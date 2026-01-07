@@ -60,9 +60,6 @@ button{
   background:linear-gradient(135deg,#757575,#616161);
   color:#fff;
 }
-.btn-close:hover{
-  background:linear-gradient(135deg,#616161,#424242);
-}
 button:disabled{
   background:#999;
   cursor:not-allowed;
@@ -118,66 +115,6 @@ textarea{
   gap:10px;
   margin-top:14px;
 }
-  /* ---------- MOBILE RESPONSIVENESS FIX ---------- */
-*{
-  box-sizing: border-box;
-}
-
-@media (max-width: 480px){
-
-  .card{
-    padding:16px;
-    margin:16px 8px;
-  }
-
-  h1{ font-size:14px; }
-  h2{ font-size:13px; }
-
-  /* Wheel scaling */
-  #wheelWrap{
-    margin:12px 0;
-  }
-
-  canvas{
-    width:220px !important;
-    height:220px !important;
-  }
-
-  button{
-    font-size:14px;
-    padding:10px;
-  }
-
-  .infoBox{
-    font-size:13px;
-    padding:12px;
-  }
-
-  .countdown{
-    font-size:13px;
-    padding:8px;
-  }
-
-  .blink{
-    font-size:13px;
-  }
-
-  /* Modal adjustments */
-  .modal-box{
-    padding:16px;
-    max-width:360px;
-  }
-
-  textarea{
-    min-height:70px;
-    font-size:13px;
-  }
-
-  .modal-actions button{
-    font-size:14px;
-    padding:10px;
-  }
-}
 </style>
 </head>
 
@@ -206,7 +143,9 @@ textarea{
     <button id="spinBtn" class="btn-primary" onclick="spin()">Spin the Coin</button>
 
     <div id="status" class="status"></div>
+
     <div id="resultBox" class="infoBox" style="display:none"></div>
+    <div id="seminarBox" class="infoBox" style="display:none"></div>
 
     <button id="seminarBtn" class="btn-seminar" onclick="openModal()">Submit / Edit Seminar Topic</button>
     <button id="logoutBtn" class="btn-logout" onclick="logout()">Logout</button>
@@ -234,25 +173,17 @@ textarea{
 </div>
 
 <script>
-const BACKEND = "https://script.google.com/macros/s/AKfycbxAOPaDRPGJKA4reATcVo9m17USl7llQ7XD-0WnOC0Fvh04rzPuGAps6_L5BN-qp-Yg2Q/exec";
+const BACKEND =
+"https://script.google.com/macros/s/AKfycbxAOPaDRPGJKA4reATcVo9m17USl7llQ7XD-0WnOC0Fvh04rzPuGAps6_L5BN-qp-Yg2Q/exec";
+
 const token = new URLSearchParams(location.search).get("token");
-
-let angle=0, spinning=false;
-
-/* ---------- UI LOCK ---------- */
-function disableAllActions(msg){
-  spinBtn.disabled=true;
-  seminarBtn.disabled=true;
-  logoutBtn.disabled=true;
-  status.className="status yellow";
-  status.innerText=msg;
-}
+let angle = 0, spinning = false;
 
 /* ---------- INIT ---------- */
 drawWheel();
 loadAll();
 
-/* ---------- LOAD DATA ---------- */
+/* ---------- LOAD ---------- */
 function loadAll(){
   fetch(BACKEND,{
     method:"POST",
@@ -263,8 +194,7 @@ function loadAll(){
     loading.style.display="none";
     content.style.display="block";
     if(res.name && res.roll){
-      document.getElementById("welcome").innerText =
-        `Welcome ${res.name} (${res.roll})`;
+      welcome.innerText = `Welcome ${res.name} (${res.roll})`;
     }
     if(res.status==="ASSIGNED"){
       wheelWrap.style.display="none";
@@ -281,8 +211,61 @@ function loadAll(){
   .then(r=>r.json())
   .then(res=>{
     if(res.deadline) startCountdown(res.deadline);
-    if(res.topic) topicInput.value=res.topic;
+    if(res.topic){
+      topicInput.value = res.topic;
+      showSeminarTopic(res.topic);
+    }
     if(!res.editable) saveBtn.disabled=true;
+  });
+}
+
+/* ---------- SEMINAR DISPLAY ---------- */
+function showSeminarTopic(topic){
+  if(!topic) return;
+  seminarBox.innerHTML =
+    `<b>Submitted Seminar Topic:</b><br>
+     <span style="color:#1b5e20">"${topic}"</span>`;
+  seminarBox.style.display = "block";
+}
+
+/* ---------- RESULT ---------- */
+function showResult(res){
+  let html=`<b>Assigned Topic:</b><br>${res.project} – ${res.projectName}<br><br><b>Group Members:</b><br>`;
+  res.team.forEach((s,i)=>html+=`${i+1}. ${s.name} (${s.roll})<br>`);
+  resultBox.innerHTML=html;
+  resultBox.style.display="block";
+  seminarBtn.disabled=false;
+  logoutBtn.disabled=false;
+}
+
+/* ---------- SAVE SEMINAR ---------- */
+function saveTopic(){
+  saveBtn.disabled=true;
+  topicStatus.className="status yellow";
+  topicStatus.innerText="Submitting…";
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"saveSeminarTopic",
+      token,
+      topic:topicInput.value
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    saveBtn.disabled=false;
+
+    if(res.status==="SAVED"){
+      topicStatus.className="status green";
+      topicStatus.innerText="Saved successfully";
+      closeBtn.disabled=false;
+      showSeminarTopic(topicInput.value);
+    }
+    else{
+      topicStatus.className="status red";
+      topicStatus.innerText="Unable to save topic.";
+    }
   });
 }
 
@@ -293,7 +276,6 @@ function startCountdown(deadline){
     const d=D-new Date();
     if(d<=0){
       timeLeft.innerText="Deadline passed";
-      spinBtn.style.display="none";
       saveBtn.disabled=true;
       return;
     }
@@ -308,12 +290,12 @@ function startCountdown(deadline){
 /* ---------- WHEEL ---------- */
 function drawWheel(){
   const c=wheel.getContext("2d");
-  c.clearRect(0,0,260,260);
+  c.clearRect(0,0,240,240);
   for(let i=0;i<9;i++){
     c.beginPath();
-    c.moveTo(130,130);
+    c.moveTo(120,120);
     c.fillStyle=i%2?"#90caf9":"#bbdefb";
-    c.arc(130,130,120,
+    c.arc(120,120,110,
       (i*40+angle)*Math.PI/180,
       ((i+1)*40+angle)*Math.PI/180);
     c.fill();
@@ -324,18 +306,13 @@ function drawWheel(){
 function spin(){
   if(spinning) return;
   spinning=true;
-  disableAllActions("Allocating group topic, please wait…");
-
   let stop=Math.random()*360+2160;
   let id=setInterval(()=>{
     angle+=20;
     drawWheel();
     if(angle>=stop){
       clearInterval(id);
-      requestAnimationFrame(()=>{
-        status.innerText="Assigning topic, please wait…";
-        allocate();
-      });
+      allocate();
     }
   },30);
 }
@@ -348,113 +325,22 @@ function allocate(){
   })
   .then(r=>r.json())
   .then(res=>{
-    status.innerText="";
     wheelWrap.style.display="none";
     spinMsg.style.display="none";
     showResult(res);
   });
 }
 
-/* ---------- RESULT ---------- */
-function showResult(res){
-  let html=`<b>Assigned Topic:</b><br>${res.project} – ${res.projectName}<br><br><b>Group Members:</b><br>`;
-  res.team.forEach((s,i)=>html+=`${i+1}. ${s.name} (${s.roll})<br>`);
-  if(!res.complete){
-    html+=`<div class="red" style="margin-top:8px">
-      A few students haven't spun the wheel yet. Please login later to see full group details.
-    </div>`;
-  }
-  resultBox.innerHTML=html;
-  resultBox.style.display="block";
-  seminarBtn.disabled=false;
-  logoutBtn.disabled=false;
-}
-
-/* ---------- SEMINAR ---------- */
-function openModal(){
-  topicStatus.innerText="";
-  saveBtn.disabled=false;
-  closeBtn.disabled=true;
-  modal.style.display="flex";
-}
+/* ---------- MODAL ---------- */
+function openModal(){ modal.style.display="flex"; }
 function closeModal(){ modal.style.display="none"; }
-function saveTopic(){
-  saveBtn.disabled = true;
-  topicStatus.className = "status yellow";
-  topicStatus.innerText = "Submitting…";
-
-  fetch(BACKEND, {
-    method: "POST",
-    body: new URLSearchParams({
-      action: "saveSeminarTopic",
-      token,
-      topic: topicInput.value
-    })
-  })
-  .then(r => r.json())
-  .then(res => {
-
-    saveBtn.disabled = false;
-
-    if (res.status === "SAVED") {
-      topicStatus.className = "status green";
-      topicStatus.innerText = "Saved successfully";
-      closeBtn.disabled = false;
-    }
-
-    else if (res.status === "TOO_SHORT") {
-      topicStatus.className = "status red";
-      topicStatus.innerText =
-        "Topic must be at least 10 characters long.";
-    }
-
-    else if (res.status === "NOT_ASSIGNED") {
-      topicStatus.className = "status red";
-      topicStatus.innerText =
-        "You must spin the wheel and get a topic first.";
-    }
-
-    else if (res.status === "LOCKED") {
-      topicStatus.className = "status red";
-      topicStatus.innerText =
-        "Deadline passed. Submission locked.";
-      saveBtn.disabled = true;
-    }
-
-    else if (res.status === "INVALID_SESSION") {
-      topicStatus.className = "status red";
-      topicStatus.innerText =
-        "Session expired. Please login again.";
-    }
-
-    else {
-      topicStatus.className = "status red";
-      topicStatus.innerText =
-        "Unexpected error. Please try again.";
-    }
-  })
-  .catch(() => {
-    saveBtn.disabled = false;
-    topicStatus.className = "status red";
-    topicStatus.innerText = "Network error. Try again.";
-  });
-}
 
 /* ---------- LOGOUT ---------- */
 function logout(){
-  disableAllActions("Logging out, please wait…");
-  requestAnimationFrame(()=>{
-    requestAnimationFrame(()=>{
-      setTimeout(()=>{
-        fetch(BACKEND,{
-          method:"POST",
-          body:new URLSearchParams({ action:"logout", token })
-        }).finally(()=>{
-          location.href="login.html";
-        });
-      },800);
-    });
-  });
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({ action:"logout", token })
+  }).finally(()=>location.href="login.html");
 }
 </script>
 
