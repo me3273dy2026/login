@@ -41,11 +41,7 @@ h2{font-size:14px;text-align:center;color:#555;margin:6px 0 14px;}
   50%{color:#9b59b6;}75%{color:#e67e22;}
   100%{color:#1abc9c;}
 }
-#wheelWrap{
-  display:flex;
-  justify-content:center;
-  margin:18px 0;
-}
+#wheelWrap{display:flex;justify-content:center;margin:18px 0;}
 button{
   width:100%;
   padding:12px;
@@ -59,12 +55,9 @@ button{
 .btn-primary{background:linear-gradient(135deg,#2c5364,#203a43);color:#fff;}
 .btn-seminar{background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;}
 .btn-logout{background:#c0392b;color:#fff;}
-.btn-close{
-  background:linear-gradient(135deg,#757575,#616161);
-  color:#fff;
-}
+.btn-close{background:linear-gradient(135deg,#757575,#616161);color:#fff;}
 button:disabled{background:#999;cursor:not-allowed;}
-.status{margin-top:12px;text-align:center;font-size:14px}
+.status{text-align:center;font-size:14px;margin-top:12px}
 .yellow{color:#f57f17;}
 .green{color:#1b5e20;}
 .red{color:#b71c1c;}
@@ -147,8 +140,8 @@ textarea{
     <div id="resultBox" class="infoBox" style="display:none"></div>
     <div id="seminarBox" class="infoBox" style="display:none"></div>
 
-    <button id="seminarBtn" class="btn-seminar" onclick="openModal()">Submit / Edit Seminar Topic</button>
-    <button id="logoutBtn" class="btn-logout" onclick="logout()">Logout</button>
+    <button id="seminarBtn" class="btn-seminar" disabled onclick="openModal()">Submit / Edit Seminar Topic</button>
+    <button id="logoutBtn" class="btn-logout" disabled onclick="logout()">Logout</button>
   </div>
 </div>
 
@@ -179,37 +172,38 @@ const BACKEND =
 const token = new URLSearchParams(location.search).get("token");
 let angle = 0, spinning = false;
 
+/* ---------- BUTTON CONTROL ---------- */
+function disableAllButtons(msg){
+  spinBtn.disabled = true;
+  seminarBtn.disabled = true;
+  logoutBtn.disabled = true;
+  if(msg){
+    status.className = "status yellow";
+    status.innerText = msg;
+  }
+}
+function enablePostAllocationButtons(){
+  seminarBtn.disabled = false;
+  logoutBtn.disabled = false;
+}
+
 /* ---------- RESPONSIVE WHEEL ---------- */
 function resizeWheel(){
-  const maxSize = 240;
-  const minSize = 180;
-  const padding = 60;
-
-  const available = Math.min(window.innerWidth - padding, maxSize);
-  const size = Math.max(minSize, available);
-
+  const max = 240, min = 180, pad = 60;
+  const size = Math.max(min, Math.min(window.innerWidth - pad, max));
   wheel.width = size;
   wheel.height = size;
 }
-
 function drawWheel(){
   const c = wheel.getContext("2d");
-  const size = wheel.width;
-  const r = size / 2 - 10;
-
-  c.clearRect(0, 0, size, size);
-
-  for(let i = 0; i < 9; i++){
+  const s = wheel.width;
+  const r = s/2 - 10;
+  c.clearRect(0,0,s,s);
+  for(let i=0;i<9;i++){
     c.beginPath();
-    c.moveTo(size/2, size/2);
-    c.fillStyle = i % 2 ? "#90caf9" : "#bbdefb";
-    c.arc(
-      size/2,
-      size/2,
-      r,
-      (i * 40 + angle) * Math.PI / 180,
-      ((i + 1) * 40 + angle) * Math.PI / 180
-    );
+    c.moveTo(s/2,s/2);
+    c.fillStyle=i%2?"#90caf9":"#bbdefb";
+    c.arc(s/2,s/2,r,(i*40+angle)*Math.PI/180,((i+1)*40+angle)*Math.PI/180);
     c.fill();
   }
 }
@@ -218,11 +212,7 @@ function drawWheel(){
 resizeWheel();
 drawWheel();
 loadAll();
-
-window.addEventListener("resize", () => {
-  resizeWheel();
-  drawWheel();
-});
+window.addEventListener("resize",()=>{ resizeWheel(); drawWheel(); });
 
 /* ---------- LOAD ---------- */
 function loadAll(){
@@ -234,14 +224,13 @@ function loadAll(){
   .then(res=>{
     loading.style.display="none";
     content.style.display="block";
-    if(res.name && res.roll){
-      welcome.innerText = `Welcome ${res.name} (${res.roll})`;
-    }
+    if(res.name) welcome.innerText=`Welcome ${res.name} (${res.roll})`;
     if(res.status==="ASSIGNED"){
       wheelWrap.style.display="none";
       spinBtn.style.display="none";
       spinMsg.style.display="none";
       showResult(res);
+      enablePostAllocationButtons();
     }
   });
 
@@ -253,37 +242,24 @@ function loadAll(){
   .then(res=>{
     if(res.deadline) startCountdown(res.deadline);
     if(res.topic){
-      topicInput.value = res.topic;
+      topicInput.value=res.topic;
       showSeminarTopic(res.topic);
     }
     if(!res.editable) saveBtn.disabled=true;
   });
 }
 
-/* ---------- DISPLAY ---------- */
-function showResult(res){
-  let html=`<b>Assigned Topic:</b><br>${res.project} – ${res.projectName}<br><br><b>Group Members:</b><br>`;
-  res.team.forEach((s,i)=>html+=`${i+1}. ${s.name} (${s.roll})<br>`);
-  resultBox.innerHTML=html;
-  resultBox.style.display="block";
-}
-
-function showSeminarTopic(topic){
-  seminarBox.innerHTML =
-    `<b>Submitted Seminar Topic:</b><br>
-     <span style="color:#1b5e20">"${topic}"</span>`;
-  seminarBox.style.display="block";
-}
-
 /* ---------- SPIN ---------- */
 function spin(){
   if(spinning) return;
-  spinning = true;
-  let stop = Math.random()*360 + 2160;
-  let id = setInterval(()=>{
-    angle += 20;
+  spinning=true;
+  disableAllButtons("Allocating group topic, please wait…");
+
+  let stop=Math.random()*360+2160;
+  let id=setInterval(()=>{
+    angle+=20;
     drawWheel();
-    if(angle >= stop){
+    if(angle>=stop){
       clearInterval(id);
       allocate();
     }
@@ -298,10 +274,25 @@ function allocate(){
   })
   .then(r=>r.json())
   .then(res=>{
+    status.innerText="";
     wheelWrap.style.display="none";
+    spinBtn.style.display="none";
     spinMsg.style.display="none";
     showResult(res);
+    enablePostAllocationButtons();
   });
+}
+
+/* ---------- DISPLAY ---------- */
+function showResult(res){
+  let html=`<b>Assigned Topic:</b><br>${res.project} – ${res.projectName}<br><br><b>Group Members:</b><br>`;
+  res.team.forEach((s,i)=>html+=`${i+1}. ${s.name} (${s.roll})<br>`);
+  resultBox.innerHTML=html;
+  resultBox.style.display="block";
+}
+function showSeminarTopic(topic){
+  seminarBox.innerHTML=`<b>Submitted Seminar Topic:</b><br><span style="color:#1b5e20">"${topic}"</span>`;
+  seminarBox.style.display="block";
 }
 
 /* ---------- SEMINAR ---------- */
@@ -315,11 +306,7 @@ function saveTopic(){
 
   fetch(BACKEND,{
     method:"POST",
-    body:new URLSearchParams({
-      action:"saveSeminarTopic",
-      token,
-      topic:topicInput.value
-    })
+    body:new URLSearchParams({ action:"saveSeminarTopic", token, topic:topicInput.value })
   })
   .then(r=>r.json())
   .then(res=>{
@@ -349,8 +336,7 @@ function startCountdown(deadline){
     const h=Math.floor(d/36e5),
           m=Math.floor(d%36e5/6e4),
           s=Math.floor(d%6e4/1e3);
-    timeLeft.innerText=
-      `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+    timeLeft.innerText=`${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
   },1000);
 }
 
