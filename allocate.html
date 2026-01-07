@@ -342,10 +342,17 @@ function startCountdown(deadline){
 
 /* ---------- LOGOUT ---------- */
 function logout(){
+  disableAllButtons("Logging out, please wait…");
+
   fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({ action:"logout", token })
-  }).finally(()=>location.href="login.html");
+  })
+  .finally(()=>{
+    setTimeout(()=>{
+      location.href="login.html";
+    }, 600);
+  });
 }
 </script>
 
