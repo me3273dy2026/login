@@ -42,6 +42,14 @@ h2{
   padding:14px;
   margin-top:16px;
   font-size:14px;
+}
+.notice{
+  margin-top:16px;
+  padding:14px;
+  border-radius:12px;
+  background:#e8f5e9;
+  color:#1b5e20;
+  font-weight:700;
   text-align:center;
 }
 button{
@@ -75,7 +83,7 @@ button:disabled{
 
 <div class="card">
 
-  <!-- WELCOME (HIDDEN INITIALLY) -->
+  <!-- WELCOME -->
   <h1 id="welcome" style="display:none"></h1>
   <h2>Group Discussion & Seminar (ME3273)</h2>
 
@@ -84,7 +92,8 @@ button:disabled{
     <b>Getting details, please wait…</b>
   </div>
 
-  <!-- CONTENT -->
+  <!-- FINAL CONTENT -->
+  <div id="noticeBox" class="notice" style="display:none"></div>
   <div id="resultBox" class="infoBox" style="display:none"></div>
   <div id="seminarBox" class="infoBox" style="display:none"></div>
 
@@ -103,7 +112,7 @@ const BACKEND =
 
 const token = new URLSearchParams(location.search).get("token");
 
-/* ---------- LOAD ALL DATA TOGETHER ---------- */
+/* ---------- LOAD EVERYTHING TOGETHER ---------- */
 loadAll();
 
 function loadAll(){
@@ -132,11 +141,24 @@ function loadAll(){
         return;
       }
 
-      /* SHOW WELCOME ONLY WHEN DATA IS READY */
+      /* ---- WELCOME ---- */
       welcome.innerText =
         `Welcome ${dash.name} (${dash.roll})`;
       welcome.style.display = "block";
 
+      /* ---- NOTICE MESSAGE (KEY PART) ---- */
+      const gdTopics = ["Topic1", "Topic2", "Topic3"];
+
+      if (gdTopics.includes(dash.project)) {
+        noticeBox.innerText =
+          "You have a group discussion on 13th Jan 2026.";
+      } else {
+        noticeBox.innerText =
+          "You may have a seminar or personal interview on 13th Jan 2026. Please be prepared.";
+      }
+      noticeBox.style.display = "block";
+
+      /* ---- GROUP DETAILS ---- */
       let html =
         `<b>Assigned Group Discussion Topic:</b><br>
          ${dash.project} – ${dash.projectName}<br><br>
@@ -149,6 +171,7 @@ function loadAll(){
       resultBox.innerHTML = html;
       resultBox.style.display = "block";
 
+      /* ---- SEMINAR TOPIC ---- */
       if(sem.topic){
         seminarBox.innerHTML =
           `<b>Submitted Seminar Topic:</b><br>
