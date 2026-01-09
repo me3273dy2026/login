@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Topic Allocation | ME3273</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+  font-family:"Segoe UI",Arial,sans-serif;
+  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  margin:0;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+.card{
+  background:#fff;
+  width:100%;
+  max-width:520px;
+  margin:24px 12px;
+  padding:24px;
+  border-radius:16px;
+  box-shadow:0 15px 40px rgba(0,0,0,.25);
+}
+h1{font-size:15px;text-align:center;color:#203a43;margin:0;}
+h2{font-size:14px;text-align:center;color:#555;margin:6px 0 14px;}
+#loading{text-align:center;font-size:15px;color:#555;margin:30px 0;}
+.countdown{
+  background:#fff8e1;color:#6d4c41;padding:10px;
+  border-radius:10px;text-align:center;
+  font-size:14px;font-weight:600;
+}
+.blink{
+  text-align:center;font-size:14px;margin:12px 0;
+  animation:blinkColors 2s infinite;
+}
+@keyframes blinkColors{
+  0%{color:#1abc9c;}25%{color:#3498db;}
+  50%{color:#9b59b6;}75%{color:#e67e22;}
+  100%{color:#1abc9c;}
+}
+#wheelWrap{display:flex;justify-content:center;margin:18px 0;}
+button{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:30px;
+  font-size:15px;
+  font-weight:600;
+  cursor:pointer;
+  margin-top:12px;
+}
+.btn-primary{background:linear-gradient(135deg,#2c5364,#203a43);color:#fff;}
+.btn-seminar{background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;}
+.btn-logout{background:#c0392b;color:#fff;}
+.btn-close{background:linear-gradient(135deg,#757575,#616161);color:#fff;}
+button:disabled{background:#999;cursor:not-allowed;}
+.status{text-align:center;font-size:14px;margin-top:12px}
+.yellow{color:#f57f17;}
+.green{color:#1b5e20;}
+.red{color:#b71c1c;}
+.infoBox{
+  background:#f5f7fa;
+  border-radius:12px;
+  padding:14px;
+  margin-top:16px;
+  font-size:14px;
+}
+.footer{
+  margin:12px 0 20px;
+  text-align:center;
+  font-size:13px;
+  color:#e0e0e0;
+}
+
+/* MODAL */
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.6);
+  display:none;
+  justify-content:center;
+  align-items:center;
+}
+.modal-box{
+  background:#fff;
+  width:calc(100% - 32px);
+  max-width:420px;
+  border-radius:14px;
+  padding:22px;
+}
+textarea{
+  width:100%;
+  min-height:90px;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid #ccc;
+}
+.instruction{
+  margin-top:8px;
+  font-size:13px;
+  color:#b71c1c;
+}
+.modal-actions{
+  display:flex;
+  gap:10px;
+  margin-top:14px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+  <h1 id="welcome">Welcome</h1>
+  <h2>Group Discussion & Seminar (ME3273)</h2>
+
+  <div id="loading">Loading, please wait…</div>
+
+  <div id="content" style="display:none">
+
+    <div class="countdown">
+      ⏳ Time remaining: <span id="timeLeft">--:--:--</span>
+    </div>
+
+    <div id="spinMsg" class="blink">
+      Spin the coin to get your topic name for group discussion
+    </div>
+
+    <div id="wheelWrap">
+      <canvas id="wheel"></canvas>
+    </div>
+
+    <button id="spinBtn" class="btn-primary" onclick="spin()">Spin the Coin</button>
+
+    <div id="status" class="status"></div>
+
+    <div id="resultBox" class="infoBox" style="display:none"></div>
+    <div id="seminarBox" class="infoBox" style="display:none"></div>
+
+    <button id="seminarBtn" class="btn-seminar" disabled onclick="openModal()">Submit / Edit Seminar Topic</button>
+    <button id="logoutBtn" class="btn-logout" disabled onclick="logout()">Logout</button>
+  </div>
+</div>
+
+<div class="footer">
+  <div>Developed by Rajesh Akula</div>
+  <div>© 2026 · IIEST Shibpur</div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <h3>Seminar Topic</h3>
+    <textarea id="topicInput"></textarea>
+    <div class="instruction">
+      The topic should be technical and related to any trending research topic in mechanical engineering.
+    </div>
+    <div id="topicStatus" class="status"></div>
+    <div class="modal-actions">
+      <button id="saveBtn" class="btn-primary" onclick="saveTopic()">Save</button>
+      <button id="closeBtn" class="btn-close" disabled onclick="closeModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const BACKEND =
+"https://script.google.com/macros/s/AKfycbxAOPaDRPGJKA4reATcVo9m17USl7llQ7XD-0WnOC0Fvh04rzPuGAps6_L5BN-qp-Yg2Q/exec";
+
+const token = new URLSearchParams(location.search).get("token");
+let angle = 0, spinning = false;
+
+/* ---------- BUTTON CONTROL ---------- */
+function disableAllButtons(msg){
+  spinBtn.disabled = true;
+  seminarBtn.disabled = true;
+  logoutBtn.disabled = true;
+  if(msg){
+    status.className = "status yellow";
+    status.innerText = msg;
+  }
+}
+function enablePostAllocationButtons(){
+  seminarBtn.disabled = false;
+  logoutBtn.disabled = false;
+}
+
+/* ---------- RESPONSIVE WHEEL ---------- */
+function resizeWheel(){
+  const max = 240, min = 180, pad = 60;
+  const size = Math.max(min, Math.min(window.innerWidth - pad, max));
+  wheel.width = size;
+  wheel.height = size;
+}
+function drawWheel(){
+  const c = wheel.getContext("2d");
+  const s = wheel.width;
+  const r = s/2 - 10;
+  c.clearRect(0,0,s,s);
+  for(let i=0;i<9;i++){
+    c.beginPath();
+    c.moveTo(s/2,s/2);
+    c.fillStyle=i%2?"#90caf9":"#bbdefb";
+    c.arc(s/2,s/2,r,(i*40+angle)*Math.PI/180,((i+1)*40+angle)*Math.PI/180);
+    c.fill();
+  }
+}
+
+/* ---------- INIT ---------- */
+resizeWheel();
+drawWheel();
+loadAll();
+window.addEventListener("resize",()=>{ resizeWheel(); drawWheel(); });
+
+/* ---------- LOAD ---------- */
+function loadAll(){
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({ action:"dashboard", token })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    loading.style.display="none";
+    content.style.display="block";
+    if(res.name) welcome.innerText=`Welcome ${res.name} (${res.roll})`;
+    if(res.status==="ASSIGNED"){
+      wheelWrap.style.display="none";
+      spinBtn.style.display="none";
+      spinMsg.style.display="none";
+      showResult(res);
+      enablePostAllocationButtons();
+    }
+  });
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({ action:"getSeminarTopic", token })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    if(res.deadline) startCountdown(res.deadline);
+    if(res.topic){
+      topicInput.value=res.topic;
+      showSeminarTopic(res.topic);
+    }
+    if(!res.editable) saveBtn.disabled=true;
+  });
+}
+
+/* ---------- SPIN ---------- */
+function spin(){
+  if(spinning) return;
+  spinning=true;
+  disableAllButtons("Allocating group topic, please wait…");
+
+  let stop=Math.random()*360+2160;
+  let id=setInterval(()=>{
+    angle+=20;
+    drawWheel();
+    if(angle>=stop){
+      clearInterval(id);
+      allocate();
+    }
+  },30);
+}
+
+/* ---------- ASSIGN ---------- */
+function allocate(){
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({ action:"assign", token })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    status.innerText="";
+    wheelWrap.style.display="none";
+    spinBtn.style.display="none";
+    spinMsg.style.display="none";
+    showResult(res);
+    enablePostAllocationButtons();
+  });
+}
+
+/* ---------- DISPLAY ---------- */
+function showResult(res){
+  let html=`<b>Assigned Topic:</b><br>${res.project} – ${res.projectName}<br><br><b>Group Members:</b><br>`;
+  res.team.forEach((s,i)=>html+=`${i+1}. ${s.name} (${s.roll})<br>`);
+  resultBox.innerHTML=html;
+  resultBox.style.display="block";
+}
+function showSeminarTopic(topic){
+  seminarBox.innerHTML=`<b>Submitted Seminar Topic:</b><br><span style="color:#1b5e20">"${topic}"</span>`;
+  seminarBox.style.display="block";
+}
+
+/* ---------- SEMINAR ---------- */
+function openModal(){ modal.style.display="flex"; }
+function closeModal(){ modal.style.display="none"; }
+
+function saveTopic(){
+  saveBtn.disabled=true;
+  topicStatus.className="status yellow";
+  topicStatus.innerText="Submitting…";
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({ action:"saveSeminarTopic", token, topic:topicInput.value })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    saveBtn.disabled=false;
+    if(res.status==="SAVED"){
+      topicStatus.className="status green";
+      topicStatus.innerText="Saved successfully";
+      closeBtn.disabled=false;
+      showSeminarTopic(topicInput.value);
+    }else{
+      topicStatus.className="status red";
+      topicStatus.innerText="Unable to save topic.";
+    }
+  });
+}
+
+/* ---------- COUNTDOWN ---------- */
+function startCountdown(deadline){
+  const D=new Date(deadline);
+  setInterval(()=>{
+    const d=D-new Date();
+    if(d<=0){
+      timeLeft.innerText="Deadline passed";
+      saveBtn.disabled=true;
+      return;
+    }
+    const h=Math.floor(d/36e5),
+          m=Math.floor(d%36e5/6e4),
+          s=Math.floor(d%6e4/1e3);
+    timeLeft.innerText=`${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+  },1000);
+}
+
+/* ---------- LOGOUT ---------- */
+function logout(){
+  disableAllButtons("Logging out, please wait…");
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({ action:"logout", token })
+  })
+  .finally(()=>{
+    setTimeout(()=>{
+      location.href="login.html";
+    }, 600);
+  });
+}
+</script>
+
+</body>
+</html>
