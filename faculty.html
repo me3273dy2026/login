@@ -27,7 +27,6 @@ body{
 h1{
   font-size:18px;
   text-align:center;
-  margin:0 0 16px;
   color:#203a43;
 }
 select, textarea, button{
@@ -38,21 +37,13 @@ select, textarea, button{
   border-radius:10px;
   border:1px solid #ccc;
 }
-textarea{
-  resize:vertical;
-  min-height:90px;
-}
+textarea{ min-height:90px; }
 button{
   background:#203a43;
   color:#fff;
   font-weight:600;
   border:none;
   cursor:pointer;
-}
-.info{
-  margin-top:10px;
-  font-size:13px;
-  color:#666;
 }
 </style>
 </head>
@@ -75,23 +66,18 @@ button{
   <textarea id="positives" placeholder="Positives"></textarea>
   <textarea id="improvements" placeholder="Points to improve"></textarea>
 
-  <button disabled>Save Performance</button>
-
-  <div class="info">
-    * Data will be saved after next step
-  </div>
+  <button id="saveBtn" onclick="savePerformance()">Save Performance</button>
 </div>
 
 <script>
 const BACKEND =
-"https://script.google.com/macros/s/AKfycbyC8WqnbN4y31XH0x1IQIXzln6Z-H1in-eA2Ol3la8SuzQwvNZ2co5LS2DSm_83ZlGICw/exec";
+"https://script.google.com/macros/s/AKfycbxDu7ERgsjSTLgNbB_BOvPsnHhTymheEC3Y-skFgKFfrYRMos1ZkkDyYDDGzCBWAmbU3g/exec";
 
-/* LOAD STUDENT LIST */
+/* Load students */
 fetch(BACKEND + "?action=getAllStudents")
   .then(r=>r.json())
   .then(res=>{
-    studentSelect.innerHTML =
-      `<option value="">Select Student</option>`;
+    studentSelect.innerHTML = `<option value="">Select Student</option>`;
     res.students.forEach(s=>{
       studentSelect.innerHTML +=
         `<option value="${s.roll}">
@@ -99,6 +85,62 @@ fetch(BACKEND + "?action=getAllStudents")
          </option>`;
     });
   });
+
+studentSelect.onchange = checkExisting;
+typeSelect.onchange = checkExisting;
+
+function checkExisting(){
+  positives.value = "";
+  improvements.value = "";
+
+  if(!studentSelect.value) return;
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getLatestPerformance",
+      roll: studentSelect.value,
+      type: typeSelect.value
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    if(res.status==="FOUND"){
+      positives.value = res.positives;
+      improvements.value = res.improvements;
+      saveBtn.innerText = "Update Performance";
+    }else{
+      saveBtn.innerText = "Save Performance";
+    }
+  });
+}
+
+function savePerformance(){
+  if(!studentSelect.value){
+    alert("Select a student");
+    return;
+  }
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"savePerformance",
+      roll: studentSelect.value,
+      type: typeSelect.value,
+      positives: positives.value,
+      improvements: improvements.value
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    if(res.status==="SAVED"){
+      alert("Performance saved");
+      saveBtn.innerText = "Update Performance";
+    }else{
+      alert("Error saving data");
+    }
+  });
+}
 </script>
 
 </body>
