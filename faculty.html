@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Faculty Dashboard | ME3273</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+  font-family:"Segoe UI",Arial,sans-serif;
+  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  margin:0;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+}
+.card{
+  background:#fff;
+  width:100%;
+  max-width:600px;
+  margin:24px 12px;
+  padding:24px;
+  border-radius:16px;
+  box-shadow:0 15px 40px rgba(0,0,0,.25);
+}
+h1{
+  font-size:18px;
+  text-align:center;
+  margin:0 0 16px;
+  color:#203a43;
+}
+select, textarea, button{
+  width:100%;
+  margin-top:12px;
+  padding:12px;
+  font-size:14px;
+  border-radius:10px;
+  border:1px solid #ccc;
+}
+textarea{
+  resize:vertical;
+  min-height:90px;
+}
+button{
+  background:#203a43;
+  color:#fff;
+  font-weight:600;
+  border:none;
+  cursor:pointer;
+}
+.info{
+  margin-top:10px;
+  font-size:13px;
+  color:#666;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+  <h1>Faculty Performance Entry</h1>
+
+  <select id="studentSelect">
+    <option value="">Loading students…</option>
+  </select>
+
+  <select id="typeSelect">
+    <option value="GD">Group Discussion</option>
+    <option value="SEMINAR">Seminar</option>
+    <option value="PI">Personal Interview</option>
+  </select>
+
+  <textarea id="positives" placeholder="Positives"></textarea>
+  <textarea id="improvements" placeholder="Points to improve"></textarea>
+
+  <button disabled>Save Performance</button>
+
+  <div class="info">
+    * Data will be saved after next step
+  </div>
+</div>
+
+<script>
+const BACKEND =
+"https://script.google.com/macros/s/AKfycbyC8WqnbN4y31XH0x1IQIXzln6Z-H1in-eA2Ol3la8SuzQwvNZ2co5LS2DSm_83ZlGICw/exec";
+
+/* LOAD STUDENT LIST */
+fetch(BACKEND + "?action=getAllStudents")
+  .then(r=>r.json())
+  .then(res=>{
+    studentSelect.innerHTML =
+      `<option value="">Select Student</option>`;
+    res.students.forEach(s=>{
+      studentSelect.innerHTML +=
+        `<option value="${s.roll}">
+          ${s.roll} – ${s.name}
+         </option>`;
+    });
+  });
+</script>
+
+</body>
+</html>
