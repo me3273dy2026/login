@@ -12,8 +12,7 @@ body{
   margin:0;
   min-height:100vh;
   display:flex;
-  flex-direction:column;
-  align-items:center;
+  justify-content:center;
 }
 .card{
   background:#fff;
@@ -24,40 +23,21 @@ body{
   border-radius:16px;
   box-shadow:0 15px 40px rgba(0,0,0,.25);
 }
-h1{font-size:16px;text-align:center;color:#203a43;}
-h2{font-size:14px;text-align:center;color:#555;}
-.infoBox{
-  background:#f5f7fa;
-  border-radius:12px;
-  padding:14px;
-  margin-top:16px;
-}
-.notice{
-  background:#e8f5e9;
-  color:#1b5e20;
-  font-weight:700;
-  text-align:center;
-}
+h1,h2{text-align:center}
+.infoBox{background:#f5f7fa;padding:14px;border-radius:12px;margin-top:14px}
+.notice{background:#e8f5e9;color:#1b5e20;font-weight:700;text-align:center}
 button{
-  width:100%;
-  padding:12px;
-  border:none;
-  border-radius:30px;
-  font-size:15px;
-  font-weight:600;
-  cursor:pointer;
-  margin-top:12px;
+  width:100%;padding:12px;margin-top:12px;
+  border:none;border-radius:30px;
+  font-size:15px;font-weight:600;cursor:pointer
 }
-button:disabled{
-  background:#999 !important;
-  cursor:not-allowed;
-}
-.btn-perf{background:#203a43;color:#fff;}
-.btn-logout{background:#c0392b;color:#fff;}
-.greenBox{background:#e8f5e9;padding:12px;border-radius:10px;margin-top:10px;}
-.yellowBox{background:#fffde7;padding:12px;border-radius:10px;margin-top:10px;}
-.loading{text-align:center;font-weight:600;margin-top:10px;}
-ol{margin:6px 0 0 18px;}
+button:disabled{background:#999;cursor:not-allowed}
+.btn-perf{background:#203a43;color:#fff}
+.btn-logout{background:#c0392b;color:#fff}
+.greenBox{background:#e8f5e9;padding:12px;border-radius:10px;margin-top:8px}
+.yellowBox{background:#fffde7;padding:12px;border-radius:10px;margin-top:8px}
+.loading{text-align:center;font-weight:600}
+ol{margin-left:18px}
 </style>
 </head>
 
@@ -68,7 +48,7 @@ ol{margin:6px 0 0 18px;}
 <h1 id="welcome"></h1>
 <h2>Group Discussion & Seminar (ME3273)</h2>
 
-<div id="loadingBox" class="infoBox">
+<div id="loadingBox" class="infoBox loading">
   Getting details, please wait…
 </div>
 
@@ -81,150 +61,97 @@ ol{margin:6px 0 0 18px;}
 </button>
 
 <div id="perfPanel" class="infoBox" style="display:none">
-
   <button onclick="toggleSection('GD')">Group Discussion</button>
-  <div id="GD" style="display:none"></div>
+  <div id="GD"></div>
 
   <button onclick="toggleSection('SEMINAR')">Seminar</button>
-  <div id="SEMINAR" style="display:none"></div>
+  <div id="SEMINAR"></div>
 
   <button onclick="toggleSection('PI')">Personal Interview</button>
-  <div id="PI" style="display:none"></div>
-
+  <div id="PI"></div>
 </div>
 
-<button id="logoutBtn" class="btn-logout" disabled onclick="logout()">
-  Logout
-</button>
+<button id="logoutBtn" class="btn-logout" disabled onclick="logout()">Logout</button>
 
 </div>
 
 <script>
-const BACKEND =
-"https://script.google.com/macros/s/AKfycbxw5_pMfEPHA3u13MaShb1kFfzaqcKwdkXhbEI9tqgVuHM75-Ox7Y5uuR_9xQ2bRxIZ7Q/exec";
-
+const BACKEND = "https://script.google.com/macros/s/AKfycbwHK_j2TxwWt_Y5hu0XJkx8XodM6lQ4hBJOWmYLRNup21WDuJEDdmcskY2X9mA4rBnbwg/exec";
 const token = new URLSearchParams(location.search).get("token");
 
-/* Disable buttons initially */
 setButtonsDisabled(true);
-
-/* LOAD DASHBOARD */
 loadAll();
 
 function setButtonsDisabled(state){
-  document.querySelectorAll("button").forEach(b=>{
-    b.disabled = state;
-  });
+  document.querySelectorAll("button").forEach(b=>b.disabled=state);
 }
 
 function loadAll(){
-
   Promise.all([
     fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"dashboard",token})}).then(r=>r.json()),
     fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getSeminarTopic",token})}).then(r=>r.json())
-  ])
-  .then(([dash,sem])=>{
-
+  ]).then(([dash,sem])=>{
     loadingBox.style.display="none";
+    welcome.innerText=`Welcome ${dash.name} (${dash.roll})`;
 
-    welcome.innerText = `Welcome ${dash.name} (${dash.roll})`;
-
-    noticeBox.innerText = "Please check your evaluation feedback below.";
+    noticeBox.innerText="Please check your evaluation feedback below.";
     noticeBox.style.display="block";
 
-    let html = `<b>Group Topic:</b> ${dash.projectName}<br><b>Members:</b><br>`;
-    dash.team.forEach((s,i)=>{
-      html += `${i+1}. ${s.name} (${s.roll})<br>`;
-    });
-
-    resultBox.innerHTML = html;
+    resultBox.innerHTML=`<b>Group Members:</b><br>`+
+      dash.team.map((s,i)=>`${i+1}. ${s.name} (${s.roll})`).join("<br>");
     resultBox.style.display="block";
 
     if(sem.topic){
-      seminarBox.innerHTML = `<b>Seminar Topic:</b><br>"${sem.topic}"`;
+      seminarBox.innerHTML=`<b>Seminar Topic:</b><br>"${sem.topic}"`;
       seminarBox.style.display="block";
     }
 
-    /* ENABLE buttons after loading */
     setButtonsDisabled(false);
-  })
-  .catch(()=>{
-    loadingBox.innerHTML = "<b style='color:red'>Unable to load details.</b>";
   });
 }
 
-/* PERFORMANCE PANEL */
 function togglePanel(){
-  perfPanel.style.display =
-    perfPanel.style.display==="none" ? "block" : "none";
+  perfPanel.style.display = perfPanel.style.display==="none"?"block":"none";
 }
 
 function toggleSection(type){
 
-  const box = document.getElementById(type);
+  const box=document.getElementById(type);
 
-  if(box.style.display === "block"){
-    box.style.display="none";
+  if(box.innerHTML){
     box.innerHTML="";
     return;
   }
 
-  ["GD","SEMINAR","PI"].forEach(t=>{
-    document.getElementById(t).style.display="none";
-    document.getElementById(t).innerHTML="";
-  });
-
-  box.style.display="block";
-  box.innerHTML = `<div class="loading">Loading… please wait</div>`;
+  box.innerHTML=`<div class="loading">Loading… please wait</div>`;
 
   fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({action:"getMyPerformance",token,type})
-  })
-  .then(r=>r.json())
-  .then(res=>{
+  }).then(r=>r.json()).then(res=>{
     if(res.status!=="FOUND"){
-      box.innerHTML = "<b>Performance not yet evaluated.</b>";
+      box.innerHTML="<b>Not yet evaluated.</b>";
       return;
     }
 
-    box.innerHTML = `
-      <div class="greenBox">
-        <b>Positives</b>
-        <ol>${makeList(res.positives)}</ol>
-      </div>
-      <div class="yellowBox">
-        <b>Points to Improve</b>
-        <ol>${makeList(res.improvements)}</ol>
-      </div>`;
+    box.innerHTML=`
+      <div><b>Evaluation Date:</b> ${res.evaluationDate}</div>
+      <div class="greenBox"><b>Positives</b><ol>${makeList(res.positives)}</ol></div>
+      <div class="yellowBox"><b>Points to Improve</b><ol>${makeList(res.improvements)}</ol></div>`;
   });
 }
 
-function makeList(text){
-  return text.split("\n")
-    .filter(l=>l.trim()!=="")
-    .map(l=>`<li>${l}</li>`).join("");
+function makeList(t){
+  return t.split("\n").filter(x=>x).map(x=>`<li>${x}</li>`).join("");
 }
 
-/* LOGOUT */
 function logout(){
-
-  /* Immediately disable all buttons */
   setButtonsDisabled(true);
-
-  const ok = confirm("Are you sure you want to logout?");
-
-  if(!ok){
-    /* Restore buttons if cancelled */
-    setButtonsDisabled(false);
-    return;
+  if(!confirm("Are you sure you want to logout?")){
+    setButtonsDisabled(false); return;
   }
-
-  fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({action:"logout",token})
-  })
-  .finally(()=>location.href="login.html");
+  fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"logout",token})})
+    .finally(()=>location.href="login.html");
 }
 </script>
 
