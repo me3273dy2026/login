@@ -10,12 +10,16 @@
 body{
   font-family:"Segoe UI",Arial,sans-serif;
   background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-  min-height:100vh;margin:0;
-  display:flex;justify-content:center;align-items:flex-start;
+  min-height:100vh;
+  margin:0;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
 }
 .card{
   background:#fff;
-  width:100%;max-width:1000px;
+  width:100%;
+  max-width:1000px;
   margin:24px 12px;
   padding:28px;
   border-radius:14px;
@@ -31,30 +35,46 @@ h1{text-align:center;color:#e67e22;margin-bottom:6px;}
 h2{text-align:center;color:#555;font-size:15px;margin-bottom:20px;}
 
 select,input,textarea,button{
-  width:100%;padding:10px 12px;
-  border-radius:6px;border:1px solid #ccc;
-  font-size:15px;margin-top:6px;
+  width:100%;
+  padding:10px 12px;
+  border-radius:6px;
+  border:1px solid #ccc;
+  font-size:15px;
+  margin-top:6px;
 }
-textarea{min-height:90px;}
+
+textarea{
+  min-height:90px;
+  resize:vertical;
+}
 
 button{
   background:linear-gradient(135deg,#f39c12,#e67e22);
-  color:#fff;border:none;font-weight:600;
-  border-radius:30px;margin-top:14px;
+  color:#fff;
+  border:none;
+  font-weight:600;
+  border-radius:30px;
+  margin-top:14px;
   cursor:pointer;
 }
+
 .section-gap{
   margin-top:16px;
 }
+
 .row{
-  display:flex;gap:16px;margin-top:18px;
+  display:flex;
+  gap:16px;
+  margin-top:18px;
 }
+
 .box{
   flex:1;
   background:#f8f9fa;
   padding:16px;
   border-radius:12px;
 }
+
 .box h3{
   margin-top:0;
   color:#203a43;
@@ -70,18 +90,11 @@ button{
   margin-top:20px;
 }
 
-ul{margin:6px 0 0 18px;}
-
-.footer{
-  margin-top:22px;text-align:center;
-  font-size:13px;color:#5f6f78;font-weight:600;
+ul{
+  margin:6px 0 0 18px;
 }
-.footer div{font-size:12px;color:#7a8a93;}
 
-@media(max-width:800px){
-  .row{flex-direction:column;}
-}
-  .preview{
+.preview{
   background:#ffffff;
   border:1px dashed #ccc;
   border-radius:6px;
@@ -96,6 +109,22 @@ ul{margin:6px 0 0 18px;}
 }
 .preview li{
   margin-bottom:4px;
+}
+
+.footer{
+  margin-top:22px;
+  text-align:center;
+  font-size:13px;
+  color:#5f6f78;
+  font-weight:600;
+}
+.footer div{
+  font-size:12px;
+  color:#7a8a93;
+}
+
+@media(max-width:800px){
+  .row{flex-direction:column;}
 }
 </style>
 </head>
@@ -122,10 +151,14 @@ ul{margin:6px 0 0 18px;}
       <div class="box">
         <h3>Student Details</h3>
         <div id="studentInfo"></div>
+
         <div class="section-gap"></div>
+
         <h3>Group Discussion</h3>
         <div id="gdInfo"></div>
+
         <div class="section-gap"></div>
+
         <h3>Seminar Topic</h3>
         <div id="seminarInfo"></div>
       </div>
@@ -145,11 +178,13 @@ ul{margin:6px 0 0 18px;}
         <input type="date" id="evalDate">
 
         <label>Positives (one per line)</label>
-        <textarea id="positives" oninput="renderBullets('positives','posPreview')"></textarea>
+        <textarea id="positives"
+          oninput="renderBullets('positives','posPreview')"></textarea>
         <div id="posPreview" class="preview"></div>
 
         <label>Points to Improve (one per line)</label>
-        <textarea id="improvements" oninput="renderBullets('improvements','impPreview')"></textarea>
+        <textarea id="improvements"
+          oninput="renderBullets('improvements','impPreview')"></textarea>
         <div id="impPreview" class="preview"></div>
 
         <div id="actionArea" class="loading">
@@ -174,23 +209,25 @@ const today = new Date().toISOString().split("T")[0];
 evalDate.value = today;
 
 /* Load students */
-fetch(BACKEND+"?action=getAllStudents")
-.then(r=>r.json())
-.then(res=>{
+fetch(BACKEND + "?action=getAllStudents")
+.then(r => r.json())
+.then(res => {
   studentSelect.innerHTML = `<option value="">Select Student</option>`;
-  res.students.forEach(s=>{
-    studentSelect.innerHTML += `<option value="${s.roll}">${s.roll} – ${s.name}</option>`;
+  res.students.forEach(s => {
+    studentSelect.innerHTML +=
+      `<option value="${s.roll}">${s.roll} – ${s.name}</option>`;
   });
 });
 
 studentSelect.onchange = loadStudent;
 typeSelect.onchange = checkPerformance;
 
+/* Load selected student */
 function loadStudent(){
   if(!studentSelect.value) return;
 
-  loading.style.display="block";
-  content.style.display="none";
+  loading.style.display = "block";
+  content.style.display = "none";
 
   fetch(BACKEND,{
     method:"POST",
@@ -199,27 +236,30 @@ function loadStudent(){
       roll: studentSelect.value
     })
   })
-  .then(r=>r.json())
-  .then(d=>{
+  .then(r => r.json())
+  .then(d => {
+
     studentInfo.innerHTML =
       `<b>Name:</b> ${d.name}<br><b>Roll:</b> ${d.roll}`;
 
     gdInfo.innerHTML = d.project
-      ? `<b>Topic:</b> ${d.projectName}<ul>` +
-        d.team.map((t,i)=>`<li>${t.name} (${t.roll})</li>`).join("") +
-        `</ul>`
+      ? `<b>Topic:</b> ${d.projectName}
+         <ul>${d.team.map(t =>
+           `<li>${t.name} (${t.roll})</li>`
+         ).join("")}</ul>`
       : "Not assigned";
 
     seminarInfo.innerHTML = d.seminarTopic || "Not submitted";
 
-    loading.style.display="none";
-    content.style.display="block";
+    loading.style.display = "none";
+    content.style.display = "block";
     checkPerformance();
   });
 }
 
+/* Check existing performance */
 function checkPerformance(){
-  actionArea.innerHTML="Loading… please wait";
+  actionArea.innerHTML = "Loading… please wait";
 
   fetch(BACKEND,{
     method:"POST",
@@ -229,24 +269,42 @@ function checkPerformance(){
       type: typeSelect.value
     })
   })
-  .then(r=>r.json())
-  .then(res=>{
-    positives.value = res.status==="FOUND" ? res.positives : "";
-    improvements.value = res.status==="FOUND" ? res.improvements : "";
-    renderBullets('positives','posPreview');
-    renderBullets('improvements','impPreview');
+  .then(r => r.json())
+  .then(res => {
+
+    positives.value = res.status === "FOUND" ? res.positives : "";
+    improvements.value = res.status === "FOUND" ? res.improvements : "";
+
+    renderBullets("positives","posPreview");
+    renderBullets("improvements","impPreview");
+
     actionArea.innerHTML =
       `<button onclick="savePerformance()">
-        ${res.status==="FOUND" ? "Update Performance" : "Save Performance"}
+        ${res.status === "FOUND" ? "Update Performance" : "Save Performance"}
       </button>`;
   });
 }
 
+/* Save / Update performance */
 function savePerformance(){
 
   const btn = document.querySelector("#actionArea button");
 
-  // Disable button & show loading text
+  // Clean & capitalize before saving
+  positives.value = positives.value
+    .split("\n")
+    .map(l => l.trim())
+    .filter(l => l !== "")
+    .map(l => l.charAt(0).toUpperCase() + l.slice(1))
+    .join("\n");
+
+  improvements.value = improvements.value
+    .split("\n")
+    .map(l => l.trim())
+    .filter(l => l !== "")
+    .map(l => l.charAt(0).toUpperCase() + l.slice(1))
+    .join("\n");
+
   btn.disabled = true;
   btn.innerText = "Updating… please wait";
 
@@ -260,8 +318,8 @@ function savePerformance(){
       improvements: improvements.value
     })
   })
-  .then(r=>r.json())
-  .then(res=>{
+  .then(r => r.json())
+  .then(res => {
     if(res.status === "SAVED"){
       btn.innerText = "Update Performance";
       btn.disabled = false;
@@ -272,30 +330,29 @@ function savePerformance(){
       alert("Error while saving");
     }
   })
-  .catch(()=>{
+  .catch(() => {
     btn.innerText = "Save Performance";
     btn.disabled = false;
     alert("Server error. Try again.");
   });
 }
-  function renderBullets(textareaId, previewId){
 
-  const text = document.getElementById(textareaId).value
+/* Render numbered preview (DO NOT modify textarea) */
+function renderBullets(textareaId, previewId){
+
+  const lines = document.getElementById(textareaId).value
     .split("\n")
     .map(l => l.trim())
     .filter(l => l !== "")
     .map(l => l.charAt(0).toUpperCase() + l.slice(1));
 
-  // Update textarea with capitalized text
-  document.getElementById(textareaId).value = text.join("\n");
-
-  if(text.length === 0){
+  if(lines.length === 0){
     document.getElementById(previewId).innerHTML = "";
     return;
   }
 
   let html = "<ol>";
-  text.forEach(line=>{
+  lines.forEach(line => {
     html += `<li>${line}</li>`;
   });
   html += "</ol>";
