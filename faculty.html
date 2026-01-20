@@ -222,6 +222,13 @@ function checkPerformance(){
 }
 
 function savePerformance(){
+
+  const btn = document.querySelector("#actionArea button");
+
+  // Disable button & show loading text
+  btn.disabled = true;
+  btn.innerText = "Updating… please wait";
+
   fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({
@@ -233,7 +240,22 @@ function savePerformance(){
     })
   })
   .then(r=>r.json())
-  .then(()=>alert("Performance saved"));
+  .then(res=>{
+    if(res.status === "SAVED"){
+      btn.innerText = "Update Performance";
+      btn.disabled = false;
+      alert("Performance saved successfully");
+    }else{
+      btn.innerText = "Save Performance";
+      btn.disabled = false;
+      alert("Error while saving");
+    }
+  })
+  .catch(()=>{
+    btn.innerText = "Save Performance";
+    btn.disabled = false;
+    alert("Server error. Try again.");
+  });
 }
 </script>
 
