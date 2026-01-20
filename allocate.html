@@ -28,25 +28,19 @@ h1{
   font-size:16px;
   text-align:center;
   color:#203a43;
-  margin:0;
 }
 h2{
   font-size:14px;
   text-align:center;
   color:#555;
-  margin:6px 0 14px;
 }
 .infoBox{
   background:#f5f7fa;
   border-radius:12px;
   padding:14px;
   margin-top:16px;
-  font-size:14px;
 }
 .notice{
-  margin-top:16px;
-  padding:14px;
-  border-radius:12px;
   background:#e8f5e9;
   color:#1b5e20;
   font-weight:700;
@@ -60,54 +54,15 @@ button{
   font-size:15px;
   font-weight:600;
   cursor:pointer;
-  margin-top:18px;
-}
-.btn-logout{
-  background:#c0392b;
-  color:#fff;
-}
-.btn-perf{
-  background:#203a43;
-  color:#fff;
-}
-button:disabled{
-  background:#999;
-  cursor:not-allowed;
-}
-.footer{
-  margin:12px 0 20px;
-  text-align:center;
-  font-size:13px;
-  color:#e0e0e0;
-}
-
-/* PERFORMANCE VIEW */
-.perfBox{
-  margin-top:16px;
-}
-.perfBtns button{
-  margin-top:8px;
-}
-.greenBox{
-  background:#e8f5e9;
-  border-radius:10px;
-  padding:12px;
   margin-top:12px;
 }
-.yellowBox{
-  background:#fffde7;
-  border-radius:10px;
-  padding:12px;
-  margin-top:12px;
-}
-ol{
-  margin:6px 0 0 18px;
-}
-.loading{
-  text-align:center;
-  font-weight:600;
-  margin-top:10px;
-}
+.btn-perf{background:#203a43;color:#fff;}
+.btn-close{background:#7f8c8d;color:#fff;margin-top:10px;}
+.btn-logout{background:#c0392b;color:#fff;}
+.greenBox{background:#e8f5e9;padding:12px;border-radius:10px;margin-top:10px;}
+.yellowBox{background:#fffde7;padding:12px;border-radius:10px;margin-top:10px;}
+.loading{text-align:center;font-weight:600;margin-top:10px;}
+ol{margin:6px 0 0 18px;}
 </style>
 </head>
 
@@ -115,62 +70,35 @@ ol{
 
 <div class="card">
 
-  <!-- WELCOME -->
-  <h1 id="welcome" style="display:none"></h1>
-  <h2>Group Discussion & Seminar (ME3273)</h2>
+<h1 id="welcome"></h1>
+<h2>Group Discussion & Seminar (ME3273)</h2>
 
-  <!-- LOADING -->
-  <div id="loadingBox" class="infoBox">
-    <b>Getting details, please wait…</b>
-  </div>
+<div id="loadingBox" class="infoBox">
+  Getting details, please wait…
+</div>
 
-  <!-- FINAL CONTENT -->
-  <div id="noticeBox" class="notice" style="display:none"></div>
-  <div id="resultBox" class="infoBox" style="display:none"></div>
-  <div id="seminarBox" class="infoBox" style="display:none"></div>
+<div id="noticeBox" class="infoBox notice" style="display:none"></div>
+<div id="resultBox" class="infoBox" style="display:none"></div>
+<div id="seminarBox" class="infoBox" style="display:none"></div>
 
-  <!-- PERFORMANCE VIEWER -->
-  <button id="perfBtn" class="btn-perf" style="display:none"
-          onclick="togglePerformance()">
-    Check Your Performance
-  </button>
+<button class="btn-perf" onclick="togglePanel()">Check Your Performance</button>
 
-  <div id="perfPanel" class="infoBox perfBox" style="display:none">
+<!-- PERFORMANCE PANEL -->
+<div id="perfPanel" class="infoBox" style="display:none">
 
-    <div class="perfBtns">
-      <button onclick="loadPerformance('GD')">Group Discussion</button>
-      <button onclick="loadPerformance('SEMINAR')">Seminar</button>
-      <button onclick="loadPerformance('PI')">Personal Interview</button>
-    </div>
+  <button onclick="toggleSection('GD')">Group Discussion</button>
+  <div id="GD" style="display:none"></div>
 
-    <div id="perfLoading" class="loading" style="display:none">
-      Loading… please wait
-    </div>
+  <button onclick="toggleSection('SEMINAR')">Seminar</button>
+  <div id="SEMINAR" style="display:none"></div>
 
-    <div id="perfContent" style="display:none">
-
-      <div class="greenBox">
-        <b>Positives</b>
-        <ol id="posList"></ol>
-      </div>
-
-      <div class="yellowBox">
-        <b>Points to Improve</b>
-        <ol id="impList"></ol>
-      </div>
-
-    </div>
-  </div>
-
-  <button id="logoutBtn" class="btn-logout" disabled onclick="logout()">
-    Logout
-  </button>
+  <button onclick="toggleSection('PI')">Personal Interview</button>
+  <div id="PI" style="display:none"></div>
 
 </div>
 
-<div class="footer">
-  <div>Developed by Dr. Rajesh Akula</div>
-  <div>© 2026 · IIEST Shibpur</div>
+<button class="btn-logout" onclick="logout()">Logout</button>
+
 </div>
 
 <script>
@@ -179,127 +107,78 @@ const BACKEND =
 
 const token = new URLSearchParams(location.search).get("token");
 
-/* ---------- LOAD DASHBOARD ---------- */
 loadAll();
 
 function loadAll(){
+  Promise.all([
+    fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"dashboard",token})}).then(r=>r.json()),
+    fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getSeminarTopic",token})}).then(r=>r.json())
+  ])
+  .then(([dash,sem])=>{
+    loadingBox.style.display="none";
+    welcome.innerText=`Welcome ${dash.name} (${dash.roll})`;
 
-  const dashboardReq = fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({ action:"dashboard", token })
-  }).then(r=>r.json());
+    noticeBox.innerText="Please check your evaluation feedback below.";
+    noticeBox.style.display="block";
 
-  const seminarReq = fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({ action:"getSeminarTopic", token })
-  }).then(r=>r.json());
+    let html=`<b>Group Topic:</b> ${dash.projectName}<br><b>Members:</b><br>`;
+    dash.team.forEach((s,i)=>html+=`${i+1}. ${s.name} (${s.roll})<br>`);
+    resultBox.innerHTML=html;
+    resultBox.style.display="block";
 
-  Promise.all([dashboardReq, seminarReq])
-    .then(([dash, sem]) => {
-
-      loadingBox.style.display = "none";
-
-      welcome.style.display = "block";
-      welcome.innerText = `Welcome ${dash.name} (${dash.roll})`;
-
-      if(dash.status !== "ASSIGNED"){
-        resultBox.innerHTML = "<b>No group assigned.</b>";
-        resultBox.style.display = "block";
-        logoutBtn.disabled = false;
-        return;
-      }
-
-      /* NOTICE */
-      const gdTopics = ["T1","T2","T3"];
-      noticeBox.innerText = gdTopics.includes(dash.project)
-        ? "You have a group discussion on 13th Jan 2026."
-        : "You may have a seminar or personal interview on 13th Jan 2026.";
-      noticeBox.style.display = "block";
-
-      /* GROUP INFO */
-      let html =
-        `<b>Assigned Group Discussion Topic:</b><br>
-         ${dash.project} – ${dash.projectName}<br><br>
-         <b>Group Members:</b><br>`;
-
-      dash.team.forEach((s,i)=>{
-        html += `${i+1}. ${s.name} (${s.roll})<br>`;
-      });
-
-      resultBox.innerHTML = html;
-      resultBox.style.display = "block";
-
-      /* SEMINAR */
-      if(sem.topic){
-        seminarBox.innerHTML =
-          `<b>Submitted Seminar Topic:</b><br>
-           <span style="color:#1b5e20">"${sem.topic}"</span>`;
-        seminarBox.style.display = "block";
-      }
-
-      perfBtn.style.display = "block";
-      logoutBtn.disabled = false;
-    });
-}
-
-/* ---------- PERFORMANCE VIEW ---------- */
-function togglePerformance(){
-  perfPanel.style.display =
-    perfPanel.style.display === "none" ? "block" : "none";
-}
-
-function loadPerformance(type){
-
-  perfLoading.style.display = "block";
-  perfContent.style.display = "none";
-  posList.innerHTML = "";
-  impList.innerHTML = "";
-
-  fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({
-      action:"getMyPerformance",
-      token: token,
-      type: type
-    })
-  })
-  .then(r=>r.json())
-  .then(res=>{
-    perfLoading.style.display = "none";
-
-    if(res.status !== "FOUND"){
-      perfContent.innerHTML =
-        "<b>Performance not yet evaluated.</b>";
-      perfContent.style.display = "block";
-      return;
+    if(sem.topic){
+      seminarBox.innerHTML=`<b>Seminar Topic:</b><br>"${sem.topic}"`;
+      seminarBox.style.display="block";
     }
-
-    renderList(posList, res.positives);
-    renderList(impList, res.improvements);
-
-    perfContent.style.display = "block";
   });
 }
 
-function renderList(el, text){
-  el.innerHTML = "";
-  text.split("\n")
-    .map(l=>l.trim())
-    .filter(l=>l!=="")
-    .forEach(line=>{
-      const li=document.createElement("li");
-      li.innerText=line;
-      el.appendChild(li);
-    });
+function togglePanel(){
+  perfPanel.style.display = perfPanel.style.display==="none"?"block":"none";
 }
 
-/* ---------- LOGOUT ---------- */
-function logout(){
-  logoutBtn.disabled = true;
+function toggleSection(type){
+
+  const box = document.getElementById(type);
+  box.style.display = box.style.display==="none"?"block":"none";
+
+  if(box.innerHTML!=="") return;
+
+  box.innerHTML = `<div class="loading">Loading… please wait</div>`;
+
   fetch(BACKEND,{
     method:"POST",
-    body:new URLSearchParams({ action:"logout", token })
+    body:new URLSearchParams({action:"getMyPerformance",token,type})
   })
+  .then(r=>r.json())
+  .then(res=>{
+    if(res.status!=="FOUND"){
+      box.innerHTML=`<b>Performance not yet evaluated.</b>
+        <button class="btn-close" onclick="closeSection('${type}')">Close</button>`;
+      return;
+    }
+
+    box.innerHTML=`
+      <div class="greenBox"><b>Positives</b><ol>${makeList(res.positives)}</ol></div>
+      <div class="yellowBox"><b>Points to Improve</b><ol>${makeList(res.improvements)}</ol></div>
+      <button class="btn-close" onclick="closeSection('${type}')">Close</button>
+    `;
+  });
+}
+
+function closeSection(type){
+  const box=document.getElementById(type);
+  box.style.display="none";
+  box.innerHTML="";
+}
+
+function makeList(text){
+  return text.split("\n").filter(l=>l.trim()!=="")
+    .map(l=>`<li>${l}</li>`).join("");
+}
+
+function logout(){
+  fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"logout",token})})
   .finally(()=>location.href="login.html");
 }
 </script>
