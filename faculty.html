@@ -58,23 +58,28 @@ button{
   cursor:pointer;
 }
 
-.section-gap{
-  margin-top:16px;
+/* LOGOUT BUTTON */
+.logout-btn{
+  background:linear-gradient(135deg,#c0392b,#a93226);
+  margin-top:22px;
 }
+.logout-btn:hover{
+  opacity:0.95;
+}
+
+.section-gap{margin-top:16px;}
 
 .row{
   display:flex;
   gap:16px;
   margin-top:18px;
 }
-
 .box{
   flex:1;
   background:#f8f9fa;
   padding:16px;
   border-radius:12px;
 }
-
 .box h3{
   margin-top:0;
   color:#203a43;
@@ -90,9 +95,7 @@ button{
   margin-top:20px;
 }
 
-ul{
-  margin:6px 0 0 18px;
-}
+ul{margin:6px 0 0 18px;}
 
 .preview{
   background:#ffffff;
@@ -195,6 +198,11 @@ ul{
     </div>
   </div>
 
+  <!-- LOGOUT BUTTON -->
+  <button class="logout-btn" onclick="logoutFaculty()">
+    Logout
+  </button>
+
   <div class="footer">
     Developed by Dr. Rajesh Akula
     <div>© 2026 · IIEST Shibpur</div>
@@ -210,10 +218,10 @@ evalDate.value = today;
 
 /* Load students */
 fetch(BACKEND + "?action=getAllStudents")
-.then(r => r.json())
-.then(res => {
+.then(r=>r.json())
+.then(res=>{
   studentSelect.innerHTML = `<option value="">Select Student</option>`;
-  res.students.forEach(s => {
+  res.students.forEach(s=>{
     studentSelect.innerHTML +=
       `<option value="${s.roll}">${s.roll} – ${s.name}</option>`;
   });
@@ -222,12 +230,11 @@ fetch(BACKEND + "?action=getAllStudents")
 studentSelect.onchange = loadStudent;
 typeSelect.onchange = checkPerformance;
 
-/* Load selected student */
 function loadStudent(){
   if(!studentSelect.value) return;
 
-  loading.style.display = "block";
-  content.style.display = "none";
+  loading.style.display="block";
+  content.style.display="none";
 
   fetch(BACKEND,{
     method:"POST",
@@ -236,9 +243,8 @@ function loadStudent(){
       roll: studentSelect.value
     })
   })
-  .then(r => r.json())
-  .then(d => {
-
+  .then(r=>r.json())
+  .then(d=>{
     studentInfo.innerHTML =
       `<b>Name:</b> ${d.name}<br><b>Roll:</b> ${d.roll}`;
 
@@ -251,15 +257,14 @@ function loadStudent(){
 
     seminarInfo.innerHTML = d.seminarTopic || "Not submitted";
 
-    loading.style.display = "none";
-    content.style.display = "block";
+    loading.style.display="none";
+    content.style.display="block";
     checkPerformance();
   });
 }
 
-/* Check existing performance */
 function checkPerformance(){
-  actionArea.innerHTML = "Loading… please wait";
+  actionArea.innerHTML="Loading… please wait";
 
   fetch(BACKEND,{
     method:"POST",
@@ -269,44 +274,40 @@ function checkPerformance(){
       type: typeSelect.value
     })
   })
-  .then(r => r.json())
-  .then(res => {
-
-    positives.value = res.status === "FOUND" ? res.positives : "";
-    improvements.value = res.status === "FOUND" ? res.improvements : "";
+  .then(r=>r.json())
+  .then(res=>{
+    positives.value = res.status==="FOUND" ? res.positives : "";
+    improvements.value = res.status==="FOUND" ? res.improvements : "";
 
     renderBullets("positives","posPreview");
     renderBullets("improvements","impPreview");
 
     actionArea.innerHTML =
       `<button onclick="savePerformance()">
-        ${res.status === "FOUND" ? "Update Performance" : "Save Performance"}
+        ${res.status==="FOUND" ? "Update Performance" : "Save Performance"}
       </button>`;
   });
 }
 
-/* Save / Update performance */
 function savePerformance(){
-
   const btn = document.querySelector("#actionArea button");
 
-  // Clean & capitalize before saving
   positives.value = positives.value
     .split("\n")
-    .map(l => l.trim())
-    .filter(l => l !== "")
-    .map(l => l.charAt(0).toUpperCase() + l.slice(1))
+    .map(l=>l.trim())
+    .filter(l=>l!=="")
+    .map(l=>l.charAt(0).toUpperCase()+l.slice(1))
     .join("\n");
 
   improvements.value = improvements.value
     .split("\n")
-    .map(l => l.trim())
-    .filter(l => l !== "")
-    .map(l => l.charAt(0).toUpperCase() + l.slice(1))
+    .map(l=>l.trim())
+    .filter(l=>l!=="")
+    .map(l=>l.charAt(0).toUpperCase()+l.slice(1))
     .join("\n");
 
-  btn.disabled = true;
-  btn.innerText = "Updating… please wait";
+  btn.disabled=true;
+  btn.innerText="Updating… please wait";
 
   fetch(BACKEND,{
     method:"POST",
@@ -318,46 +319,42 @@ function savePerformance(){
       improvements: improvements.value
     })
   })
-  .then(r => r.json())
-  .then(res => {
-    if(res.status === "SAVED"){
-      btn.innerText = "Update Performance";
-      btn.disabled = false;
-      alert("Performance saved successfully");
-    }else{
-      btn.innerText = "Save Performance";
-      btn.disabled = false;
-      alert("Error while saving");
-    }
+  .then(r=>r.json())
+  .then(res=>{
+    btn.disabled=false;
+    btn.innerText="Update Performance";
+    alert(res.status==="SAVED"
+      ? "Performance saved successfully"
+      : "Error while saving");
   })
-  .catch(() => {
-    btn.innerText = "Save Performance";
-    btn.disabled = false;
+  .catch(()=>{
+    btn.disabled=false;
+    btn.innerText="Save Performance";
     alert("Server error. Try again.");
   });
 }
 
-/* Render numbered preview (DO NOT modify textarea) */
 function renderBullets(textareaId, previewId){
-
   const lines = document.getElementById(textareaId).value
     .split("\n")
-    .map(l => l.trim())
-    .filter(l => l !== "")
-    .map(l => l.charAt(0).toUpperCase() + l.slice(1));
+    .map(l=>l.trim())
+    .filter(l=>l!=="")
+    .map(l=>l.charAt(0).toUpperCase()+l.slice(1));
 
-  if(lines.length === 0){
-    document.getElementById(previewId).innerHTML = "";
+  if(lines.length===0){
+    document.getElementById(previewId).innerHTML="";
     return;
   }
 
-  let html = "<ol>";
-  lines.forEach(line => {
-    html += `<li>${line}</li>`;
-  });
-  html += "</ol>";
+  document.getElementById(previewId).innerHTML =
+    "<ol>"+lines.map(l=>`<li>${l}</li>`).join("")+"</ol>";
+}
 
-  document.getElementById(previewId).innerHTML = html;
+/* LOGOUT */
+function logoutFaculty(){
+  if(confirm("Are you sure you want to logout?")){
+    window.location.href="login.html";
+  }
 }
 </script>
 
