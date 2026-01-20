@@ -66,6 +66,10 @@ button{
   background:#c0392b;
   color:#fff;
 }
+.btn-perf{
+  background:#203a43;
+  color:#fff;
+}
 button:disabled{
   background:#999;
   cursor:not-allowed;
@@ -75,6 +79,34 @@ button:disabled{
   text-align:center;
   font-size:13px;
   color:#e0e0e0;
+}
+
+/* PERFORMANCE VIEW */
+.perfBox{
+  margin-top:16px;
+}
+.perfBtns button{
+  margin-top:8px;
+}
+.greenBox{
+  background:#e8f5e9;
+  border-radius:10px;
+  padding:12px;
+  margin-top:12px;
+}
+.yellowBox{
+  background:#fffde7;
+  border-radius:10px;
+  padding:12px;
+  margin-top:12px;
+}
+ol{
+  margin:6px 0 0 18px;
+}
+.loading{
+  text-align:center;
+  font-weight:600;
+  margin-top:10px;
 }
 </style>
 </head>
@@ -97,22 +129,57 @@ button:disabled{
   <div id="resultBox" class="infoBox" style="display:none"></div>
   <div id="seminarBox" class="infoBox" style="display:none"></div>
 
-  <button id="logoutBtn" class="btn-logout" disabled onclick="logout()">Logout</button>
+  <!-- PERFORMANCE VIEWER -->
+  <button id="perfBtn" class="btn-perf" style="display:none"
+          onclick="togglePerformance()">
+    Check Your Performance
+  </button>
+
+  <div id="perfPanel" class="infoBox perfBox" style="display:none">
+
+    <div class="perfBtns">
+      <button onclick="loadPerformance('GD')">Group Discussion</button>
+      <button onclick="loadPerformance('SEMINAR')">Seminar</button>
+      <button onclick="loadPerformance('PI')">Personal Interview</button>
+    </div>
+
+    <div id="perfLoading" class="loading" style="display:none">
+      Loading… please wait
+    </div>
+
+    <div id="perfContent" style="display:none">
+
+      <div class="greenBox">
+        <b>Positives</b>
+        <ol id="posList"></ol>
+      </div>
+
+      <div class="yellowBox">
+        <b>Points to Improve</b>
+        <ol id="impList"></ol>
+      </div>
+
+    </div>
+  </div>
+
+  <button id="logoutBtn" class="btn-logout" disabled onclick="logout()">
+    Logout
+  </button>
 
 </div>
 
 <div class="footer">
-  <div>Developed by Rajesh Akula</div>
+  <div>Developed by Dr. Rajesh Akula</div>
   <div>© 2026 · IIEST Shibpur</div>
 </div>
 
 <script>
 const BACKEND =
-"https://script.google.com/macros/s/AKfycbx0vm998R9yNk4ei1ZuJb96rbrdNZCPuHtCMhw5nmN6FtErlUVz_7WfkZP3HPnlczXBag/exec";
+"https://script.google.com/macros/s/AKfycbwd4YFYBRgF_psYeLPl6Mz2C06KFFBb67zyXMkfRTIdcPJdpxwMKgFeSnQzEr9JBupcPQ/exec";
 
 const token = new URLSearchParams(location.search).get("token");
 
-/* ---------- LOAD EVERYTHING TOGETHER ---------- */
+/* ---------- LOAD DASHBOARD ---------- */
 loadAll();
 
 function loadAll(){
@@ -132,34 +199,24 @@ function loadAll(){
 
       loadingBox.style.display = "none";
 
+      welcome.style.display = "block";
+      welcome.innerText = `Welcome ${dash.name} (${dash.roll})`;
+
       if(dash.status !== "ASSIGNED"){
-        welcome.style.display = "block";
-        welcome.innerText = "Welcome";
         resultBox.innerHTML = "<b>No group assigned.</b>";
         resultBox.style.display = "block";
         logoutBtn.disabled = false;
         return;
       }
 
-      
-      /* ---- WELCOME ---- */
-      welcome.innerText =
-        `Welcome ${dash.name} (${dash.roll})`;
-      welcome.style.display = "block";
-
-      /* ---- NOTICE MESSAGE (KEY PART) ---- */
-      const gdTopics = ["T1", "T2", "T3"];
-
-      if (gdTopics.includes(dash.project)) {
-        noticeBox.innerText =
-          "You have a group discussion on 13th Jan 2026.";
-      } else {
-        noticeBox.innerText =
-          "You may have a seminar or personal interview on 13th Jan 2026. Please be prepared.";
-      }
+      /* NOTICE */
+      const gdTopics = ["T1","T2","T3"];
+      noticeBox.innerText = gdTopics.includes(dash.project)
+        ? "You have a group discussion on 13th Jan 2026."
+        : "You may have a seminar or personal interview on 13th Jan 2026.";
       noticeBox.style.display = "block";
 
-      /* ---- GROUP DETAILS ---- */
+      /* GROUP INFO */
       let html =
         `<b>Assigned Group Discussion Topic:</b><br>
          ${dash.project} – ${dash.projectName}<br><br>
@@ -172,21 +229,67 @@ function loadAll(){
       resultBox.innerHTML = html;
       resultBox.style.display = "block";
 
-      /* ---- SEMINAR TOPIC ---- */
+      /* SEMINAR */
       if(sem.topic){
         seminarBox.innerHTML =
           `<b>Submitted Seminar Topic:</b><br>
-           <span style="color:#1b5e20">
-           "${sem.topic}"
-           </span>`;
+           <span style="color:#1b5e20">"${sem.topic}"</span>`;
         seminarBox.style.display = "block";
       }
 
+      perfBtn.style.display = "block";
       logoutBtn.disabled = false;
+    });
+}
+
+/* ---------- PERFORMANCE VIEW ---------- */
+function togglePerformance(){
+  perfPanel.style.display =
+    perfPanel.style.display === "none" ? "block" : "none";
+}
+
+function loadPerformance(type){
+
+  perfLoading.style.display = "block";
+  perfContent.style.display = "none";
+  posList.innerHTML = "";
+  impList.innerHTML = "";
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getMyPerformance",
+      token: token,
+      type: type
     })
-    .catch(()=>{
-      loadingBox.innerHTML =
-        "<b style='color:#b71c1c'>Unable to load details.</b>";
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    perfLoading.style.display = "none";
+
+    if(res.status !== "FOUND"){
+      perfContent.innerHTML =
+        "<b>Performance not yet evaluated.</b>";
+      perfContent.style.display = "block";
+      return;
+    }
+
+    renderList(posList, res.positives);
+    renderList(impList, res.improvements);
+
+    perfContent.style.display = "block";
+  });
+}
+
+function renderList(el, text){
+  el.innerHTML = "";
+  text.split("\n")
+    .map(l=>l.trim())
+    .filter(l=>l!=="")
+    .forEach(line=>{
+      const li=document.createElement("li");
+      li.innerText=line;
+      el.appendChild(li);
     });
 }
 
