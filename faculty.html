@@ -10,19 +10,14 @@
 body{
   font-family:"Segoe UI",Arial,sans-serif;
   background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-  min-height:100vh;
-  margin:0;
-  display:flex;
-  justify-content:center;
-  align-items:flex-start;
+  min-height:100vh;margin:0;
+  display:flex;justify-content:center;align-items:flex-start;
 }
-/* CARD */
 .card{
   background:#fff;
-  width:100%;
-  max-width:520px;
+  width:100%;max-width:1000px;
   margin:24px 12px;
-  padding:32px 30px;
+  padding:28px;
   border-radius:14px;
   box-shadow:0 15px 40px rgba(0,0,0,.25);
   animation:fadeIn .6s ease;
@@ -32,71 +27,57 @@ body{
   to{opacity:1;transform:translateY(0);}
 }
 
-/* HEADINGS */
-h1{
-  text-align:center;
-  color:#e67e22;
-  font-size:20px;
-  margin-bottom:6px;
-}
-h2{
-  text-align:center;
-  color:#555;
-  font-size:15px;
-  margin-bottom:22px;
-}
+h1{text-align:center;color:#e67e22;margin-bottom:6px;}
+h2{text-align:center;color:#555;font-size:15px;margin-bottom:20px;}
 
-/* FORM */
-label{
-  font-weight:600;
-  margin-top:14px;
-  display:block;
+select,input,textarea,button{
+  width:100%;padding:10px 12px;
+  border-radius:6px;border:1px solid #ccc;
+  font-size:15px;margin-top:6px;
 }
+textarea{min-height:90px;}
 
-select, textarea{
-  width:100%;
-  padding:10px 12px;
-  margin-top:6px;
-  border-radius:6px;
-  border:1px solid #ccc;
-  font-size:15px;
-}
-
-textarea{
-  resize:vertical;
-  min-height:90px;
-}
-
-/* BUTTON */
 button{
-  margin-top:26px;
-  width:100%;
-  padding:12px;
   background:linear-gradient(135deg,#f39c12,#e67e22);
-  color:#fff;
-  border:none;
-  font-size:16px;
-  font-weight:600;
-  border-radius:30px;
+  color:#fff;border:none;font-weight:600;
+  border-radius:30px;margin-top:14px;
   cursor:pointer;
 }
 
-button:disabled{
-  background:#999;
-  cursor:not-allowed;
+.row{
+  display:flex;gap:16px;margin-top:18px;
+}
+.box{
+  flex:1;
+  background:#f8f9fa;
+  padding:16px;
+  border-radius:12px;
+}
+.box h3{
+  margin-top:0;
+  color:#203a43;
+  font-size:16px;
+  border-bottom:1px solid #ddd;
+  padding-bottom:6px;
 }
 
-/* FOOTER */
-.footer{
-  margin-top:26px;
+.loading{
   text-align:center;
-  font-size:13px;
-  color:#5f6f78;
   font-weight:600;
+  color:#555;
+  margin-top:20px;
 }
-.footer div{
-  font-size:12px;
-  color:#7a8a93;
+
+ul{margin:6px 0 0 18px;}
+
+.footer{
+  margin-top:22px;text-align:center;
+  font-size:13px;color:#5f6f78;font-weight:600;
+}
+.footer div{font-size:12px;color:#7a8a93;}
+
+@media(max-width:800px){
+  .row{flex-direction:column;}
 }
 </style>
 </head>
@@ -112,20 +93,52 @@ button:disabled{
     <option value="">Loading students…</option>
   </select>
 
-  <label>Evaluation Type</label>
-  <select id="typeSelect">
-    <option value="GD">Group Discussion</option>
-    <option value="SEMINAR">Seminar</option>
-    <option value="PI">Personal Interview</option>
-  </select>
+  <div id="loading" class="loading" style="display:none">
+    Loading… please wait
+  </div>
 
-  <label>Positives</label>
-  <textarea id="positives" placeholder="Strengths, good points, observations"></textarea>
+  <div id="content" style="display:none">
+    <div class="row">
 
-  <label>Points to Improve</label>
-  <textarea id="improvements" placeholder="Areas where student can improve"></textarea>
+      <!-- LEFT BOX -->
+      <div class="box">
+        <h3>Student Details</h3>
+        <div id="studentInfo"></div>
 
-  <button id="saveBtn" onclick="savePerformance()">Save Performance</button>
+        <h3>Group Discussion</h3>
+        <div id="gdInfo"></div>
+
+        <h3>Seminar Topic</h3>
+        <div id="seminarInfo"></div>
+      </div>
+
+      <!-- RIGHT BOX -->
+      <div class="box">
+        <h3>Evaluation</h3>
+
+        <label>Evaluation Type</label>
+        <select id="typeSelect">
+          <option value="GD">Group Discussion</option>
+          <option value="SEMINAR">Seminar</option>
+          <option value="PI">Personal Interview</option>
+        </select>
+
+        <label>Date of Evaluation</label>
+        <input type="date" id="evalDate">
+
+        <label>Positives (one per line)</label>
+        <textarea id="positives"></textarea>
+
+        <label>Points to Improve (one per line)</label>
+        <textarea id="improvements"></textarea>
+
+        <div id="actionArea" class="loading">
+          Loading… please wait
+        </div>
+      </div>
+
+    </div>
+  </div>
 
   <div class="footer">
     Developed by Dr. Rajesh Akula
@@ -135,29 +148,58 @@ button:disabled{
 
 <script>
 const BACKEND =
-"https://script.google.com/macros/s/AKfycbxDu7ERgsjSTLgNbB_BOvPsnHhTymheEC3Y-skFgKFfrYRMos1ZkkDyYDDGzCBWAmbU3g/exec";
+"https://script.google.com/macros/s/AKfycbx0vm998R9yNk4ei1ZuJb96rbrdNZCPuHtCMhw5nmN6FtErlUVz_7WfkZP3HPnlczXBag/exec";
+
+const today = new Date().toISOString().split("T")[0];
+evalDate.value = today;
 
 /* Load students */
-fetch(BACKEND + "?action=getAllStudents")
-  .then(r=>r.json())
-  .then(res=>{
-    studentSelect.innerHTML = `<option value="">Select Student</option>`;
-    res.students.forEach(s=>{
-      studentSelect.innerHTML +=
-        `<option value="${s.roll}">
-          ${s.roll} – ${s.name}
-         </option>`;
-    });
+fetch(BACKEND+"?action=getAllStudents")
+.then(r=>r.json())
+.then(res=>{
+  studentSelect.innerHTML = `<option value="">Select Student</option>`;
+  res.students.forEach(s=>{
+    studentSelect.innerHTML += `<option value="${s.roll}">${s.roll} – ${s.name}</option>`;
   });
+});
 
-studentSelect.onchange = checkExisting;
-typeSelect.onchange = checkExisting;
+studentSelect.onchange = loadStudent;
+typeSelect.onchange = checkPerformance;
 
-function checkExisting(){
-  positives.value = "";
-  improvements.value = "";
-
+function loadStudent(){
   if(!studentSelect.value) return;
+
+  loading.style.display="block";
+  content.style.display="none";
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getStudentDetailsByRoll",
+      roll: studentSelect.value
+    })
+  })
+  .then(r=>r.json())
+  .then(d=>{
+    studentInfo.innerHTML =
+      `<b>Name:</b> ${d.name}<br><b>Roll:</b> ${d.roll}`;
+
+    gdInfo.innerHTML = d.project
+      ? `<b>Topic:</b> ${d.projectName}<ul>` +
+        d.team.map((t,i)=>`<li>${t.name} (${t.roll})</li>`).join("") +
+        `</ul>`
+      : "Not assigned";
+
+    seminarInfo.innerHTML = d.seminarTopic || "Not submitted";
+
+    loading.style.display="none";
+    content.style.display="block";
+    checkPerformance();
+  });
+}
+
+function checkPerformance(){
+  actionArea.innerHTML="Loading… please wait";
 
   fetch(BACKEND,{
     method:"POST",
@@ -169,22 +211,17 @@ function checkExisting(){
   })
   .then(r=>r.json())
   .then(res=>{
-    if(res.status==="FOUND"){
-      positives.value = res.positives;
-      improvements.value = res.improvements;
-      saveBtn.innerText = "Update Performance";
-    }else{
-      saveBtn.innerText = "Save Performance";
-    }
+    positives.value = res.status==="FOUND" ? res.positives : "";
+    improvements.value = res.status==="FOUND" ? res.improvements : "";
+
+    actionArea.innerHTML =
+      `<button onclick="savePerformance()">
+        ${res.status==="FOUND" ? "Update Performance" : "Save Performance"}
+      </button>`;
   });
 }
 
 function savePerformance(){
-  if(!studentSelect.value){
-    alert("Please select a student");
-    return;
-  }
-
   fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({
@@ -196,14 +233,7 @@ function savePerformance(){
     })
   })
   .then(r=>r.json())
-  .then(res=>{
-    if(res.status==="SAVED"){
-      alert("Performance saved successfully");
-      saveBtn.innerText = "Update Performance";
-    }else{
-      alert("Error saving performance");
-    }
-  });
+  .then(()=>alert("Performance saved"));
 }
 </script>
 
