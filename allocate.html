@@ -57,7 +57,6 @@ button{
   margin-top:12px;
 }
 .btn-perf{background:#203a43;color:#fff;}
-.btn-close{background:#7f8c8d;color:#fff;margin-top:10px;}
 .btn-logout{background:#c0392b;color:#fff;}
 .greenBox{background:#e8f5e9;padding:12px;border-radius:10px;margin-top:10px;}
 .yellowBox{background:#fffde7;padding:12px;border-radius:10px;margin-top:10px;}
@@ -81,7 +80,9 @@ ol{margin:6px 0 0 18px;}
 <div id="resultBox" class="infoBox" style="display:none"></div>
 <div id="seminarBox" class="infoBox" style="display:none"></div>
 
-<button class="btn-perf" onclick="togglePanel()">Check Your Performance</button>
+<button class="btn-perf" onclick="togglePanel()">
+  Check Your Performance
+</button>
 
 <!-- PERFORMANCE PANEL -->
 <div id="perfPanel" class="infoBox" style="display:none">
@@ -134,16 +135,31 @@ function loadAll(){
 }
 
 function togglePanel(){
-  perfPanel.style.display = perfPanel.style.display==="none"?"block":"none";
+  perfPanel.style.display =
+    perfPanel.style.display==="none" ? "block" : "none";
 }
 
 function toggleSection(type){
 
   const box = document.getElementById(type);
-  box.style.display = box.style.display==="none"?"block":"none";
 
-  if(box.innerHTML!=="") return;
+  /* If open → close */
+  if(box.style.display === "block"){
+    box.style.display = "none";
+    box.innerHTML = "";
+    return;
+  }
 
+  /* Close other sections */
+  ["GD","SEMINAR","PI"].forEach(t=>{
+    if(t !== type){
+      document.getElementById(t).style.display="none";
+      document.getElementById(t).innerHTML="";
+    }
+  });
+
+  /* Open this section */
+  box.style.display = "block";
   box.innerHTML = `<div class="loading">Loading… please wait</div>`;
 
   fetch(BACKEND,{
@@ -153,32 +169,34 @@ function toggleSection(type){
   .then(r=>r.json())
   .then(res=>{
     if(res.status!=="FOUND"){
-      box.innerHTML=`<b>Performance not yet evaluated.</b>
-        <button class="btn-close" onclick="closeSection('${type}')">Close</button>`;
+      box.innerHTML=`<b>Performance not yet evaluated.</b>`;
       return;
     }
 
     box.innerHTML=`
-      <div class="greenBox"><b>Positives</b><ol>${makeList(res.positives)}</ol></div>
-      <div class="yellowBox"><b>Points to Improve</b><ol>${makeList(res.improvements)}</ol></div>
-      <button class="btn-close" onclick="closeSection('${type}')">Close</button>
+      <div class="greenBox">
+        <b>Positives</b>
+        <ol>${makeList(res.positives)}</ol>
+      </div>
+      <div class="yellowBox">
+        <b>Points to Improve</b>
+        <ol>${makeList(res.improvements)}</ol>
+      </div>
     `;
   });
 }
 
-function closeSection(type){
-  const box=document.getElementById(type);
-  box.style.display="none";
-  box.innerHTML="";
-}
-
 function makeList(text){
-  return text.split("\n").filter(l=>l.trim()!=="")
+  return text.split("\n")
+    .filter(l=>l.trim()!=="")
     .map(l=>`<li>${l}</li>`).join("");
 }
 
 function logout(){
-  fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"logout",token})})
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({action:"logout",token})
+  })
   .finally(()=>location.href="login.html");
 }
 </script>
