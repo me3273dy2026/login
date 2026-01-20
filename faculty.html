@@ -79,6 +79,22 @@ ul{margin:6px 0 0 18px;}
 @media(max-width:800px){
   .row{flex-direction:column;}
 }
+  .preview{
+  background:#ffffff;
+  border:1px dashed #ccc;
+  border-radius:6px;
+  padding:10px 12px;
+  margin-top:6px;
+  font-size:14px;
+  color:#333;
+}
+.preview ol{
+  margin:0;
+  padding-left:18px;
+}
+.preview li{
+  margin-bottom:4px;
+}
 </style>
 </head>
 
@@ -127,10 +143,12 @@ ul{margin:6px 0 0 18px;}
         <input type="date" id="evalDate">
 
         <label>Positives (one per line)</label>
-        <textarea id="positives"></textarea>
+        <textarea id="positives" oninput="renderBullets('positives','posPreview')"></textarea>
+        <div id="posPreview" class="preview"></div>
 
         <label>Points to Improve (one per line)</label>
-        <textarea id="improvements"></textarea>
+        <textarea id="improvements" oninput="renderBullets('improvements','impPreview')"></textarea>
+        <div id="impPreview" class="preview"></div>
 
         <div id="actionArea" class="loading">
           Loading… please wait
@@ -213,7 +231,8 @@ function checkPerformance(){
   .then(res=>{
     positives.value = res.status==="FOUND" ? res.positives : "";
     improvements.value = res.status==="FOUND" ? res.improvements : "";
-
+    renderBullets('positives','posPreview');
+    renderBullets('improvements','impPreview');
     actionArea.innerHTML =
       `<button onclick="savePerformance()">
         ${res.status==="FOUND" ? "Update Performance" : "Save Performance"}
@@ -256,6 +275,26 @@ function savePerformance(){
     btn.disabled = false;
     alert("Server error. Try again.");
   });
+}
+  function renderBullets(textareaId, previewId){
+
+  const text = document.getElementById(textareaId).value
+    .split("\n")
+    .map(l => l.trim())
+    .filter(l => l !== "");
+
+  if(text.length === 0){
+    document.getElementById(previewId).innerHTML = "";
+    return;
+  }
+
+  let html = "<ol>";
+  text.forEach(line=>{
+    html += `<li>${line}</li>`;
+  });
+  html += "</ol>";
+
+  document.getElementById(previewId).innerHTML = html;
 }
 </script>
 
