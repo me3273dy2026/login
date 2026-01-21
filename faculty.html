@@ -156,6 +156,9 @@ button{
           <option value="PI">Personal Interview</option>
         </select>
 
+        <label>Marks (out of 100)</label>
+        <input type="number" id="marks" min="0" max="100">
+
         <label>Positives (one per line)</label>
         <textarea id="positives"
           oninput="renderBullets('positives','posPreview')"></textarea>
@@ -188,7 +191,8 @@ if(sessionStorage.getItem("facultyLoggedIn") !== "YES"){
   window.location.replace("login.html");
 }
 
-const BACKEND = "https://script.google.com/macros/s/AKfycbx4se0jHTRoZbRKDJ3kLbczPjh9luEqQVmzvfAghysriJp6lnxH3mRjojd5-L41Y_nt/exec";
+const BACKEND =
+"https://script.google.com/macros/s/AKfycbwG5BMuxbnuPobpJG6BDv2WlZR9LOt2U9pNFWgPQMFNT2Et524WYeHoQOlULYdJUoLAxw/exec";
 
 /* Load students */
 fetch(BACKEND + "?action=getAllStudents")
@@ -252,6 +256,7 @@ function checkPerformance(){
   .then(res=>{
     positives.value = res.status==="FOUND" ? res.positives : "";
     improvements.value = res.status==="FOUND" ? res.improvements : "";
+    marks.value = res.status==="FOUND" ? res.marks : "";
 
     renderBullets("positives","posPreview");
     renderBullets("improvements","impPreview");
@@ -264,8 +269,14 @@ function checkPerformance(){
 }
 
 function savePerformance(){
-  const btn = document.querySelector("#actionArea button");
 
+  const m = Number(marks.value);
+  if(isNaN(m) || m < 0 || m > 100){
+    alert("Marks must be between 0 and 100");
+    return;
+  }
+
+  const btn = document.querySelector("#actionArea button");
   btn.disabled=true;
   btn.innerText="Updating… please wait";
 
@@ -276,14 +287,15 @@ function savePerformance(){
       roll: studentSelect.value,
       type: typeSelect.value,
       positives: positives.value,
-      improvements: improvements.value
+      improvements: improvements.value,
+      marks: m
     })
   })
   .then(r=>r.json())
   .then(()=>{
     btn.disabled=false;
     btn.innerText="Update Performance";
-    alert("Performance saved");
+    alert("Performance saved successfully");
   });
 }
 
