@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Faculty Login | ME3273</title>
+<title>Faculty Allocation | ME3273</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -10,95 +10,282 @@
 body{
   font-family:"Segoe UI",Arial,sans-serif;
   background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-  height:100vh;margin:0;
-  display:flex;justify-content:center;align-items:center;
+  min-height:100vh;margin:0;
+  display:flex;justify-content:center;align-items:flex-start;
 }
 .card{
   background:#fff;
-  width:100%;max-width:420px;
-  padding:32px 30px;
-  border-radius:14px;
+  width:100%;max-width:900px;
+  margin:24px 12px;
+  padding:28px;
+  border-radius:16px;
   box-shadow:0 15px 40px rgba(0,0,0,.25);
-  animation:fadeIn .6s ease;
 }
-@keyframes fadeIn{
-  from{opacity:0;transform:translateY(20px);}
-  to{opacity:1;transform:translateY(0);}
-}
-h1{text-align:center;color:#e67e22;font-size:20px;margin-bottom:6px;}
+h1{text-align:center;color:#e67e22;margin-bottom:4px;}
 h2{text-align:center;color:#555;font-size:15px;margin-bottom:22px;}
 
 label{font-weight:600;margin-top:14px;display:block;}
-
-input{
-  width:100%;padding:10px 12px;margin-top:6px;
-  border-radius:6px;border:1px solid #ccc;font-size:15px;
+input,select,button{
+  width:100%;padding:10px 12px;
+  border-radius:6px;border:1px solid #ccc;
+  font-size:15px;margin-top:6px;
 }
-
 button{
-  margin-top:26px;width:100%;padding:12px;
   background:linear-gradient(135deg,#f39c12,#e67e22);
-  color:#fff;border:none;font-size:16px;
-  font-weight:600;border-radius:30px;cursor:pointer;
+  color:#fff;border:none;font-weight:600;
+  border-radius:30px;margin-top:14px;
+  cursor:pointer;
+}
+button:disabled{background:#999;cursor:not-allowed}
+
+.section{
+  background:#f8f9fa;
+  border-radius:14px;
+  padding:18px;
+  margin-top:22px;
+}
+.section h3{
+  margin-top:0;
+  color:#203a43;
+  border-bottom:1px solid #ddd;
+  padding-bottom:6px;
+}
+.preview{
+  background:#fff;
+  border:1px dashed #ccc;
+  border-radius:8px;
+  padding:10px 12px;
+  margin-top:10px;
+  font-size:14px;
+}
+ul{margin:6px 0 0 18px;}
+
+.success{
+  color:#1b5e20;font-weight:600;margin-top:10px;
+}
+.loading{
+  text-align:center;font-weight:600;color:#555;
+  margin-top:10px;
 }
 
-.msg{text-align:center;margin-top:18px;font-weight:600;}
+.locked{
+  opacity:.6;
+  pointer-events:none;
+}
 
 .footer{
-  margin-top:26px;
-  text-align:center;
-  font-size:13px;
-  color:#5f6f78;
-  font-weight:600;
+  margin-top:26px;text-align:center;
+  font-size:13px;color:#5f6f78;font-weight:600;
 }
-.footer div{
-  font-size:12px;
-  color:#7a8a93;
-}
+.footer div{font-size:12px;color:#7a8a93;}
 </style>
 </head>
 
 <body>
 
 <div class="card">
-  <h1>Faculty Login</h1>
-  <h2>Group Discussion & Seminar (ME3273)</h2>
+<h1>Faculty Allocation</h1>
+<h2>Weekly Evaluation Allocation (ME3273)</h2>
 
-  <label>Faculty ID</label>
-  <input id="fid">
+<!-- DATE -->
+<label>Select Allocation Date</label>
+<input type="date" id="allocDate">
 
-  <label>Password</label>
-  <input type="password" id="pwd">
+<!-- GD SECTION -->
+<div class="section" id="gdSection">
+  <h3>Group Discussion Allocation</h3>
 
-  <button onclick="loginFaculty()">Login</button>
-  <div class="msg" id="msg"></div>
+  <label>GD Topic</label>
+  <select id="gdTopic">
+    <option value="">Select Topic</option>
+    <option value="T1">T1</option>
+    <option value="T2">T2</option>
+    <option value="T3">T3</option>
+  </select>
 
-  <div class="footer">
-    Developed by Dr. Rajesh Akula
-    <div>© 2026 · IIEST Shibpur</div>
-  </div>
+  <button onclick="previewGD()">Preview Eligible Students</button>
+  <div id="gdPreview"></div>
+
+  <button onclick="saveGD()">Save GD Allocation</button>
+</div>
+
+<!-- SEMINAR SECTION -->
+<div class="section locked" id="seminarSection">
+  <h3>Seminar Allocation</h3>
+
+  <label>Select Students</label>
+  <select id="seminarList" multiple size="6"></select>
+
+  <button onclick="saveSeminar()">Save Seminar Allocation</button>
+</div>
+
+<!-- PI SECTION -->
+<div class="section locked" id="piSection">
+  <h3>Personal Interview Allocation</h3>
+
+  <label>Select Students</label>
+  <select id="piList" multiple size="6"></select>
+
+  <button onclick="savePI()">Save PI Allocation</button>
+</div>
+
+<div class="footer">
+Developed by Dr. Rajesh Akula
+<div>© 2026 · IIEST Shibpur</div>
+</div>
+
 </div>
 
 <script>
-function loginFaculty(){
-  const fid = document.getElementById("fid").value.trim();
-  const pwd = document.getElementById("pwd").value.trim();
-  const msg = document.getElementById("msg");
+const BACKEND =
+"https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec";
 
-  if(!fid || !pwd){
-    msg.style.color="red";
-    msg.innerText="Enter Faculty ID and Password";
-    return;
-  }
+const dateInput = document.getElementById("allocDate");
 
-  if(fid === "admin" && pwd === "me3273"){
-    // 🔐 SESSION-ONLY AUTH
-    sessionStorage.setItem("facultyLoggedIn", "YES");
-    window.location.href = "faculty.html";
-  }else{
-    msg.style.color="red";
-    msg.innerText="Invalid credentials";
+function requireDate(){
+  if(!dateInput.value){
+    alert("Please select allocation date");
+    return false;
   }
+  return true;
+}
+
+/* ---------- GD ---------- */
+function previewGD(){
+  if(!requireDate() || !gdTopic.value) return;
+
+  gdPreview.innerHTML = "<div class='loading'>Loading…</div>";
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"testGDEligible",
+      topic:gdTopic.value,
+      date:dateInput.value
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    if(!res.students.length){
+      gdPreview.innerHTML="<b>No eligible students</b>";
+      return;
+    }
+    gdPreview.innerHTML =
+      `<div class="preview">
+        <b>${res.students.length} students</b>
+        <ul>${res.students.map(s=>`<li>${s.roll} – ${s.name}</li>`).join("")}</ul>
+      </div>`;
+  });
+}
+
+function saveGD(){
+  if(!requireDate() || !gdTopic.value) return;
+
+  if(!confirm("Confirm GD allocation?")) return;
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"saveGDAllocation",
+      topic:gdTopic.value,
+      date:dateInput.value
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    alert(`GD Allocation saved (${res.count})`);
+    gdSection.classList.add("locked");
+    loadSeminarEligible();
+    seminarSection.classList.remove("locked");
+  });
+}
+
+/* ---------- SEMINAR ---------- */
+function loadSeminarEligible(){
+  seminarList.innerHTML="";
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"testEligible",
+      category:"SEMINAR",
+      date:dateInput.value
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    res.students.forEach(s=>{
+      seminarList.innerHTML+=
+        `<option value="${s.roll}">${s.roll} – ${s.name}</option>`;
+    });
+  });
+}
+
+function saveSeminar(){
+  const rolls=[...seminarList.selectedOptions].map(o=>o.value);
+  if(!rolls.length) return alert("Select students");
+
+  if(!confirm("Confirm Seminar allocation?")) return;
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"saveIndividualAllocation",
+      category:"SEMINAR",
+      date:dateInput.value,
+      rolls:rolls.join(",")
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    alert(`Seminar Allocation saved (${res.count})`);
+    seminarSection.classList.add("locked");
+    loadPIEligible();
+    piSection.classList.remove("locked");
+  });
+}
+
+/* ---------- PI ---------- */
+function loadPIEligible(){
+  piList.innerHTML="";
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"testEligible",
+      category:"PI",
+      date:dateInput.value
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    res.students.forEach(s=>{
+      piList.innerHTML+=
+        `<option value="${s.roll}">${s.roll} – ${s.name}</option>`;
+    });
+  });
+}
+
+function savePI(){
+  const rolls=[...piList.selectedOptions].map(o=>o.value);
+  if(!rolls.length) return alert("Select students");
+
+  if(!confirm("Confirm PI allocation?")) return;
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"saveIndividualAllocation",
+      category:"PI",
+      date:dateInput.value,
+      rolls:rolls.join(",")
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    alert(`PI Allocation saved (${res.count})`);
+    piSection.classList.add("locked");
+  });
 }
 </script>
 
