@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Faculty Dashboard | ME3273</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+*{box-sizing:border-box;}
+body{
+  font-family:"Segoe UI",Arial,sans-serif;
+  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  min-height:100vh;margin:0;
+  display:flex;justify-content:center;align-items:flex-start;
+}
+.card{
+  background:#fff;
+  width:100%;max-width:1000px;
+  margin:24px 12px;
+  padding:28px;
+  border-radius:14px;
+  box-shadow:0 15px 40px rgba(0,0,0,.25);
+}
+h1{text-align:center;color:#e67e22;margin-bottom:6px;}
+h2{text-align:center;color:#555;font-size:15px;margin-bottom:20px;}
+
+select,input,textarea,button{
+  width:100%;padding:10px 12px;
+  border-radius:6px;border:1px solid #ccc;
+  font-size:15px;margin-top:6px;
+}
+textarea{min-height:90px;resize:vertical;}
+
+button{
+  background:linear-gradient(135deg,#f39c12,#e67e22);
+  color:#fff;border:none;
+  font-weight:600;border-radius:30px;
+  margin-top:14px;cursor:pointer;
+}
+
+.logout-btn{
+  background:linear-gradient(135deg,#c0392b,#a93226);
+}
+
+.row{
+  display:flex;gap:16px;margin-top:18px;
+}
+.box{
+  flex:1;background:#f8f9fa;
+  padding:16px;border-radius:12px;
+}
+.box h3{
+  margin-top:0;color:#203a43;
+  border-bottom:1px solid #ddd;padding-bottom:6px;
+}
+
+.loading{
+  text-align:center;font-weight:600;color:#555;margin-top:20px;
+}
+
+.preview{
+  background:#fff;border:1px dashed #ccc;
+  border-radius:6px;padding:10px 12px;margin-top:6px;
+}
+.preview ol{margin:0;padding-left:18px;}
+
+.footer{
+  margin-top:22px;text-align:center;
+  font-size:13px;color:#5f6f78;font-weight:600;
+}
+.footer div{font-size:12px;color:#7a8a93;}
+
+hr{margin:32px 0;border:none;border-top:1px solid #ddd;}
+
+@media(max-width:800px){
+  .row{flex-direction:column;}
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<h1>Faculty Dashboard</h1>
+<h2>Performance Review & Allocation (ME3273)</h2>
+
+<!-- ================= STUDENT REVIEW ================= -->
+
+<label>Select Student</label>
+<select id="studentSelect">
+  <option>Loading students…</option>
+</select>
+
+<div id="loading" class="loading" style="display:none">
+  Loading… please wait
+</div>
+
+<div id="content" style="display:none">
+  <div class="row">
+
+    <!-- LEFT -->
+    <div class="box">
+      <h3>Student Details</h3>
+      <div id="studentInfo"></div>
+
+      <h3 style="margin-top:16px">Group Discussion</h3>
+      <div id="gdInfo"></div>
+
+      <h3 style="margin-top:16px">Seminar Topic</h3>
+      <div id="seminarInfo"></div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="box">
+      <h3>Evaluation</h3>
+
+      <label>Evaluation Type</label>
+      <select id="typeSelect">
+        <option value="GD">Group Discussion</option>
+        <option value="SEMINAR">Seminar</option>
+        <option value="PI">Personal Interview</option>
+      </select>
+
+      <label>Marks (out of 100)</label>
+      <input type="number" id="marks" min="0" max="100">
+
+      <label>Positives (one per line)</label>
+      <textarea id="positives"
+        oninput="renderBullets('positives','posPreview')"></textarea>
+      <div id="posPreview" class="preview"></div>
+
+      <label>Points to Improve (one per line)</label>
+      <textarea id="improvements"
+        oninput="renderBullets('improvements','impPreview')"></textarea>
+      <div id="impPreview" class="preview"></div>
+
+      <div id="actionArea" class="loading">
+        Loading… please wait
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================= GD WEEKLY ALLOCATION ================= -->
+
+<hr>
+
+<h2>Weekly Allocation – Group Discussion</h2>
+
+<label>Evaluation Date</label>
+<input type="date" id="gdDate">
+
+<label>Select GD Topic</label>
+<select id="gdTopic">
+  <option value="">Select Topic</option>
+  <option value="T1">T1</option>
+  <option value="T2">T2</option>
+  <option value="T3">T3</option>
+  <option value="T4">T4</option>
+</select>
+
+<button onclick="allocateGD()">Allocate GD</button>
+
+<div id="gdStatus" class="loading" style="display:none"></div>
+
+<button class="logout-btn" onclick="logoutFaculty()">Logout</button>
+
+<div class="footer">
+Developed by Dr. Rajesh Akula
+<div>© 2026 · IIEST Shibpur</div>
+</div>
+
+</div>
+
+<script>
+/* ACCESS GUARD */
+if(sessionStorage.getItem("facultyLoggedIn")!=="YES"){
+  location.replace("login.html");
+}
+
+const BACKEND =
+"https://script.google.com/macros/s/AKfycbzQR4XoOW73Q-VJKUu7n2Gy2cKVhwLyVUJGJ63aJMugp_xV2SMcm5TflDshoTFazy6-eg/exec";
+
+/* LOAD STUDENTS */
+fetch(BACKEND+"?action=getAllStudents")
+.then(r=>r.json())
+.then(res=>{
+  studentSelect.innerHTML='<option value="">Select Student</option>';
+  res.students.forEach(s=>{
+    studentSelect.innerHTML+=
+      `<option value="${s.roll}">${s.roll} – ${s.name}</option>`;
+  });
+});
+
+studentSelect.onchange = loadStudent;
+typeSelect.onchange = loadPerformance;
+
+/* ---------- STUDENT REVIEW ---------- */
+
+function loadStudent(){
+  if(!studentSelect.value) return;
+
+  loading.style.display="block";
+  content.style.display="none";
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getStudentDetailsByRoll",
+      roll:studentSelect.value
+    })
+  })
+  .then(r=>r.json())
+  .then(d=>{
+    studentInfo.innerHTML =
+      `<b>Name:</b> ${d.name}<br><b>Roll:</b> ${d.roll}`;
+
+    gdInfo.innerHTML = d.project
+      ? `<b>Topic:</b> ${d.projectName}
+         <ul>${d.team.map(t=>`<li>${t.name} (${t.roll})</li>`).join("")}</ul>`
+      : "Not assigned";
+
+    seminarInfo.innerHTML = d.seminarTopic || "Not submitted";
+
+    loading.style.display="none";
+    content.style.display="block";
+    loadPerformance();
+  });
+}
+
+function loadPerformance(){
+  actionArea.innerHTML="Loading… please wait";
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getLatestPerformance",
+      roll:studentSelect.value,
+      type:typeSelect.value
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    positives.value = res.status==="FOUND" ? res.positives : "";
+    improvements.value = res.status==="FOUND" ? res.improvements : "";
+    marks.value = res.status==="FOUND" ? res.marks : "";
+
+    renderBullets("positives","posPreview");
+    renderBullets("improvements","impPreview");
+
+    actionArea.innerHTML =
+      `<button onclick="savePerformance()">
+        ${res.status==="FOUND"?"Update":"Save"} Performance
+      </button>`;
+  });
+}
+
+function savePerformance(){
+  const btn=document.querySelector("#actionArea button");
+  btn.disabled=true;
+  btn.innerText="Updating…";
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"savePerformance",
+      roll:studentSelect.value,
+      type:typeSelect.value,
+      marks:marks.value,
+      positives:positives.value,
+      improvements:improvements.value
+    })
+  })
+  .then(()=> {
+    btn.disabled=false;
+    btn.innerText="Update Performance";
+    alert("Performance saved");
+  });
+}
+
+/* ---------- GD ALLOCATION ---------- */
+
+function allocateGD(){
+  const topic = gdTopic.value;
+  const date  = gdDate.value;
+  const box   = gdStatus;
+
+  if(!topic || !date){
+    alert("Select date and topic");
+    return;
+  }
+
+  if(!confirm(`Allocate GD (${topic}) on ${date}?`)) return;
+
+  box.style.display="block";
+  box.innerText="Allocating… please wait";
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"saveGDAllocation",
+      topic,
+      date
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    box.innerText =
+      res.status==="SAVED"
+        ? `GD allocation done. ${res.count} students assigned.`
+        : "Allocation failed.";
+  });
+}
+
+/* ---------- HELPERS ---------- */
+
+function renderBullets(tid,pid){
+  const lines=document.getElementById(tid).value
+    .split("\n").map(l=>l.trim()).filter(Boolean)
+    .map(l=>l.charAt(0).toUpperCase()+l.slice(1));
+  document.getElementById(pid).innerHTML=
+    lines.length?`<ol>${lines.map(l=>`<li>${l}</li>`).join("")}</ol>`:"";
+}
+
+function logoutFaculty(){
+  if(confirm("Logout?")){
+    sessionStorage.removeItem("facultyLoggedIn");
+    location.href="login.html";
+  }
+}
+</script>
+
+</body>
+</html>
