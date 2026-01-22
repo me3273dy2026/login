@@ -70,6 +70,8 @@ button{
 }
 .footer div{font-size:12px;color:#7a8a93;}
 
+hr{margin:32px 0;border:none;border-top:1px solid #ddd;}
+
 @media(max-width:800px){
   .row{flex-direction:column;}
 }
@@ -79,8 +81,11 @@ button{
 <body>
 
 <div class="card">
+
 <h1>Faculty Dashboard</h1>
-<h2>Performance Review (ME3273)</h2>
+<h2>Performance Review & Allocation (ME3273)</h2>
+
+<!-- ================= STUDENT REVIEW ================= -->
 
 <label>Select Student</label>
 <select id="studentSelect">
@@ -138,6 +143,28 @@ button{
   </div>
 </div>
 
+<!-- ================= GD WEEKLY ALLOCATION ================= -->
+
+<hr>
+
+<h2>Weekly Allocation – Group Discussion</h2>
+
+<label>Evaluation Date</label>
+<input type="date" id="gdDate">
+
+<label>Select GD Topic</label>
+<select id="gdTopic">
+  <option value="">Select Topic</option>
+  <option value="T1">T1</option>
+  <option value="T2">T2</option>
+  <option value="T3">T3</option>
+  <option value="T4">T4</option>
+</select>
+
+<button onclick="allocateGD()">Allocate GD</button>
+
+<div id="gdStatus" class="loading" style="display:none"></div>
+
 <button class="logout-btn" onclick="logoutFaculty()">Logout</button>
 
 <div class="footer">
@@ -154,9 +181,9 @@ if(sessionStorage.getItem("facultyLoggedIn")!=="YES"){
 }
 
 const BACKEND =
-"https://script.google.com/macros/s/AKfycbzQR4XoOW73Q-VJKUu7n2Gy2cKVhwLyVUJGJ63aJMugp_xV2SMcm5TflDshoTFazy6-eg/exec";
+"https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec";
 
-/* Load students */
+/* LOAD STUDENTS */
 fetch(BACKEND+"?action=getAllStudents")
 .then(r=>r.json())
 .then(res=>{
@@ -169,6 +196,8 @@ fetch(BACKEND+"?action=getAllStudents")
 
 studentSelect.onchange = loadStudent;
 typeSelect.onchange = loadPerformance;
+
+/* ---------- STUDENT REVIEW ---------- */
 
 function loadStudent(){
   if(!studentSelect.value) return;
@@ -244,13 +273,48 @@ function savePerformance(){
       improvements:improvements.value
     })
   })
-  .then(r=>r.json())
-  .then(()=>{
+  .then(()=> {
     btn.disabled=false;
     btn.innerText="Update Performance";
     alert("Performance saved");
   });
 }
+
+/* ---------- GD ALLOCATION ---------- */
+
+function allocateGD(){
+  const topic = gdTopic.value;
+  const date  = gdDate.value;
+  const box   = gdStatus;
+
+  if(!topic || !date){
+    alert("Select date and topic");
+    return;
+  }
+
+  if(!confirm(`Allocate GD (${topic}) on ${date}?`)) return;
+
+  box.style.display="block";
+  box.innerText="Allocating… please wait";
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"saveGDAllocation",
+      topic,
+      date
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    box.innerText =
+      res.status==="SAVED"
+        ? `GD allocation done. ${res.count} students assigned.`
+        : "Allocation failed.";
+  });
+}
+
+/* ---------- HELPERS ---------- */
 
 function renderBullets(tid,pid){
   const lines=document.getElementById(tid).value
