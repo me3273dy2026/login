@@ -15,15 +15,14 @@ body{
 }
 .card{
   background:#fff;
-  width:100%;max-width:1000px;
+  width:100%;max-width:1100px;
   margin:24px 12px;
   padding:28px;
   border-radius:14px;
   box-shadow:0 15px 40px rgba(0,0,0,.25);
 }
-h1{text-align:center;color:#e67e22;margin-bottom:6px;}
-h2{text-align:center;color:#555;font-size:15px;margin-bottom:20px;}
-h3{color:#203a43;margin-top:0;}
+h1{text-align:center;color:#e67e22;margin-bottom:4px;}
+h2{text-align:center;color:#555;font-size:15px;margin-bottom:18px;}
 
 select,input,textarea,button{
   width:100%;padding:10px 12px;
@@ -34,9 +33,8 @@ textarea{min-height:90px;resize:vertical;}
 
 button{
   background:linear-gradient(135deg,#f39c12,#e67e22);
-  color:#fff;border:none;
-  font-weight:600;border-radius:30px;
-  margin-top:14px;cursor:pointer;
+  color:#fff;border:none;font-weight:600;
+  border-radius:30px;margin-top:12px;cursor:pointer;
 }
 .logout-btn{
   background:linear-gradient(135deg,#c0392b,#a93226);
@@ -48,10 +46,11 @@ button{
   padding:16px;border-radius:12px;
 }
 .box h3{
+  margin-top:0;color:#203a43;
   border-bottom:1px solid #ddd;padding-bottom:6px;
 }
 
-.loading{text-align:center;font-weight:600;color:#555;margin-top:20px;}
+.loading{text-align:center;font-weight:600;color:#555;margin-top:16px;}
 
 .preview{
   background:#fff;border:1px dashed #ccc;
@@ -59,7 +58,8 @@ button{
 }
 .preview ol{margin:0;padding-left:18px;}
 
-hr{margin:32px 0;border:none;border-top:1px solid #ddd;}
+.section{margin-top:28px;}
+.checkbox-list label{display:block;margin-top:6px;}
 
 .footer{
   margin-top:22px;text-align:center;
@@ -67,7 +67,7 @@ hr{margin:32px 0;border:none;border-top:1px solid #ddd;}
 }
 .footer div{font-size:12px;color:#7a8a93;}
 
-@media(max-width:800px){
+@media(max-width:900px){
   .row{flex-direction:column;}
 }
 </style>
@@ -78,9 +78,15 @@ hr{margin:32px 0;border:none;border-top:1px solid #ddd;}
 <div class="card">
 
 <h1>Faculty Dashboard</h1>
-<h2>Performance Review & Allocation (ME3273)</h2>
+<h2>Evaluation & Weekly Allocation (ME3273)</h2>
 
-<!-- ================= PERFORMANCE REVIEW ================= -->
+<!-- COMMON DATE -->
+<label>Evaluation Date (GD / Seminar / PI)</label>
+<input type="date" id="allocDate">
+
+<!-- ================= PERFORMANCE EVALUATION ================= -->
+<div class="section">
+<h3 style="color:#203a43">Student Performance Evaluation</h3>
 
 <label>Select Student</label>
 <select id="studentSelect">
@@ -117,7 +123,7 @@ hr{margin:32px 0;border:none;border-top:1px solid #ddd;}
         <option value="PI">Personal Interview</option>
       </select>
 
-      <label>Marks (out of 100)</label>
+      <label>Marks (0–100)</label>
       <input type="number" id="marks" min="0" max="100">
 
       <label>Positives (one per line)</label>
@@ -137,43 +143,45 @@ hr{margin:32px 0;border:none;border-top:1px solid #ddd;}
 
   </div>
 </div>
+</div>
 
 <!-- ================= WEEKLY ALLOCATION ================= -->
-
-<hr>
-
-<h2>Weekly Allocation</h2>
-
-<label>Evaluation Date</label>
-<input type="date" id="allocDate">
+<div class="section">
+<h3 style="color:#203a43">Weekly Allocation</h3>
 
 <!-- GD -->
-<h3>Group Discussion</h3>
+<div class="box">
+<h3>Group Discussion (Topics)</h3>
 <select id="gdTopic">
-  <option value="">Select GD Topic</option>
+  <option value="">Select Topic</option>
   <option>T1</option><option>T2</option><option>T3</option>
   <option>T4</option><option>T5</option><option>T6</option>
   <option>T7</option><option>T8</option><option>T9</option>
 </select>
-<button onclick="allocateGD()">Allocate GD</button>
-
-<hr>
+<button onclick="saveGD()">Allocate GD</button>
+</div>
 
 <!-- SEMINAR -->
-<h3>Seminar</h3>
-<textarea id="seminarRolls"
-  placeholder="Enter roll numbers (comma separated)"></textarea>
-<button onclick="allocateIndividual('SEMINAR')">Allocate Seminar</button>
-
-<hr>
+<div class="box section">
+<h3>Seminar Allocation</h3>
+<button onclick="loadSeminar()">Load Eligible Students</button>
+<div id="seminarList" class="checkbox-list"></div>
+<button onclick="saveSeminar()">Save Seminar Allocation</button>
+</div>
 
 <!-- PI -->
-<h3>Personal Interview</h3>
-<textarea id="piRolls"
-  placeholder="Enter roll numbers (comma separated)"></textarea>
-<button onclick="allocateIndividual('PI')">Allocate PI</button>
+<div class="box section">
+<h3>Personal Interview Allocation</h3>
+<button onclick="loadPI()">Load Eligible Students</button>
+<div id="piList" class="checkbox-list"></div>
+<button onclick="savePI()">Save PI Allocation</button>
+</div>
 
-<div id="allocStatus" class="loading" style="display:none"></div>
+<!-- PDF -->
+<div class="box section">
+<h3>Export Allocation</h3>
+<button onclick="exportPDF()">Download Allocation PDF</button>
+</div>
 
 <button class="logout-btn" onclick="logoutFaculty()">Logout</button>
 
@@ -185,15 +193,15 @@ Developed by Dr. Rajesh Akula
 </div>
 
 <script>
-/* ACCESS GUARD */
+/* ===== ACCESS GUARD ===== */
 if(sessionStorage.getItem("facultyLoggedIn")!=="YES"){
   location.replace("login.html");
 }
 
 const BACKEND =
-"https://script.google.com/macros/s/AKfycbynFQCmFgRia2PO5G-1UoPjVo25Tj9jqddrB4iAduS0v7nd39-oAKWM0pSrv3LLDNVhDA/exec";
+"https://script.google.com/macros/s/AKfycbzswNMJiLFid26BCqXp-ShajqAF_ReSHSjaT3fptFUHlB9h7mhiWCq59l72tvyBUYRslg/exec";
 
-/* LOAD STUDENTS */
+/* ---------- LOAD STUDENTS ---------- */
 fetch(BACKEND+"?action=getAllStudents")
 .then(r=>r.json())
 .then(res=>{
@@ -204,14 +212,12 @@ fetch(BACKEND+"?action=getAllStudents")
   });
 });
 
-studentSelect.onchange = loadStudent;
-typeSelect.onchange = loadPerformance;
+studentSelect.onchange=loadStudent;
+typeSelect.onchange=loadPerformance;
 
-/* ===== PERFORMANCE REVIEW ===== */
-
+/* ---------- STUDENT DETAILS ---------- */
 function loadStudent(){
   if(!studentSelect.value) return;
-
   loading.style.display="block";
   content.style.display="none";
 
@@ -224,15 +230,15 @@ function loadStudent(){
   })
   .then(r=>r.json())
   .then(d=>{
-    studentInfo.innerHTML =
+    studentInfo.innerHTML=
       `<b>Name:</b> ${d.name}<br><b>Roll:</b> ${d.roll}`;
 
-    gdInfo.innerHTML = d.project
+    gdInfo.innerHTML=d.project
       ? `<b>Topic:</b> ${d.projectName}
          <ul>${d.team.map(t=>`<li>${t.name} (${t.roll})</li>`).join("")}</ul>`
       : "Not assigned";
 
-    seminarInfo.innerHTML = d.seminarTopic || "Not submitted";
+    seminarInfo.innerHTML=d.seminarTopic||"Not submitted";
 
     loading.style.display="none";
     content.style.display="block";
@@ -240,6 +246,7 @@ function loadStudent(){
   });
 }
 
+/* ---------- PERFORMANCE ---------- */
 function loadPerformance(){
   actionArea.innerHTML="Loading… please wait";
 
@@ -253,14 +260,14 @@ function loadPerformance(){
   })
   .then(r=>r.json())
   .then(res=>{
-    positives.value = res.status==="FOUND" ? res.positives : "";
-    improvements.value = res.status==="FOUND" ? res.improvements : "";
-    marks.value = res.status==="FOUND" ? res.marks : "";
+    positives.value=res.status==="FOUND"?res.positives:"";
+    improvements.value=res.status==="FOUND"?res.improvements:"";
+    marks.value=res.status==="FOUND"?res.marks:"";
 
     renderBullets("positives","posPreview");
     renderBullets("improvements","impPreview");
 
-    actionArea.innerHTML =
+    actionArea.innerHTML=
       `<button onclick="savePerformance()">
         ${res.status==="FOUND"?"Update":"Save"} Performance
       </button>`;
@@ -269,8 +276,7 @@ function loadPerformance(){
 
 function savePerformance(){
   const btn=document.querySelector("#actionArea button");
-  btn.disabled=true;
-  btn.innerText="Updating…";
+  btn.disabled=true; btn.innerText="Updating…";
 
   fetch(BACKEND,{
     method:"POST",
@@ -283,22 +289,20 @@ function savePerformance(){
       improvements:improvements.value
     })
   })
-  .then(()=>{
-    btn.disabled=false;
-    btn.innerText="Update Performance";
-    alert("Performance saved");
-  });
+  .then(()=>{ btn.disabled=false; btn.innerText="Update Performance"; });
 }
 
-/* ===== ALLOCATION ===== */
+/* ---------- BULLETS ---------- */
+function renderBullets(tid,pid){
+  const lines=document.getElementById(tid).value
+    .split("\n").map(l=>l.trim()).filter(Boolean)
+    .map(l=>l.charAt(0).toUpperCase()+l.slice(1));
+  document.getElementById(pid).innerHTML=
+    lines.length?`<ol>${lines.map(l=>`<li>${l}</li>`).join("")}</ol>`:"";
+}
 
-function allocateGD(){
-  if(!allocDate.value || !gdTopic.value){
-    alert("Select date & topic"); return;
-  }
-  allocStatus.style.display="block";
-  allocStatus.innerText="Allocating GD…";
-
+/* ---------- ALLOCATION ---------- */
+function saveGD(){
   fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({
@@ -306,46 +310,76 @@ function allocateGD(){
       topic:gdTopic.value,
       date:allocDate.value
     })
-  })
-  .then(r=>r.json())
-  .then(res=>{
-    allocStatus.innerText =
-      `GD allocation completed. ${res.count} students assigned.`;
-  });
+  }).then(()=>alert("GD allocated"));
 }
 
-function allocateIndividual(type){
-  const rolls = type==="SEMINAR" ? seminarRolls.value : piRolls.value;
-  if(!allocDate.value || !rolls){
-    alert("Date or roll numbers missing"); return;
-  }
-  allocStatus.style.display="block";
-  allocStatus.innerText=`Allocating ${type}…`;
-
+function loadSeminar(){
   fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({
-      action:"saveIndividualAllocation",
-      category:type,
-      date:allocDate.value,
-      rolls
+      action:"getEligibleSeminar",
+      date:allocDate.value
     })
   })
   .then(r=>r.json())
   .then(res=>{
-    allocStatus.innerText =
-      `${type} allocation completed. ${res.count} students assigned.`;
+    seminarList.innerHTML=res.students.map(s=>
+      `<label><input type="checkbox" value="${s.roll}">
+      ${s.roll} – ${s.name}</label>`
+    ).join("");
   });
 }
 
-/* ===== HELPERS ===== */
+function saveSeminar(){
+  const rolls=[...seminarList.querySelectorAll("input:checked")]
+    .map(i=>i.value).join(",");
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"saveIndividualAllocation",
+      category:"SEMINAR",
+      date:allocDate.value,
+      rolls
+    })
+  }).then(()=>alert("Seminar allocated"));
+}
 
-function renderBullets(tid,pid){
-  const lines=document.getElementById(tid).value
-    .split("\n").map(l=>l.trim()).filter(Boolean)
-    .map(l=>l.charAt(0).toUpperCase()+l.slice(1));
-  document.getElementById(pid).innerHTML=
-    lines.length?`<ol>${lines.map(l=>`<li>${l}</li>`).join("")}</ol>`:"";
+function loadPI(){
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getEligiblePI",
+      date:allocDate.value
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    piList.innerHTML=res.students.map(s=>
+      `<label><input type="checkbox" value="${s.roll}">
+      ${s.roll} – ${s.name}</label>`
+    ).join("");
+  });
+}
+
+function savePI(){
+  const rolls=[...piList.querySelectorAll("input:checked")]
+    .map(i=>i.value).join(",");
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"saveIndividualAllocation",
+      category:"PI",
+      date:allocDate.value,
+      rolls
+    })
+  }).then(()=>alert("PI allocated"));
+}
+
+function exportPDF(){
+  window.open(
+    BACKEND+"?action=exportAllocationPDF&date="+allocDate.value,
+    "_blank"
+  );
 }
 
 function logoutFaculty(){
