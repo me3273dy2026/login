@@ -14,36 +14,32 @@ body{
 }
 .card{
   background:#fff;
-  width:100%;max-width:540px;
+  width:100%;max-width:520px;
   margin:24px 12px;padding:24px;
   border-radius:16px;
   box-shadow:0 15px 40px rgba(0,0,0,.25);
 }
 h1,h2{text-align:center}
-.infoBox{
-  background:#f5f7fa;
-  padding:14px;border-radius:12px;margin-top:14px
-}
-.badge{
-  display:inline-block;
-  padding:4px 10px;
-  border-radius:20px;
-  font-size:12px;
-  font-weight:700;
-}
-.GD{background:#e3f2fd;color:#0d47a1}
-.SEMINAR{background:#e8f5e9;color:#1b5e20}
-.PI{background:#fff3e0;color:#e65100}
-.past{opacity:.7}
+.infoBox{background:#f5f7fa;padding:14px;border-radius:12px;margin-top:14px}
+.notice{background:#e8f5e9;color:#1b5e20;font-weight:700;text-align:center}
 button{
   width:100%;padding:12px;margin-top:12px;
   border:none;border-radius:30px;
   font-size:15px;font-weight:600;cursor:pointer
 }
-button:disabled{background:#999}
-.btn-main{background:#203a43;color:#fff}
+.btn-perf{background:#203a43;color:#fff}
 .btn-logout{background:#c0392b;color:#fff}
 .loading{text-align:center;font-weight:600}
+.greenBox{background:#e8f5e9;padding:12px;border-radius:10px;margin-top:8px}
+.yellowBox{background:#fffde7;padding:12px;border-radius:10px;margin-top:8px}
+.marksBox{
+  display:inline-block;
+  padding:10px 16px;
+  border-radius:8px;
+  font-size:18px;
+  font-weight:700;
+  margin:10px auto;
+}
 </style>
 </head>
 
@@ -52,129 +48,94 @@ button:disabled{background:#999}
 <div class="card">
 
 <h1 id="welcome"></h1>
-<h2>Evaluation Schedule & Feedback</h2>
+<h2>ME3273</h2>
 
 <div id="loadingBox" class="infoBox loading">
-  Loading your details…
+  Getting details… please wait
 </div>
 
-<div id="upcomingBox" class="infoBox" style="display:none"></div>
-<div id="pastBox" class="infoBox" style="display:none"></div>
+<div id="allocBox" class="infoBox notice" style="display:none"></div>
 
-<button id="perfBtn" class="btn-main" onclick="togglePerf()">
-  View Performance Feedback
+<button id="perfBtn" class="btn-perf" disabled onclick="togglePanel()">
+  Check Your Performance
 </button>
 
 <div id="perfPanel" class="infoBox" style="display:none">
-  <button onclick="loadPerf('GD')">Group Discussion</button>
+  <button onclick="toggleSection('GD')">Group Discussion</button>
   <div id="GD"></div>
 
-  <button onclick="loadPerf('SEMINAR')">Seminar</button>
+  <button onclick="toggleSection('SEMINAR')">Seminar</button>
   <div id="SEMINAR"></div>
 
-  <button onclick="loadPerf('PI')">Personal Interview</button>
+  <button onclick="toggleSection('PI')">Personal Interview</button>
   <div id="PI"></div>
 </div>
 
-<button class="btn-logout" onclick="logout()">Logout</button>
+<button id="logoutBtn" class="btn-logout" disabled onclick="logout()">Logout</button>
 
 </div>
 
 <script>
-const BACKEND =
-"https://script.google.com/macros/s/AKfycbyDAivsJUT-UAWo29nR001y8X88ueHfrGFSoTNF5Zza9jpj78W310Ixe__eVgrbeaQbkQ/exec";
-const token = new URLSearchParams(location.search).get("token");
+const BACKEND="https://script.google.com/macros/s/AKfycbyRJR4DY9LQfSLL9WZZMi_h9fb8GG5IK2WwOBc8oSs5Ct5pBAsxCvNrQO90mDJxlYGVnQ/exec";
+const token=new URLSearchParams(location.search).get("token");
 
-/* INIT */
-loadDashboard();
+loadAll();
 
-/* DASHBOARD */
-function loadDashboard(){
-
+function loadAll(){
   Promise.all([
-    fetch(BACKEND,{
-      method:"POST",
-      body:new URLSearchParams({action:"dashboard",token})
-    }).then(r=>r.json()),
-
-    fetch(BACKEND,{
-      method:"POST",
-      body:new URLSearchParams({action:"getMyAllAllocations",token})
-    }).then(r=>r.json())
-  ])
-  .then(([dash,alloc])=>{
-
+    fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"dashboard",token})}).then(r=>r.json()),
+    fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getMyLatestAllocation",token})}).then(r=>r.json())
+  ]).then(([dash,alloc])=>{
     loadingBox.style.display="none";
     welcome.innerText=`Welcome ${dash.name} (${dash.roll})`;
 
-    /* UPCOMING */
-    if(alloc.upcoming.length){
-      upcomingBox.innerHTML =
-        `<b>Upcoming Evaluations</b><ul>` +
-        alloc.upcoming.map(a=>
-          `<li><span class="badge ${a.category}">
-            ${a.category}</span> – ${a.date}</li>`
-        ).join("") + `</ul>`;
-      upcomingBox.style.display="block";
-    }
+    allocBox.style.display="block";
+    allocBox.innerText=
+      alloc.status==="ALLOCATED"
+      ? `You have ${alloc.category} on ${alloc.date}${alloc.topic?` (Topic: ${alloc.topic})`:""}`
+      : "Allocation is under process.";
 
-    /* PAST */
-    if(alloc.past.length){
-      pastBox.innerHTML =
-        `<b>Past Evaluations</b><ul>` +
-        alloc.past.map(a=>
-          `<li class="past"><span class="badge ${a.category}">
-            ${a.category}</span> – ${a.date}</li>`
-        ).join("") + `</ul>`;
-      pastBox.style.display="block";
-    }
+    perfBtn.disabled=false;
+    logoutBtn.disabled=false;
   });
 }
 
-/* PERFORMANCE */
-function togglePerf(){
-  perfPanel.style.display =
-    perfPanel.style.display==="none" ? "block" : "none";
+function togglePanel(){
+  perfPanel.style.display=
+    perfPanel.style.display==="none"?"block":"none";
 }
 
-function loadPerf(type){
-
+function toggleSection(type){
   const box=document.getElementById(type);
-  if(box.innerHTML){ box.innerHTML=""; return; }
+  if(box.innerHTML){box.innerHTML="";return;}
 
   box.innerHTML="<div class='loading'>Loading…</div>";
 
   fetch(BACKEND,{
     method:"POST",
-    body:new URLSearchParams({
-      action:"getMyPerformance",
-      token,
-      type
-    })
-  })
-  .then(r=>r.json())
-  .then(res=>{
+    body:new URLSearchParams({action:"getMyPerformance",token,type})
+  }).then(r=>r.json()).then(res=>{
     if(res.status!=="FOUND"){
       box.innerHTML="<b>Not yet evaluated.</b>";
       return;
     }
-    box.innerHTML = `
+    box.innerHTML=`
       <div><b>Date:</b> ${res.evaluationDate}</div>
-      <div><b>Marks:</b> ${res.marks} / 100</div>
-      <b>Positives</b>
-      <ol>${res.positives.split("\n").map(x=>`<li>${x}</li>`).join("")}</ol>
-      <b>Points to Improve</b>
-      <ol>${res.improvements.split("\n").map(x=>`<li>${x}</li>`).join("")}</ol>
+      <div class="marksBox">Marks: ${res.marks}/100</div>
+      <div class="greenBox"><b>Positives</b><ol>${makeList(res.positives)}</ol></div>
+      <div class="yellowBox"><b>Improvements</b><ol>${makeList(res.improvements)}</ol></div>
     `;
   });
 }
 
-/* LOGOUT */
+function makeList(t){
+  return t.split("\n").filter(Boolean).map(x=>`<li>${x}</li>`).join("");
+}
+
 function logout(){
-  fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({action:"logout",token})
-  }).finally(()=>location.href="login.html");
+  if(!confirm("Logout?")) return;
+  fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"logout",token})})
+    .finally(()=>location.href="login.html");
 }
 </script>
 
