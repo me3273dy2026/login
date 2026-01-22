@@ -4,187 +4,201 @@
 <meta charset="UTF-8">
 <title>Faculty Dashboard | ME3273</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
-body{font-family:Segoe UI;background:#203a43;margin:0;padding:20px}
-.card{background:#fff;max-width:1100px;margin:auto;padding:25px;border-radius:12px}
-h1{text-align:center;color:#e67e22}
-label{display:block;margin-top:12px;font-weight:600}
-select,input,textarea,button{
-  width:100%;padding:8px;margin-top:6px
+body{
+  font-family:"Segoe UI",Arial;
+  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  margin:0;padding:20px;
 }
-button{background:#e67e22;color:#fff;border:none;border-radius:20px;margin-top:12px}
+.card{
+  background:#fff;
+  max-width:1200px;
+  margin:auto;
+  padding:28px;
+  border-radius:16px;
+  box-shadow:0 15px 40px rgba(0,0,0,.25);
+}
+h1{text-align:center;color:#e67e22}
+.section{
+  background:#f5f7fa;
+  padding:18px;
+  border-radius:12px;
+  margin-top:22px;
+}
+label{font-weight:600;display:block;margin-top:10px}
+select,input,textarea{
+  width:100%;padding:10px;margin-top:6px;border-radius:6px;border:1px solid #ccc
+}
+button{
+  margin-top:14px;
+  padding:12px;
+  border:none;
+  border-radius:30px;
+  font-weight:600;
+  cursor:pointer;
+}
+.primary{background:#e67e22;color:#fff}
+.secondary{background:#203a43;color:#fff}
+.danger{background:#c0392b;color:#fff}
 button:disabled{background:#aaa}
-.row{display:flex;gap:15px}
-.box{flex:1;background:#f4f6f7;padding:15px;border-radius:10px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 #busyBox{text-align:center;margin-top:10px;font-weight:600}
-@media(max-width:900px){.row{flex-direction:column}}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
 </style>
 </head>
 
 <body>
 <div class="card">
 
-<h1>Faculty Dashboard</h1>
+<h1>Faculty Dashboard – ME3273</h1>
 
-<label>Select Student</label>
+<div class="section">
+<h3>Student Evaluation</h3>
+<label>Student</label>
 <select id="studentSelect"></select>
 
-<label>Evaluation Type</label>
-<select id="typeSelect">
-  <option>GD</option>
-  <option>SEMINAR</option>
-  <option>PI</option>
-</select>
+<label>Type</label>
+<select id="typeSelect"><option>GD</option><option>SEMINAR</option><option>PI</option></select>
 
 <label>Marks</label>
 <input id="marks" type="number">
 
-<label>Positives (one per line)</label>
+<label>Positives</label>
 <textarea id="positives"></textarea>
 
-<label>Improvements (one per line)</label>
+<label>Improvements</label>
 <textarea id="improvements"></textarea>
 
-<button onclick="savePerformance()">Save / Update Performance</button>
+<button class="primary" onclick="savePerformance()">Save / Update</button>
+</div>
 
-<hr>
-
+<div class="section grid">
+<div>
 <h3>GD Allocation</h3>
-<label>Date</label>
-<input type="date" id="gdDate">
-<label>GD Topic</label>
-<select id="gdTopic"></select>
-<button onclick="allocateGD()">Allocate GD</button>
+<label>Date</label><input type="date" id="gdDate">
+<label>GD Topic</label><select id="gdTopic"></select>
+<button class="secondary" onclick="allocateGD()">Allocate GD</button>
+</div>
 
-<hr>
-
-<h3>Seminar & PI Allocation</h3>
-<label>Eligible for Seminar</label>
+<div>
+<h3>Seminar & PI</h3>
+<label>Seminar</label>
 <select id="seminarSelect" multiple size="6"></select>
-
-<label>Eligible for PI</label>
+<label>PI</label>
 <select id="piSelect" multiple size="6"></select>
+<button class="secondary" onclick="saveSeminarPI()">Allocate Seminar / PI</button>
+</div>
+</div>
 
-<button onclick="saveSeminarPI()">Allocate Seminar / PI</button>
+<div class="section">
+<h3>Export Allocation (PDF)</h3>
+<label>Select Date</label>
+<input type="date" id="pdfDate">
+<button class="primary" onclick="exportPDF()">Download PDF</button>
+</div>
 
 <div id="busyBox"></div>
 
 </div>
 
 <script>
-const BACKEND="https://script.google.com/macros/s/AKfycby5p2s84W-s8njKY9frNVPWdeDYgpLw0iVG5Ya5mGZWrOkiQSUJEPgGiTT7dyczXYlZhg/exec";
+const BACKEND="https://script.google.com/macros/s/AKfycbyDAivsJUT-UAWo29nR001y8X88ueHfrGFSoTNF5Zza9jpj78W310Ixe__eVgrbeaQbkQ/exec";
 
-/* BUSY STATE */
-function setBusy(msg){
-  document.querySelectorAll("button").forEach(b=>b.disabled=true);
-  busyBox.innerText=msg;
-}
-function clearBusy(){
-  document.querySelectorAll("button").forEach(b=>b.disabled=false);
-  busyBox.innerText="";
-}
+/* BUSY */
+function setBusy(m){document.querySelectorAll("button").forEach(b=>b.disabled=true);busyBox.innerText=m}
+function clearBusy(){document.querySelectorAll("button").forEach(b=>b.disabled=false);busyBox.innerText=""}
 
 /* STUDENTS */
-fetch(BACKEND+"?action=getAllStudents")
-.then(r=>r.json()).then(d=>{
+fetch(BACKEND+"?action=getAllStudents").then(r=>r.json()).then(d=>{
   studentSelect.innerHTML='<option></option>';
-  d.students.forEach(s=>{
-    studentSelect.innerHTML+=`<option value="${s.roll}">${s.roll} - ${s.name}</option>`;
+  d.students.forEach(s=>studentSelect.innerHTML+=`<option value="${s.roll}">${s.roll} - ${s.name}</option>`);
+});
+
+/* LOAD PERFORMANCE */
+studentSelect.onchange=typeSelect.onchange=()=>{
+  if(!studentSelect.value) return;
+  fetch(BACKEND,{method:"POST",body:new URLSearchParams({
+    action:"getLatestPerformance",roll:studentSelect.value,type:typeSelect.value
+  })}).then(r=>r.json()).then(res=>{
+    if(res.status==="FOUND"){
+      marks.value=res.marks; positives.value=res.positives; improvements.value=res.improvements;
+    }else{marks.value=""; positives.value=""; improvements.value="";}
   });
-});
+};
 
-/* GD TOPICS */
-fetch(BACKEND+"?action=getAvailableGDTopics")
-.then(r=>r.json()).then(d=>{
-  gdTopic.innerHTML='<option></option>';
-  d.topics.forEach(t=>gdTopic.innerHTML+=`<option>${t}</option>`);
-});
-
-/* PERFORMANCE */
 function savePerformance(){
-  setBusy("Saving performance, please wait…");
-  fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({
-      action:"savePerformance",
-      roll:studentSelect.value,
-      type:typeSelect.value,
-      marks:marks.value,
-      positives:positives.value,
-      improvements:improvements.value
-    })
-  }).then(()=>alert("Saved")).finally(clearBusy);
+  setBusy("Saving performance…");
+  fetch(BACKEND,{method:"POST",body:new URLSearchParams({
+    action:"savePerformance",roll:studentSelect.value,type:typeSelect.value,
+    marks:marks.value,positives:positives.value,improvements:improvements.value
+  })}).then(()=>alert("Saved")).finally(clearBusy);
 }
 
 /* GD */
+fetch(BACKEND+"?action=getAvailableGDTopics").then(r=>r.json()).then(d=>{
+  gdTopic.innerHTML='<option></option>'; d.topics.forEach(t=>gdTopic.innerHTML+=`<option>${t}</option>`);
+});
 function allocateGD(){
-  setBusy("Allocating GD, please wait…");
-  fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({
-      action:"saveGDAllocation",
-      topic:gdTopic.value,
-      date:gdDate.value
-    })
-  }).then(()=>alert("GD Allocated")).finally(clearBusy);
+  if(!gdDate.value||!gdTopic.value){alert("Select date & topic");return;}
+  setBusy("Allocating GD…");
+  fetch(BACKEND,{method:"POST",body:new URLSearchParams({
+    action:"saveGDAllocation",topic:gdTopic.value,date:gdDate.value
+  })}).then(r=>r.json()).then(res=>{
+    if(res.status==="ALREADY_EXISTS") alert("Already allocated");
+    else alert("GD allocated");
+  }).finally(clearBusy);
 }
 
 /* SEMINAR + PI */
-gdTopic.onchange = gdDate.onchange = loadSeminar;
-
-function loadSeminar(){
-  fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({
-      action:"getSeminarCandidates",
-      date:gdDate.value,
-      gdTopic:gdTopic.value
-    })
-  })
-  .then(r=>r.json())
-  .then(d=>{
-    seminarSelect.innerHTML="";
-    d.students.forEach(s=>{
-      seminarSelect.innerHTML+=`<option value="${s.roll}">${s.name}</option>`;
-    });
-    piSelect.innerHTML="";
+gdTopic.onchange=gdDate.onchange=()=>{
+  if(!gdTopic.value||!gdDate.value) return;
+  fetch(BACKEND,{method:"POST",body:new URLSearchParams({
+    action:"getSeminarCandidates",gdTopic:gdTopic.value,date:gdDate.value
+  })}).then(r=>r.json()).then(d=>{
+    seminarSelect.innerHTML=""; piSelect.innerHTML="";
+    d.students.forEach(s=>seminarSelect.innerHTML+=`<option value="${s.roll}">${s.name}</option>`);
   });
-}
+};
 
 seminarSelect.onchange=()=>{
   const rolls=[...seminarSelect.selectedOptions].map(o=>o.value).join(",");
-  fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({
-      action:"getPICandidates",
-      date:gdDate.value,
-      gdTopic:gdTopic.value,
-      seminarRolls:rolls
-    })
-  })
-  .then(r=>r.json())
-  .then(d=>{
-    piSelect.innerHTML="";
-    d.students.forEach(s=>{
-      piSelect.innerHTML+=`<option value="${s.roll}">${s.name}</option>`;
-    });
+  fetch(BACKEND,{method:"POST",body:new URLSearchParams({
+    action:"getPICandidates",gdTopic:gdTopic.value,date:gdDate.value,seminarRolls:rolls
+  })}).then(r=>r.json()).then(d=>{
+    piSelect.innerHTML=""; d.students.forEach(s=>piSelect.innerHTML+=`<option value="${s.roll}">${s.name}</option>`);
   });
 };
 
 function saveSeminarPI(){
-  const seminar=[...seminarSelect.selectedOptions].map(o=>o.value).join(",");
-  const pi=[...piSelect.selectedOptions].map(o=>o.value).join(",");
+  if(!gdDate.value||!gdTopic.value){alert("Select GD date & topic");return;}
+  setBusy("Allocating Seminar / PI…");
+  fetch(BACKEND,{method:"POST",body:new URLSearchParams({
+    action:"saveSeminarPIAllocation",
+    date:gdDate.value,
+    seminarRolls:[...seminarSelect.selectedOptions].map(o=>o.value).join(","),
+    piRolls:[...piSelect.selectedOptions].map(o=>o.value).join(",")
+  })}).then(()=>alert("Allocated")).finally(clearBusy);
+}
 
-  setBusy("Allocating Seminar / PI, please wait…");
-  fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({
-      action:"saveSeminarPIAllocation",
-      date:gdDate.value,
-      seminarRolls:seminar,
-      piRolls:pi
-    })
-  }).then(()=>alert("Seminar & PI Allocated")).finally(clearBusy);
+/* PDF */
+function exportPDF(){
+  const date=pdfDate.value;
+  if(!date){alert("Select date");return;}
+  fetch(BACKEND,{method:"POST",body:new URLSearchParams({
+    action:"getAllocationsByDate",date
+  })}).then(r=>r.json()).then(d=>{
+    const {jsPDF}=window.jspdf;
+    const doc=new jsPDF();
+    doc.text(`Evaluation Allocation – ${date}`,10,10);
+    let y=20;
+    d.data.forEach((r,i)=>{
+      doc.text(`${i+1}. ${r.roll} - ${r.name} (${r.category})`,10,y);
+      y+=8;
+    });
+    doc.save(`Allocation_${date}.pdf`);
+  });
 }
 </script>
 </body>
