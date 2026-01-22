@@ -50,16 +50,10 @@ button{
   border-bottom:1px solid #ddd;padding-bottom:6px;
 }
 
-.loading{text-align:center;font-weight:600;color:#555;margin-top:16px;}
-
-.preview{
-  background:#fff;border:1px dashed #ccc;
-  border-radius:6px;padding:10px 12px;margin-top:6px;
-}
-.preview ol{margin:0;padding-left:18px;}
+.loading{text-align:center;font-weight:600;color:#555;margin-top:12px;}
+.checkbox-list label{display:block;margin-top:6px;}
 
 .section{margin-top:28px;}
-.checkbox-list label{display:block;margin-top:6px;}
 
 .footer{
   margin-top:22px;text-align:center;
@@ -80,13 +74,9 @@ button{
 <h1>Faculty Dashboard</h1>
 <h2>Evaluation & Weekly Allocation (ME3273)</h2>
 
-<!-- COMMON DATE -->
-<label>Evaluation Date (GD / Seminar / PI)</label>
-<input type="date" id="allocDate">
-
-<!-- ================= PERFORMANCE EVALUATION ================= -->
+<!-- ================= PERFORMANCE ================= -->
 <div class="section">
-<h3 style="color:#203a43">Student Performance Evaluation</h3>
+<h3>Student Performance Evaluation</h3>
 
 <label>Select Student</label>
 <select id="studentSelect">
@@ -126,15 +116,11 @@ button{
       <label>Marks (0–100)</label>
       <input type="number" id="marks" min="0" max="100">
 
-      <label>Positives (one per line)</label>
-      <textarea id="positives"
-        oninput="renderBullets('positives','posPreview')"></textarea>
-      <div id="posPreview" class="preview"></div>
+      <label>Positives</label>
+      <textarea id="positives"></textarea>
 
-      <label>Points to Improve (one per line)</label>
-      <textarea id="improvements"
-        oninput="renderBullets('improvements','impPreview')"></textarea>
-      <div id="impPreview" class="preview"></div>
+      <label>Points to Improve</label>
+      <textarea id="improvements"></textarea>
 
       <div id="actionArea" class="loading">
         Loading… please wait
@@ -147,10 +133,15 @@ button{
 
 <!-- ================= WEEKLY ALLOCATION ================= -->
 <div class="section">
-<h3 style="color:#203a43">Weekly Allocation</h3>
+<h3>Weekly Allocation</h3>
+
+<label><b>Date of Allocation</b></label>
+<input type="date" id="allocDate">
+
+<div id="allocStatus" class="loading" style="display:none"></div>
 
 <!-- GD -->
-<div class="box">
+<div class="box section">
 <h3>Group Discussion (Topics)</h3>
 <select id="gdTopic">
   <option value="">Select Topic</option>
@@ -177,6 +168,9 @@ button{
 <button onclick="savePI()">Save PI Allocation</button>
 </div>
 
+<!-- SUMMARY -->
+<div id="allocationSummary" class="box section" style="display:none"></div>
+
 <!-- PDF -->
 <div class="box section">
 <h3>Export Allocation</h3>
@@ -193,13 +187,19 @@ Developed by Dr. Rajesh Akula
 </div>
 
 <script>
-/* ===== ACCESS GUARD ===== */
 if(sessionStorage.getItem("facultyLoggedIn")!=="YES"){
   location.replace("login.html");
 }
 
-const BACKEND =
-"https://script.google.com/macros/s/AKfycbzswNMJiLFid26BCqXp-ShajqAF_ReSHSjaT3fptFUHlB9h7mhiWCq59l72tvyBUYRslg/exec";
+const BACKEND = "https://script.google.com/macros/s/AKfycbxkFC04HnDu-qV-yOEJpg3GYOEaLIVbont-lgP8Gja0GsgqI39dPYr2fY88UeJNNn3xgA/exec";
+
+/* ---------- UTIL ---------- */
+function setAllButtons(state,msg){
+  document.querySelectorAll("button").forEach(b=>{
+    b.disabled=state;
+    if(state && msg) b.innerText=msg;
+  });
+}
 
 /* ---------- LOAD STUDENTS ---------- */
 fetch(BACKEND+"?action=getAllStudents")
@@ -214,8 +214,9 @@ fetch(BACKEND+"?action=getAllStudents")
 
 studentSelect.onchange=loadStudent;
 typeSelect.onchange=loadPerformance;
+allocDate.onchange=loadAllocationsForDate;
 
-/* ---------- STUDENT DETAILS ---------- */
+/* ---------- STUDENT ---------- */
 function loadStudent(){
   if(!studentSelect.value) return;
   loading.style.display="block";
@@ -230,16 +231,9 @@ function loadStudent(){
   })
   .then(r=>r.json())
   .then(d=>{
-    studentInfo.innerHTML=
-      `<b>Name:</b> ${d.name}<br><b>Roll:</b> ${d.roll}`;
-
-    gdInfo.innerHTML=d.project
-      ? `<b>Topic:</b> ${d.projectName}
-         <ul>${d.team.map(t=>`<li>${t.name} (${t.roll})</li>`).join("")}</ul>`
-      : "Not assigned";
-
+    studentInfo.innerHTML=`<b>${d.name}</b><br>${d.roll}`;
+    gdInfo.innerHTML=d.project?d.projectName:"Not assigned";
     seminarInfo.innerHTML=d.seminarTopic||"Not submitted";
-
     loading.style.display="none";
     content.style.display="block";
     loadPerformance();
@@ -249,7 +243,6 @@ function loadStudent(){
 /* ---------- PERFORMANCE ---------- */
 function loadPerformance(){
   actionArea.innerHTML="Loading… please wait";
-
   fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({
@@ -263,21 +256,12 @@ function loadPerformance(){
     positives.value=res.status==="FOUND"?res.positives:"";
     improvements.value=res.status==="FOUND"?res.improvements:"";
     marks.value=res.status==="FOUND"?res.marks:"";
-
-    renderBullets("positives","posPreview");
-    renderBullets("improvements","impPreview");
-
-    actionArea.innerHTML=
-      `<button onclick="savePerformance()">
-        ${res.status==="FOUND"?"Update":"Save"} Performance
-      </button>`;
+    actionArea.innerHTML=`<button onclick="savePerformance()">Save / Update</button>`;
   });
 }
 
 function savePerformance(){
-  const btn=document.querySelector("#actionArea button");
-  btn.disabled=true; btn.innerText="Updating…";
-
+  setAllButtons(true,"Saving…");
   fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({
@@ -288,21 +272,12 @@ function savePerformance(){
       positives:positives.value,
       improvements:improvements.value
     })
-  })
-  .then(()=>{ btn.disabled=false; btn.innerText="Update Performance"; });
-}
-
-/* ---------- BULLETS ---------- */
-function renderBullets(tid,pid){
-  const lines=document.getElementById(tid).value
-    .split("\n").map(l=>l.trim()).filter(Boolean)
-    .map(l=>l.charAt(0).toUpperCase()+l.slice(1));
-  document.getElementById(pid).innerHTML=
-    lines.length?`<ol>${lines.map(l=>`<li>${l}</li>`).join("")}</ol>`:"";
+  }).then(()=>setAllButtons(false));
 }
 
 /* ---------- ALLOCATION ---------- */
 function saveGD(){
+  setAllButtons(true,"Allocating… Please wait");
   fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({
@@ -310,7 +285,12 @@ function saveGD(){
       topic:gdTopic.value,
       date:allocDate.value
     })
-  }).then(()=>alert("GD allocated"));
+  }).then(r=>r.json())
+    .then(res=>{
+      alert(`GD allocated for ${res.count} students`);
+      setAllButtons(false);
+      loadAllocationsForDate();
+    });
 }
 
 function loadSeminar(){
@@ -324,13 +304,13 @@ function loadSeminar(){
   .then(r=>r.json())
   .then(res=>{
     seminarList.innerHTML=res.students.map(s=>
-      `<label><input type="checkbox" value="${s.roll}">
-      ${s.roll} – ${s.name}</label>`
+      `<label><input type="checkbox" value="${s.roll}"> ${s.roll} – ${s.name}</label>`
     ).join("");
   });
 }
 
 function saveSeminar(){
+  setAllButtons(true,"Allocating… Please wait");
   const rolls=[...seminarList.querySelectorAll("input:checked")]
     .map(i=>i.value).join(",");
   fetch(BACKEND,{
@@ -341,7 +321,13 @@ function saveSeminar(){
       date:allocDate.value,
       rolls
     })
-  }).then(()=>alert("Seminar allocated"));
+  }).then(r=>r.json())
+    .then(res=>{
+      alert(`Seminar allocated for ${res.count} students`);
+      setAllButtons(false);
+      seminarList.innerHTML="";
+      loadAllocationsForDate();
+    });
 }
 
 function loadPI(){
@@ -355,13 +341,13 @@ function loadPI(){
   .then(r=>r.json())
   .then(res=>{
     piList.innerHTML=res.students.map(s=>
-      `<label><input type="checkbox" value="${s.roll}">
-      ${s.roll} – ${s.name}</label>`
+      `<label><input type="checkbox" value="${s.roll}"> ${s.roll} – ${s.name}</label>`
     ).join("");
   });
 }
 
 function savePI(){
+  setAllButtons(true,"Allocating… Please wait");
   const rolls=[...piList.querySelectorAll("input:checked")]
     .map(i=>i.value).join(",");
   fetch(BACKEND,{
@@ -372,14 +358,55 @@ function savePI(){
       date:allocDate.value,
       rolls
     })
-  }).then(()=>alert("PI allocated"));
+  }).then(r=>r.json())
+    .then(res=>{
+      alert(`PI allocated for ${res.count} students`);
+      setAllButtons(false);
+      piList.innerHTML="";
+      loadAllocationsForDate();
+    });
 }
 
+function loadAllocationsForDate(){
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getAllocationsByDate",
+      date:allocDate.value
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    if(res.allocations.length===0){
+      allocationSummary.style.display="none";
+      return;
+    }
+    allocationSummary.style.display="block";
+    allocationSummary.innerHTML=
+      `<h3>Allocations on ${allocDate.value}</h3>`+
+      res.allocations.map(a=>
+        `<div><b>${a.category}</b> – ${a.roll} (${a.name}) ${a.topic!=="-"?"| "+a.topic:""}</div>`
+      ).join("");
+  });
+}
+
+/* ---------- PDF ---------- */
 function exportPDF(){
-  window.open(
-    BACKEND+"?action=exportAllocationPDF&date="+allocDate.value,
-    "_blank"
-  );
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"exportAllocationPDF",
+      date:allocDate.value
+    })
+  })
+  .then(r=>r.text())
+  .then(res=>{
+    if(res==="NO_DATA"){
+      alert("No allocations for this date");
+    }else{
+      window.open(BACKEND+"?action=exportAllocationPDF&date="+allocDate.value,"_blank");
+    }
+  });
 }
 
 function logoutFaculty(){
