@@ -2,74 +2,48 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Topic Allocation | ME3273</title>
+<title>Student Dashboard | ME3273</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body{
   font-family:"Segoe UI",Arial,sans-serif;
   background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-  margin:0;
-  min-height:100vh;
-  display:flex;
-  justify-content:center;
+  margin:0;min-height:100vh;
+  display:flex;justify-content:center;
 }
 .card{
   background:#fff;
-  width:100%;
-  max-width:520px;
-  margin:24px 12px;
-  padding:24px;
+  width:100%;max-width:540px;
+  margin:24px 12px;padding:24px;
   border-radius:16px;
   box-shadow:0 15px 40px rgba(0,0,0,.25);
 }
 h1,h2{text-align:center}
-
 .infoBox{
   background:#f5f7fa;
-  padding:14px;
-  border-radius:12px;
-  margin-top:14px
+  padding:14px;border-radius:12px;margin-top:14px
 }
-.notice{
-  background:#e8f5e9;
-  color:#1b5e20;
-  font-weight:700;
-  text-align:center
-}
-button{
-  width:100%;
-  padding:12px;
-  margin-top:12px;
-  border:none;
-  border-radius:30px;
-  font-size:15px;
-  font-weight:600;
-  cursor:pointer
-}
-button:disabled{
-  background:#999;
-  cursor:not-allowed
-}
-.btn-perf{background:#203a43;color:#fff}
-.btn-logout{background:#c0392b;color:#fff}
-
-.greenBox{background:#e8f5e9;padding:12px;border-radius:10px;margin-top:8px}
-.yellowBox{background:#fffde7;padding:12px;border-radius:10px;margin-top:8px}
-
-.loading{text-align:center;font-weight:600}
-ol{margin-left:18px}
-  .marksBox{
+.badge{
   display:inline-block;
-  min-width:160px;
-  padding:10px 16px;
-  margin:10px auto;
-  border-radius:8px;
-  font-size:18px;
+  padding:4px 10px;
+  border-radius:20px;
+  font-size:12px;
   font-weight:700;
-  text-align:center;
-  border:2px solid transparent;
 }
+.GD{background:#e3f2fd;color:#0d47a1}
+.SEMINAR{background:#e8f5e9;color:#1b5e20}
+.PI{background:#fff3e0;color:#e65100}
+.past{opacity:.7}
+button{
+  width:100%;padding:12px;margin-top:12px;
+  border:none;border-radius:30px;
+  font-size:15px;font-weight:600;cursor:pointer
+}
+button:disabled{background:#999}
+.btn-main{background:#203a43;color:#fff}
+.btn-logout{background:#c0392b;color:#fff}
+.loading{text-align:center;font-weight:600}
 </style>
 </head>
 
@@ -78,67 +52,44 @@ ol{margin-left:18px}
 <div class="card">
 
 <h1 id="welcome"></h1>
-<h2>Group Discussion & Seminar (ME3273)</h2>
+<h2>Evaluation Schedule & Feedback</h2>
 
 <div id="loadingBox" class="infoBox loading">
-  Getting details, please wait…
+  Loading your details…
 </div>
 
-<div id="noticeBox" class="infoBox notice" style="display:none"></div>
-<div id="resultBox" class="infoBox" style="display:none"></div>
-<div id="seminarBox" class="infoBox" style="display:none"></div>
+<div id="upcomingBox" class="infoBox" style="display:none"></div>
+<div id="pastBox" class="infoBox" style="display:none"></div>
 
-<button id="perfBtn" class="btn-perf" disabled onclick="togglePanel()">
-  Check Your Performance
+<button id="perfBtn" class="btn-main" onclick="togglePerf()">
+  View Performance Feedback
 </button>
 
 <div id="perfPanel" class="infoBox" style="display:none">
-
-  <button onclick="toggleSection('GD')">Group Discussion</button>
+  <button onclick="loadPerf('GD')">Group Discussion</button>
   <div id="GD"></div>
 
-  <button onclick="toggleSection('SEMINAR')">Seminar</button>
+  <button onclick="loadPerf('SEMINAR')">Seminar</button>
   <div id="SEMINAR"></div>
 
-  <button onclick="toggleSection('PI')">Personal Interview</button>
+  <button onclick="loadPerf('PI')">Personal Interview</button>
   <div id="PI"></div>
-
 </div>
 
-<button id="logoutBtn" class="btn-logout" disabled onclick="logout()">Logout</button>
+<button class="btn-logout" onclick="logout()">Logout</button>
 
 </div>
 
 <script>
 const BACKEND =
-"https://script.google.com/macros/s/AKfycbxDGaCg-9Spib6xlj7ldfc2fc9Fwa11y4e_kK8lRlthHqy2H3UfglHUvDr2eSufsZ6p9A/exec";
+"https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec";
 const token = new URLSearchParams(location.search).get("token");
 
-/* ---------- INIT ---------- */
-setButtonsDisabled(true);
-loadAll();
+/* INIT */
+loadDashboard();
 
-/* ---------- HELPERS ---------- */
-function setButtonsDisabled(state){
-  document.querySelectorAll("button").forEach(b=>b.disabled=state);
-}
-
-function markColor(m){
-  if(m > 80) return "green";
-  if(m >= 70) return "#f1c40f";
-  if(m >= 60) return "#e67e22";
-  return "#c0392b";
-}
-
-function makeList(t){
-  return t.split("\n")
-    .filter(x=>x.trim()!=="")
-    .map(x=>`<li>${x}</li>`)
-    .join("");
-}
-
-/* ---------- LOAD DASHBOARD ---------- */
-function loadAll(){
+/* DASHBOARD */
+function loadDashboard(){
 
   Promise.all([
     fetch(BACKEND,{
@@ -148,50 +99,50 @@ function loadAll(){
 
     fetch(BACKEND,{
       method:"POST",
-      body:new URLSearchParams({action:"getSeminarTopic",token})
+      body:new URLSearchParams({action:"getMyAllAllocations",token})
     }).then(r=>r.json())
   ])
-  .then(([dash,sem])=>{
+  .then(([dash,alloc])=>{
 
     loadingBox.style.display="none";
-
     welcome.innerText=`Welcome ${dash.name} (${dash.roll})`;
 
-    noticeBox.innerText="Please check your evaluation feedback below.";
-    noticeBox.style.display="block";
-
-    resultBox.innerHTML =
-      `<b>Group Members:</b><br>` +
-      dash.team.map((s,i)=>`${i+1}. ${s.name} (${s.roll})`).join("<br>");
-    resultBox.style.display="block";
-
-    if(sem.topic){
-      seminarBox.innerHTML =
-        `<b>Seminar Topic:</b><br>"${sem.topic}"`;
-      seminarBox.style.display="block";
+    /* UPCOMING */
+    if(alloc.upcoming.length){
+      upcomingBox.innerHTML =
+        `<b>Upcoming Evaluations</b><ul>` +
+        alloc.upcoming.map(a=>
+          `<li><span class="badge ${a.category}">
+            ${a.category}</span> – ${a.date}</li>`
+        ).join("") + `</ul>`;
+      upcomingBox.style.display="block";
     }
 
-    setButtonsDisabled(false);
+    /* PAST */
+    if(alloc.past.length){
+      pastBox.innerHTML =
+        `<b>Past Evaluations</b><ul>` +
+        alloc.past.map(a=>
+          `<li class="past"><span class="badge ${a.category}">
+            ${a.category}</span> – ${a.date}</li>`
+        ).join("") + `</ul>`;
+      pastBox.style.display="block";
+    }
   });
 }
 
-/* ---------- PERFORMANCE PANEL ---------- */
-function togglePanel(){
+/* PERFORMANCE */
+function togglePerf(){
   perfPanel.style.display =
     perfPanel.style.display==="none" ? "block" : "none";
 }
 
-function toggleSection(type){
+function loadPerf(type){
 
-  const box = document.getElementById(type);
+  const box=document.getElementById(type);
+  if(box.innerHTML){ box.innerHTML=""; return; }
 
-  if(box.innerHTML){
-    box.innerHTML="";
-    return;
-  }
-
-  box.innerHTML =
-    `<div class="loading">Loading… please wait</div>`;
+  box.innerHTML="<div class='loading'>Loading…</div>";
 
   fetch(BACKEND,{
     method:"POST",
@@ -203,52 +154,27 @@ function toggleSection(type){
   })
   .then(r=>r.json())
   .then(res=>{
-
     if(res.status!=="FOUND"){
       box.innerHTML="<b>Not yet evaluated.</b>";
       return;
     }
-
     box.innerHTML = `
-      <div><b>Evaluation Date:</b> ${res.evaluationDate}</div>
-     <div style="text-align:center">
-  <div class="marksBox"
-       style="
-         color:${markColor(res.marks)};
-         border-color:${markColor(res.marks)};
-       ">
-    Marks: ${res.marks} / 100
-  </div>
-</div>
-
-      <div class="greenBox">
-        <b>Positives</b>
-        <ol>${makeList(res.positives)}</ol>
-      </div>
-
-      <div class="yellowBox">
-        <b>Points to Improve</b>
-        <ol>${makeList(res.improvements)}</ol>
-      </div>
+      <div><b>Date:</b> ${res.evaluationDate}</div>
+      <div><b>Marks:</b> ${res.marks} / 100</div>
+      <b>Positives</b>
+      <ol>${res.positives.split("\n").map(x=>`<li>${x}</li>`).join("")}</ol>
+      <b>Points to Improve</b>
+      <ol>${res.improvements.split("\n").map(x=>`<li>${x}</li>`).join("")}</ol>
     `;
   });
 }
 
-/* ---------- LOGOUT ---------- */
+/* LOGOUT */
 function logout(){
-
-  setButtonsDisabled(true);
-
-  if(!confirm("Are you sure you want to logout?")){
-    setButtonsDisabled(false);
-    return;
-  }
-
   fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({action:"logout",token})
-  })
-  .finally(()=>location.href="login.html");
+  }).finally(()=>location.href="login.html");
 }
 </script>
 
