@@ -1,19 +1,23 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Faculty Dashboard</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Faculty Dashboard | ME3273</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body{font-family:Segoe UI;background:#203a43;margin:0;padding:20px}
 .card{background:#fff;max-width:1100px;margin:auto;padding:25px;border-radius:12px}
-h2{margin-top:30px}
+h1{text-align:center;color:#e67e22}
 label{display:block;margin-top:12px;font-weight:600}
-select,input,textarea,button{width:100%;padding:8px;margin-top:6px}
+select,input,textarea,button{
+  width:100%;padding:8px;margin-top:6px
+}
 button{background:#e67e22;color:#fff;border:none;border-radius:20px;margin-top:12px}
+button:disabled{background:#aaa}
 .row{display:flex;gap:15px}
 .box{flex:1;background:#f4f6f7;padding:15px;border-radius:10px}
-@media(max-width:800px){.row{flex-direction:column}}
+#busyBox{text-align:center;margin-top:10px;font-weight:600}
+@media(max-width:900px){.row{flex-direction:column}}
 </style>
 </head>
 
@@ -22,53 +26,65 @@ button{background:#e67e22;color:#fff;border:none;border-radius:20px;margin-top:1
 
 <h1>Faculty Dashboard</h1>
 
-<!-- PERFORMANCE -->
-<h2>Performance Evaluation</h2>
-<label>Student</label>
+<label>Select Student</label>
 <select id="studentSelect"></select>
 
-<label>Type</label>
+<label>Evaluation Type</label>
 <select id="typeSelect">
-  <option>GD</option><option>SEMINAR</option><option>PI</option>
+  <option>GD</option>
+  <option>SEMINAR</option>
+  <option>PI</option>
 </select>
 
 <label>Marks</label>
 <input id="marks" type="number">
 
-<label>Positives</label>
+<label>Positives (one per line)</label>
 <textarea id="positives"></textarea>
 
-<label>Improvements</label>
+<label>Improvements (one per line)</label>
 <textarea id="improvements"></textarea>
 
-<button onclick="savePerf()">Save Performance</button>
+<button onclick="savePerformance()">Save / Update Performance</button>
 
-<!-- GD -->
-<h2>GD Allocation</h2>
+<hr>
+
+<h3>GD Allocation</h3>
 <label>Date</label>
 <input type="date" id="gdDate">
-<label>GD Group</label>
+<label>GD Topic</label>
 <select id="gdTopic"></select>
 <button onclick="allocateGD()">Allocate GD</button>
 
-<!-- SEMINAR -->
-<h2>Seminar Allocation</h2>
-<label>Eligible Students</label>
-<select id="seminarSelect" multiple size="6"></select>
-<button onclick="allocateSeminar()">Allocate Seminar</button>
+<hr>
 
-<!-- PI -->
-<h2>PI Allocation</h2>
-<label>Eligible Students</label>
+<h3>Seminar & PI Allocation</h3>
+<label>Eligible for Seminar</label>
+<select id="seminarSelect" multiple size="6"></select>
+
+<label>Eligible for PI</label>
 <select id="piSelect" multiple size="6"></select>
-<button onclick="allocatePI()">Allocate PI</button>
+
+<button onclick="saveSeminarPI()">Allocate Seminar / PI</button>
+
+<div id="busyBox"></div>
 
 </div>
 
 <script>
-const BACKEND="https://script.google.com/macros/s/AKfycbxDGaCg-9Spib6xlj7ldfc2fc9Fwa11y4e_kK8lRlthHqy2H3UfglHUvDr2eSufsZ6p9A/exec";
+const BACKEND="https://script.google.com/macros/s/AKfycby5p2s84W-s8njKY9frNVPWdeDYgpLw0iVG5Ya5mGZWrOkiQSUJEPgGiTT7dyczXYlZhg/exec";
 
-/* students */
+/* BUSY STATE */
+function setBusy(msg){
+  document.querySelectorAll("button").forEach(b=>b.disabled=true);
+  busyBox.innerText=msg;
+}
+function clearBusy(){
+  document.querySelectorAll("button").forEach(b=>b.disabled=false);
+  busyBox.innerText="";
+}
+
+/* STUDENTS */
 fetch(BACKEND+"?action=getAllStudents")
 .then(r=>r.json()).then(d=>{
   studentSelect.innerHTML='<option></option>';
@@ -77,81 +93,98 @@ fetch(BACKEND+"?action=getAllStudents")
   });
 });
 
-/* GD topics */
+/* GD TOPICS */
 fetch(BACKEND+"?action=getAvailableGDTopics")
 .then(r=>r.json()).then(d=>{
   gdTopic.innerHTML='<option></option>';
   d.topics.forEach(t=>gdTopic.innerHTML+=`<option>${t}</option>`);
 });
 
-function savePerf(){
-  fetch(BACKEND,{method:"POST",body:new URLSearchParams({
-    action:"savePerformance",
-    roll:studentSelect.value,
-    type:typeSelect.value,
-    marks:marks.value,
-    positives:positives.value,
-    improvements:improvements.value
-  })}).then(()=>alert("Saved"));
+/* PERFORMANCE */
+function savePerformance(){
+  setBusy("Saving performance, please wait…");
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"savePerformance",
+      roll:studentSelect.value,
+      type:typeSelect.value,
+      marks:marks.value,
+      positives:positives.value,
+      improvements:improvements.value
+    })
+  }).then(()=>alert("Saved")).finally(clearBusy);
 }
 
+/* GD */
 function allocateGD(){
-  fetch(BACKEND,{method:"POST",body:new URLSearchParams({
-    action:"saveGDAllocation",
-    topic:gdTopic.value,
-    date:gdDate.value
-  })}).then(()=>alert("GD Allocated"));
+  setBusy("Allocating GD, please wait…");
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"saveGDAllocation",
+      topic:gdTopic.value,
+      date:gdDate.value
+    })
+  }).then(()=>alert("GD Allocated")).finally(clearBusy);
 }
 
+/* SEMINAR + PI */
 gdTopic.onchange = gdDate.onchange = loadSeminar;
 
 function loadSeminar(){
-  fetch(BACKEND,{method:"POST",body:new URLSearchParams({
-    action:"getSeminarCandidates",
-    date:gdDate.value,
-    gdTopic:gdTopic.value
-  })})
-  .then(r=>r.json()).then(d=>{
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getSeminarCandidates",
+      date:gdDate.value,
+      gdTopic:gdTopic.value
+    })
+  })
+  .then(r=>r.json())
+  .then(d=>{
     seminarSelect.innerHTML="";
-    d.students.forEach(s=>seminarSelect.innerHTML+=
-      `<option value="${s.roll}">${s.name}</option>`);
+    d.students.forEach(s=>{
+      seminarSelect.innerHTML+=`<option value="${s.roll}">${s.name}</option>`;
+    });
     piSelect.innerHTML="";
   });
 }
 
 seminarSelect.onchange=()=>{
-  const sr=[...seminarSelect.selectedOptions].map(o=>o.value).join(",");
-  fetch(BACKEND,{method:"POST",body:new URLSearchParams({
-    action:"getPICandidates",
-    date:gdDate.value,
-    gdTopic:gdTopic.value,
-    seminarRolls:sr
-  })})
-  .then(r=>r.json()).then(d=>{
+  const rolls=[...seminarSelect.selectedOptions].map(o=>o.value).join(",");
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getPICandidates",
+      date:gdDate.value,
+      gdTopic:gdTopic.value,
+      seminarRolls:rolls
+    })
+  })
+  .then(r=>r.json())
+  .then(d=>{
     piSelect.innerHTML="";
-    d.students.forEach(s=>piSelect.innerHTML+=
-      `<option value="${s.roll}">${s.name}</option>`);
+    d.students.forEach(s=>{
+      piSelect.innerHTML+=`<option value="${s.roll}">${s.name}</option>`;
+    });
   });
 };
 
-function allocateSeminar(){
-  const r=[...seminarSelect.selectedOptions].map(o=>o.value).join(",");
-  fetch(BACKEND,{method:"POST",body:new URLSearchParams({
-    action:"saveSeminarPIAllocation",
-    date:gdDate.value,
-    seminarRolls:r,
-    piRolls:""
-  })}).then(()=>alert("Seminar Allocated"));
-}
+function saveSeminarPI(){
+  const seminar=[...seminarSelect.selectedOptions].map(o=>o.value).join(",");
+  const pi=[...piSelect.selectedOptions].map(o=>o.value).join(",");
 
-function allocatePI(){
-  const r=[...piSelect.selectedOptions].map(o=>o.value).join(",");
-  fetch(BACKEND,{method:"POST",body:new URLSearchParams({
-    action:"saveSeminarPIAllocation",
-    date:gdDate.value,
-    seminarRolls:"",
-    piRolls:r
-  })}).then(()=>alert("PI Allocated"));
+  setBusy("Allocating Seminar / PI, please wait…");
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"saveSeminarPIAllocation",
+      date:gdDate.value,
+      seminarRolls:seminar,
+      piRolls:pi
+    })
+  }).then(()=>alert("Seminar & PI Allocated")).finally(clearBusy);
 }
 </script>
 </body>
