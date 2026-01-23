@@ -45,17 +45,7 @@ button:disabled{background:#999;cursor:not-allowed;}
   border-radius:12px;
   margin-top:14px;
 }
-.row{display:flex;gap:16px;margin-top:16px;}
-.col{flex:1;}
-
-select,input{
-  width:100%;padding:10px;
-  border-radius:6px;border:1px solid #ccc;
-  margin-top:6px;
-}
-
 .loading{text-align:center;font-weight:700;margin-top:12px;}
-
 ul{margin-left:18px;}
 
 .footer{
@@ -63,10 +53,6 @@ ul{margin-left:18px;}
   font-size:13px;color:#5f6f78;font-weight:600;
 }
 .footer div{font-size:12px;color:#7a8a93;}
-
-@media(max-width:900px){
-  .row{flex-direction:column;}
-}
 </style>
 </head>
 
@@ -75,7 +61,7 @@ ul{margin-left:18px;}
 <div class="card">
 
 <h1>Faculty Dashboard</h1>
-<h2>ME3273 · Group Discussion · Seminar · PI</h2>
+<h2>ME3273 · Weekly Allocation</h2>
 
 <!-- HOME -->
 <div id="home">
@@ -89,12 +75,19 @@ ul{margin-left:18px;}
 
 <div class="box">
   <label><b>Date of Allocation</b></label>
-  <input type="date" id="allocDate">
+  <input type="date" id="allocDate" onchange="loadExistingAllocations()">
+</div>
+
+<!-- EXISTING ALLOCATIONS -->
+<div class="box">
+  <h3>Existing Allocations (Selected Date)</h3>
+  <div id="existingAlloc"></div>
 </div>
 
 <!-- GD -->
 <div class="box">
-  <h3>Group Discussion (Topic-based)</h3>
+  <h3>Group Discussion</h3>
+
   <select id="gdTopic">
     <option value="">Select GD Topic</option>
     <option>T1</option><option>T2</option><option>T3</option>
@@ -108,17 +101,15 @@ ul{margin-left:18px;}
 
 <!-- SEMINAR -->
 <div class="box">
-  <h3>Seminar (Auto-filtered)</h3>
-  <button class="btn-main" onclick="loadSeminar()">Load Eligible Students</button>
-  <div id="seminarList"></div>
+  <h3>Seminar</h3>
+  <div id="seminarList">Auto-filtered list will appear here</div>
   <button class="btn-main" onclick="saveSeminar()">Save Seminar Allocation</button>
 </div>
 
 <!-- PI -->
 <div class="box">
-  <h3>Personal Interview (Auto-filtered)</h3>
-  <button class="btn-main" onclick="loadPI()">Load Eligible Students</button>
-  <div id="piList"></div>
+  <h3>Personal Interview</h3>
+  <div id="piList">Auto-filtered list will appear here</div>
   <button class="btn-main" onclick="savePI()">Save PI Allocation</button>
 </div>
 
@@ -126,7 +117,7 @@ ul{margin-left:18px;}
 
 </div>
 
-<!-- ================= EVALUATION ================= -->
+<!-- EVALUATION -->
 <div id="evaluate" class="section">
   <iframe src="faculty_evaluation.html"
     style="width:100%;height:700px;border:none;border-radius:12px">
@@ -145,36 +136,62 @@ ul{margin-left:18px;}
 const BACKEND =
 "https://script.google.com/macros/s/AKfycbxkFC04HnDu-qV-yOEJpg3GYOEaLIVbont-lgP8Gja0GsgqI39dPYr2fY88UeJNNn3xgA/exec";
 
-/* NAVIGATION */
-function openAllocate(){
-  home.style.display="none";
-  allocate.style.display="block";
-}
-function openEvaluate(){
-  home.style.display="none";
-  evaluate.style.display="block";
-}
+/* NAV */
+function openAllocate(){ home.style.display="none"; allocate.style.display="block"; }
+function openEvaluate(){ home.style.display="none"; evaluate.style.display="block"; }
 function closeAll(){
   allocate.style.display="none";
   evaluate.style.display="none";
   home.style.display="block";
 }
 
-/* UTIL */
-function mustHaveDate(){
-  if(!allocDate.value){
-    alert("Please select date first");
-    return false;
-  }
-  return true;
-}
 function disableAll(state){
   document.querySelectorAll("button").forEach(b=>b.disabled=state);
 }
 
-/* ================= GD ================= */
+/* ================= FIX #1: LOAD EXISTING ================= */
+function loadExistingAllocations(){
+  if(!allocDate.value) return;
+
+  existingAlloc.innerHTML="<div class='loading'>Loading allocations…</div>";
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getAllocationsByDate",
+      date:allocDate.value
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    if(res.allocations.length===0){
+      existingAlloc.innerHTML="<i>No allocations yet</i>";
+      return;
+    }
+
+    const grouped={};
+    res.allocations.forEach(a=>{
+      if(!grouped[a.category]) grouped[a.category]=[];
+      grouped[a.category].push(a);
+    });
+
+    let html="";
+    Object.keys(grouped).forEach(cat=>{
+      html+=`<b>${cat}</b><ul>`+
+        grouped[cat].map(s=>`<li>${s.roll} – ${s.name}</li>`).join("")+
+        `</ul>`;
+    });
+
+    existingAlloc.innerHTML=html;
+  });
+}
+
+/* ================= FIX #2: GD LIST ================= */
 function allocateGD(){
-  if(!mustHaveDate() || !gdTopic.value) return;
+  if(!allocDate.value || !gdTopic.value){
+    alert("Select date and GD topic");
+    return;
+  }
 
   disableAll(true);
   gdResult.innerHTML="<div class='loading'>Allocating GD…</div>";
@@ -186,16 +203,20 @@ function allocateGD(){
       topic:gdTopic.value,
       date:allocDate.value
     })
-  }).then(r=>r.json()).then(res=>{
-    gdResult.innerHTML=`<b>${res.count}</b> students allocated for GD`;
-  }).finally(()=>disableAll(false));
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    gdResult.innerHTML=
+      `<b>${res.count} students allocated for GD</b>`;
+    loadExistingAllocations();   // 🔥 refresh list
+    loadSeminarEligible();       // 🔥 auto-filter
+  })
+  .finally(()=>disableAll(false));
 }
 
-/* ================= SEMINAR ================= */
-function loadSeminar(){
-  if(!mustHaveDate()) return;
+/* SEMINAR */
+function loadSeminarEligible(){
   seminarList.innerHTML="<div class='loading'>Loading…</div>";
-
   fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({
@@ -212,11 +233,9 @@ function saveSeminar(){
   saveIndividuals("SEMINAR","seminarList");
 }
 
-/* ================= PI ================= */
-function loadPI(){
-  if(!mustHaveDate()) return;
+/* PI */
+function loadPIEligible(){
   piList.innerHTML="<div class='loading'>Loading…</div>";
-
   fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({
@@ -233,16 +252,14 @@ function savePI(){
   saveIndividuals("PI","piList");
 }
 
-/* SAVE SEM / PI */
-function saveIndividuals(cat,boxId){
-  if(!mustHaveDate()) return;
-  const rolls=[...document.querySelectorAll(`#${boxId} input:checked`)]
+/* SAVE INDIVIDUAL */
+function saveIndividuals(cat,box){
+  const rolls=[...document.querySelectorAll(`#${box} input:checked`)]
     .map(i=>i.value);
 
   if(!rolls.length){ alert("Select students"); return; }
 
   disableAll(true);
-
   fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({
@@ -251,13 +268,11 @@ function saveIndividuals(cat,boxId){
       date:allocDate.value,
       rolls:rolls.join(",")
     })
-  }).then(r=>r.json()).then(res=>{
-    alert(`${res.count} students allocated for ${cat}`);
-    document.getElementById(boxId).innerHTML="";
-  }).finally(()=>disableAll(false));
+  })
+  .then(()=>loadExistingAllocations())
+  .finally(()=>disableAll(false));
 }
 
-/* LOGOUT */
 function logout(){
   if(confirm("Logout?")) location.href="login.html";
 }
