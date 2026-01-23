@@ -112,23 +112,24 @@ function logout(){location.href="login.html";}
 /* ---------- DATE (FIXED) ---------- */
 async function onDate(){
   date.disabled = true;
-  dateStatus.innerText = "Loading… Please wait";
 
+  // Always reset UI
   gdOpenBtn.disabled = true;
   semOpenBtn.disabled = true;
   piOpenBtn.disabled = true;
 
-  try{
-    await loadExisting();   // backend fetch
-    gdOpenBtn.disabled = false;   // 🔥 ALWAYS ENABLE NEXT STEP
-  }
-  catch(e){
-    alert("Error loading allocation data");
-    console.error(e);
-  }
-  finally{
-    dateStatus.innerText = "";    // 🔥 ALWAYS CLEAR LOADING
-  }
+  gdBox.style.display="none";
+  semBox.style.display="none";
+  piBox.style.display="none";
+  saveGDBtn.style.display="none";
+  saveSemBtn.style.display="none";
+  savePIBtn.style.display="none";
+
+  // Load existing allocations (display only)
+  await loadExisting();
+
+  // 🔑 CRITICAL: always start from GD
+  gdOpenBtn.disabled = false;
 }
 
 /* ---------- LOAD EXISTING ---------- */
