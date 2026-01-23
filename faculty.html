@@ -6,24 +6,76 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
 <style>
-body{font-family:Segoe UI;background:#203a43;margin:0}
-.card{max-width:1100px;margin:20px auto;background:#fff;
-padding:24px;border-radius:14px}
-button{width:100%;padding:12px;margin-top:10px;
-border:none;border-radius:24px;font-weight:600;cursor:pointer}
+*{box-sizing:border-box}
+body{
+  font-family:Segoe UI,Arial,sans-serif;
+  background:#203a43;
+  margin:0;
+  padding:10px;
+}
+.card{
+  max-width:1100px;
+  margin:auto;
+  background:#fff;
+  padding:16px;
+  border-radius:14px;
+}
+h2,h3,h4{margin-top:0}
+
+/* Buttons */
+button{
+  width:100%;
+  padding:14px;
+  margin-top:10px;
+  border:none;
+  border-radius:28px;
+  font-weight:600;
+  cursor:pointer;
+  font-size:15px;
+}
 button:disabled{background:#aaa;cursor:not-allowed}
 .btn{background:#203a43;color:#fff}
 .btn-blue{background:#2980b9;color:#fff}
 .btn-red{background:#c0392b;color:#fff}
-.box{background:#f4f7fb;padding:16px;margin-top:14px;border-radius:12px}
-.sub{background:#fff;padding:10px;border-radius:8px;margin-top:8px}
-.row{display:flex;gap:16px;flex-wrap:wrap}
+
+/* Layout */
+.box{
+  background:#f4f7fb;
+  padding:14px;
+  margin-top:14px;
+  border-radius:12px;
+}
+.sub{
+  background:#fff;
+  padding:10px;
+  border-radius:8px;
+  margin-top:8px;
+  font-size:14px;
+}
+.row{
+  display:flex;
+  gap:16px;
+  flex-wrap:wrap;
+}
 .row .box{flex:1}
+
+/* Forms */
 input,select,textarea{
-  width:100%;padding:10px;border-radius:8px;border:1px solid #ccc
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #ccc;
+  font-size:15px;
 }
 textarea{resize:vertical}
+label{font-weight:600;font-size:14px}
 .loading{font-weight:600;color:#555;margin-top:10px}
+
+/* Mobile */
+@media(max-width:768px){
+  .row{flex-direction:column}
+  input,select,textarea{font-size:16px}
+}
 </style>
 </head>
 
@@ -43,7 +95,7 @@ textarea{resize:vertical}
 <div id="alloc" style="display:none">
 
   <div class="box">
-    <b>Date</b>
+    <label>Date</label>
     <input type="date" id="date" onchange="onDate()">
     <div id="dateStatus" style="margin-top:6px;color:#c0392b;font-weight:600;"></div>
   </div>
@@ -128,14 +180,14 @@ textarea{resize:vertical}
 </div>
 
 <script>
-const BACKEND="https://script.google.com/macros/s/AKfycbyMlgMl7L47Cxcgq1OBV_xIDbeC89-ct8Z_XQgSzW2mv1RQ6BkL1p-XdHPUFIgXOGLXqw/exec";
+/* 🔴 PASTE YOUR DEPLOYED APPS SCRIPT URL HERE */
+const BACKEND = "https://script.google.com/macros/s/AKfycbyMlgMl7L47Cxcgq1OBV_xIDbeC89-ct8Z_XQgSzW2mv1RQ6BkL1p-XdHPUFIgXOGLXqw/exec";
 
 /* ================= NAV ================= */
 function openAlloc(){
   home.style.display="none";
   evaluation.style.display="none";
   alloc.style.display="block";
-
   date.disabled=false;
   gdOpenBtn.disabled=true;
   semOpenBtn.disabled=true;
@@ -162,18 +214,9 @@ function logout(){ location.href="login.html"; }
 async function onDate(){
   date.disabled=true;
   dateStatus.innerText="Loading… Please wait";
-
   gdOpenBtn.disabled=true;
   semOpenBtn.disabled=true;
   piOpenBtn.disabled=true;
-
-  gdBox.style.display="none";
-  semBox.style.display="none";
-  piBox.style.display="none";
-  saveGDBtn.style.display="none";
-  saveSemBtn.style.display="none";
-  savePIBtn.style.display="none";
-
   await loadExisting();
   dateStatus.innerText="";
 }
@@ -197,22 +240,17 @@ async function loadExisting(){
   gdExisting.innerHTML = gd.length
     ? gd.map(x=>`${x.name} [${x.topic}]`).join("<br>")
     : "<i>No GD</i>";
-
   semExisting.innerHTML = sem.length
-    ? sem.map(x=>`${x.name}`).join("<br>")
+    ? sem.map(x=>x.name).join("<br>")
     : "<i>No Seminar</i>";
-
   piExisting.innerHTML = pi.length
-    ? pi.map(x=>`${x.name}`).join("<br>")
+    ? pi.map(x=>x.name).join("<br>")
     : "<i>No PI</i>";
 
   gdOpenBtn.disabled=false;
-  semOpenBtn.disabled=true;
-  piOpenBtn.disabled=true;
 }
 
 async function loadGD(){
-  gdOpenBtn.disabled=true;
   gdBox.style.display="block";
   saveGDBtn.style.display="block";
   gdBox.innerHTML="";
@@ -250,7 +288,6 @@ async function saveGD(){
 }
 
 async function loadSeminar(){
-  semOpenBtn.disabled=true;
   semBox.style.display="block";
   saveSemBtn.style.display="block";
   semBox.innerHTML="";
@@ -289,7 +326,6 @@ async function saveSeminar(){
 }
 
 async function loadPI(){
-  piOpenBtn.disabled=true;
   piBox.style.display="block";
   savePIBtn.style.display="block";
   piBox.innerHTML="";
@@ -364,8 +400,7 @@ function loadStudent(){
 
 function loadPerformance(){
   if(!studentSelect.value) return;
-
-  evalAction.innerHTML="Loading…";
+  evalAction.innerText="Loading…";
 
   fetch(BACKEND,{
     method:"POST",
@@ -386,7 +421,7 @@ function loadPerformance(){
 }
 
 function savePerformance(){
-  evalAction.innerHTML="Saving…";
+  evalAction.innerText="Saving…";
 
   fetch(BACKEND,{
     method:"POST",
@@ -399,7 +434,7 @@ function savePerformance(){
       improvements:improvements.value
     })
   }).then(()=>{
-    evalAction.innerHTML="Saved ✔";
+    evalAction.innerText="Saved ✔";
   });
 }
 </script>
