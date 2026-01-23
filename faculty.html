@@ -13,6 +13,7 @@ button{width:100%;padding:12px;margin-top:10px;
 border:none;border-radius:24px;font-weight:600;cursor:pointer}
 button:disabled{background:#aaa;cursor:not-allowed}
 .btn{background:#203a43;color:#fff}
+.btn-blue{background:#2980b9;color:#fff}
 .btn-red{background:#c0392b;color:#fff}
 .box{background:#f4f7fb;padding:16px;margin-top:14px;border-radius:12px}
 .sub{background:#fff;padding:10px;border-radius:8px;margin-top:8px}
@@ -25,11 +26,14 @@ input{width:100%;padding:10px;border-radius:8px}
 
 <h2>Faculty Dashboard</h2>
 
+<!-- HOME -->
 <div id="home">
-  <button class="btn" onclick="openAlloc()">Allocate</button>
+  <button class="btn" onclick="openAlloc()">Allocation</button>
+  <button class="btn-blue" onclick="openEval()">Evaluation</button>
   <button class="btn-red" onclick="logout()">Logout</button>
 </div>
 
+<!-- ================= ALLOCATION ================= -->
 <div id="alloc" style="display:none">
 
 <!-- DATE -->
@@ -66,8 +70,17 @@ input{width:100%;padding:10px;border-radius:8px}
   <button id="savePIBtn" class="btn" style="display:none" onclick="savePI()">Save / Update PI</button>
 </div>
 
-<button class="btn-red" onclick="back()">Close</button>
+<button class="btn-red" onclick="closeAlloc()">Close</button>
 </div>
+
+<!-- ================= EVALUATION ================= -->
+<div id="eval" style="display:none">
+  <iframe src="faculty_evaluation.html"
+    style="width:100%;height:720px;border:none;border-radius:12px">
+  </iframe>
+  <button class="btn-red" onclick="closeEval()">Close</button>
+</div>
+
 </div>
 
 <script>
@@ -76,26 +89,39 @@ const BACKEND="https://script.google.com/macros/s/AKfycbwi-6_KbaFA3-JKZOGcxL-h5D
 /* ---------- NAV ---------- */
 function openAlloc(){
   home.style.display="none";
+  eval.style.display="none";
   alloc.style.display="block";
 
-  date.disabled = false;
-  gdOpenBtn.disabled = true;
-  semOpenBtn.disabled = true;
-  piOpenBtn.disabled = true;
+  date.disabled=false;
+  gdOpenBtn.disabled=true;
+  semOpenBtn.disabled=true;
+  piOpenBtn.disabled=true;
 }
 
-function back(){
+function openEval(){
+  home.style.display="none";
   alloc.style.display="none";
+  eval.style.display="block";
+}
+
+function closeAlloc(){
+  alloc.style.display="none";
+  home.style.display="block";
+}
+
+function closeEval(){
+  eval.style.display="none";
   home.style.display="block";
 }
 
 /* ---------- DATE ---------- */
 async function onDate(){
-  date.disabled = true;
-  dateStatus.innerText = "Loading… Please wait";
-  gdOpenBtn.disabled = true;
-  semOpenBtn.disabled = true;
-  piOpenBtn.disabled = true;
+  date.disabled=true;
+  dateStatus.innerText="Loading… Please wait";
+
+  gdOpenBtn.disabled=true;
+  semOpenBtn.disabled=true;
+  piOpenBtn.disabled=true;
 
   gdBox.style.display="none";
   semBox.style.display="none";
@@ -105,7 +131,7 @@ async function onDate(){
   savePIBtn.style.display="none";
 
   await loadExisting();
-  dateStatus.innerText = "";
+  dateStatus.innerText="";
 }
 
 /* ---------- LOAD EXISTING ---------- */
@@ -137,10 +163,10 @@ async function loadExisting(){
     ? pi.map(x=>`${x.name}`).join("<br>")
     : "<i>No PI</i>";
 
-  /* STRICT FLOW — ALWAYS START FROM GD */
-  gdOpenBtn.disabled = false;
-  semOpenBtn.disabled = true;
-  piOpenBtn.disabled = true;
+  // STRICT FLOW – ALWAYS START FROM GD
+  gdOpenBtn.disabled=false;
+  semOpenBtn.disabled=true;
+  piOpenBtn.disabled=true;
 }
 
 /* ---------- GD ---------- */
@@ -188,7 +214,6 @@ async function saveGD(){
 
   gdOpenBtn.disabled=true;
   semOpenBtn.disabled=false;
-  piOpenBtn.disabled=true;
 
   await loadExisting();
   saveGDBtn.innerText="Save / Update GD";
@@ -239,7 +264,6 @@ async function saveSeminar(){
   semBox.style.display="none";
   saveSemBtn.style.display="none";
 
-  gdOpenBtn.disabled=true;
   semOpenBtn.disabled=true;
   piOpenBtn.disabled=false;
 
