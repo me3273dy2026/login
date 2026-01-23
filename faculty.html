@@ -17,10 +17,13 @@ button:disabled{background:#aaa;cursor:not-allowed}
 .btn-red{background:#c0392b;color:#fff}
 .box{background:#f4f7fb;padding:16px;margin-top:14px;border-radius:12px}
 .sub{background:#fff;padding:10px;border-radius:8px;margin-top:8px}
+.row{display:flex;gap:16px;flex-wrap:wrap}
+.row .box{flex:1}
 input,select,textarea{
   width:100%;padding:10px;border-radius:8px;border:1px solid #ccc
 }
 textarea{resize:vertical}
+.loading{font-weight:600;color:#555;margin-top:10px}
 </style>
 </head>
 
@@ -39,91 +42,104 @@ textarea{resize:vertical}
 <!-- ================= ALLOCATION ================= -->
 <div id="alloc" style="display:none">
 
-<div class="box">
-  <b>Date</b>
-  <input type="date" id="date" onchange="onDate()">
-  <div id="dateStatus" style="margin-top:6px;color:#c0392b;font-weight:600;"></div>
-</div>
+  <div class="box">
+    <b>Date</b>
+    <input type="date" id="date" onchange="onDate()">
+    <div id="dateStatus" style="margin-top:6px;color:#c0392b;font-weight:600;"></div>
+  </div>
 
-<div class="box">
-  <b>Group Discussion</b>
-  <div id="gdExisting" class="sub"></div>
-  <button id="gdOpenBtn" class="btn" disabled onclick="loadGD()">Allocate / Update GD</button>
-  <div id="gdBox" class="sub" style="display:none"></div>
-  <button id="saveGDBtn" class="btn" style="display:none" onclick="saveGD()">Save / Update GD</button>
-</div>
+  <div class="box">
+    <b>Group Discussion</b>
+    <div id="gdExisting" class="sub"></div>
+    <button id="gdOpenBtn" class="btn" disabled onclick="loadGD()">Allocate / Update GD</button>
+    <div id="gdBox" class="sub" style="display:none"></div>
+    <button id="saveGDBtn" class="btn" style="display:none" onclick="saveGD()">Save / Update GD</button>
+  </div>
 
-<div class="box">
-  <b>Seminar</b>
-  <div id="semExisting" class="sub"></div>
-  <button id="semOpenBtn" class="btn" disabled onclick="loadSeminar()">Allocate / Update Seminar</button>
-  <div id="semBox" class="sub" style="display:none"></div>
-  <button id="saveSemBtn" class="btn" style="display:none" onclick="saveSeminar()">Save / Update Seminar</button>
-</div>
+  <div class="box">
+    <b>Seminar</b>
+    <div id="semExisting" class="sub"></div>
+    <button id="semOpenBtn" class="btn" disabled onclick="loadSeminar()">Allocate / Update Seminar</button>
+    <div id="semBox" class="sub" style="display:none"></div>
+    <button id="saveSemBtn" class="btn" style="display:none" onclick="saveSeminar()">Save / Update Seminar</button>
+  </div>
 
-<div class="box">
-  <b>Personal Interview</b>
-  <div id="piExisting" class="sub"></div>
-  <button id="piOpenBtn" class="btn" disabled onclick="loadPI()">Allocate / Update PI</button>
-  <div id="piBox" class="sub" style="display:none"></div>
-  <button id="savePIBtn" class="btn" style="display:none" onclick="savePI()">Save / Update PI</button>
-</div>
+  <div class="box">
+    <b>Personal Interview</b>
+    <div id="piExisting" class="sub"></div>
+    <button id="piOpenBtn" class="btn" disabled onclick="loadPI()">Allocate / Update PI</button>
+    <div id="piBox" class="sub" style="display:none"></div>
+    <button id="savePIBtn" class="btn" style="display:none" onclick="savePI()">Save / Update PI</button>
+  </div>
 
-<button class="btn-red" onclick="closeAlloc()">Close</button>
+  <button class="btn-red" onclick="closeAlloc()">Close</button>
 </div>
 
 <!-- ================= EVALUATION ================= -->
 <div id="evaluation" style="display:none">
 
-<div class="box">
-  <b>Select Student</b>
-  <select id="evalRoll" onchange="loadStudentDetails()">
-    <option value="">Select Roll Number</option>
+  <h3>Evaluate Students</h3>
+
+  <label>Select Student</label>
+  <select id="studentSelect">
+    <option>Loading students…</option>
   </select>
-</div>
 
-<div id="studentInfo" class="box" style="display:none"></div>
+  <div class="row">
 
-<div class="box">
-  <b>Evaluation Type</b>
-  <select id="evalType" onchange="loadLatestPerformance()">
-    <option value="">Select</option>
-    <option value="GD">Group Discussion</option>
-    <option value="SEMINAR">Seminar</option>
-    <option value="PI">Personal Interview</option>
-  </select>
-</div>
+    <div class="box">
+      <h4>Student Details</h4>
+      <div id="studentInfo"></div>
 
-<div class="box">
-  <b>Positives</b>
-  <textarea id="positives"></textarea>
-</div>
+      <h4 style="margin-top:14px">Project</h4>
+      <div id="gdInfo"></div>
 
-<div class="box">
-  <b>Improvements</b>
-  <textarea id="improvements"></textarea>
-</div>
+      <h4 style="margin-top:14px">Seminar Topic</h4>
+      <div id="seminarInfo"></div>
+    </div>
 
-<div class="box">
-  <b>Marks</b>
-  <input type="number" id="marks" min="0" max="100">
-</div>
+    <div class="box">
+      <h4>Evaluation</h4>
 
-<button class="btn-blue" onclick="saveEvaluation()">Save Evaluation</button>
-<button class="btn-red" onclick="closeEval()">Close</button>
+      <label>Type</label>
+      <select id="typeSelect">
+        <option value="GD">Group Discussion</option>
+        <option value="SEMINAR">Seminar</option>
+        <option value="PI">Personal Interview</option>
+      </select>
 
+      <label>Marks (0–100)</label>
+      <input type="number" id="marks" min="0" max="100">
+
+      <label>Positives</label>
+      <textarea id="positives"></textarea>
+
+      <label>Points to Improve</label>
+      <textarea id="improvements"></textarea>
+
+      <div id="evalAction" class="loading">Select student…</div>
+    </div>
+
+  </div>
+
+  <button class="btn-red" onclick="closeEval()">Close</button>
 </div>
 
 </div>
 
 <script>
-const BACKEND="https://script.google.com/macros/s/AKfycbwi-6_KbaFA3-JKZOGcxL-h5DUViqw0_1_OVAJsk02P5lJdpng7QSSwJ56akQXduxwEIw/exec";
+const BACKEND="https://script.google.com/macros/s/AKfycbyMlgMl7L47Cxcgq1OBV_xIDbeC89-ct8Z_XQgSzW2mv1RQ6BkL1p-XdHPUFIgXOGLXqw/exec";
 
 /* ================= NAV ================= */
 function openAlloc(){
   home.style.display="none";
   evaluation.style.display="none";
   alloc.style.display="block";
+
+  date.disabled=false;
+  gdOpenBtn.disabled=true;
+  semOpenBtn.disabled=true;
+  piOpenBtn.disabled=true;
 }
 function closeAlloc(){
   alloc.style.display="none";
@@ -133,7 +149,7 @@ function openEval(){
   home.style.display="none";
   alloc.style.display="none";
   evaluation.style.display="block";
-  loadAllStudents();
+  loadStudents();
 }
 function closeEval(){
   evaluation.style.display="none";
@@ -141,74 +157,250 @@ function closeEval(){
 }
 function logout(){ location.href="login.html"; }
 
-/* ================= EVALUATION ================= */
-async function loadAllStudents(){
+/* ================= ALLOCATION ================= */
+
+async function onDate(){
+  date.disabled=true;
+  dateStatus.innerText="Loading… Please wait";
+
+  gdOpenBtn.disabled=true;
+  semOpenBtn.disabled=true;
+  piOpenBtn.disabled=true;
+
+  gdBox.style.display="none";
+  semBox.style.display="none";
+  piBox.style.display="none";
+  saveGDBtn.style.display="none";
+  saveSemBtn.style.display="none";
+  savePIBtn.style.display="none";
+
+  await loadExisting();
+  dateStatus.innerText="";
+}
+
+async function loadExisting(){
   const res = await fetch(BACKEND,{
     method:"POST",
-    body:new URLSearchParams({action:"getAllStudents"})
+    body:new URLSearchParams({
+      action:"getAllocationsByDate",
+      date:date.value
+    })
   }).then(r=>r.json());
 
-  evalRoll.innerHTML='<option value="">Select Roll Number</option>';
-  res.students.forEach(s=>{
-    evalRoll.innerHTML+=`<option value="${s.roll}">${s.roll} – ${s.name}</option>`;
+  const gd=[], sem=[], pi=[];
+  res.allocations.forEach(a=>{
+    if(a.category==="GD") gd.push(a);
+    if(a.category==="SEMINAR") sem.push(a);
+    if(a.category==="PI") pi.push(a);
+  });
+
+  gdExisting.innerHTML = gd.length
+    ? gd.map(x=>`${x.name} [${x.topic}]`).join("<br>")
+    : "<i>No GD</i>";
+
+  semExisting.innerHTML = sem.length
+    ? sem.map(x=>`${x.name}`).join("<br>")
+    : "<i>No Seminar</i>";
+
+  piExisting.innerHTML = pi.length
+    ? pi.map(x=>`${x.name}`).join("<br>")
+    : "<i>No PI</i>";
+
+  gdOpenBtn.disabled=false;
+  semOpenBtn.disabled=true;
+  piOpenBtn.disabled=true;
+}
+
+async function loadGD(){
+  gdOpenBtn.disabled=true;
+  gdBox.style.display="block";
+  saveGDBtn.style.display="block";
+  gdBox.innerHTML="";
+
+  const res = await fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({action:"getGDTopicStatus",date:date.value})
+  }).then(r=>r.json());
+
+  res.topics.forEach(t=>{
+    gdBox.innerHTML+=`
+      <label>
+        <input type="checkbox" value="${t.topic}" ${t.checked?"checked":""}>
+        ${t.topic}
+      </label><br>`;
   });
 }
 
-async function loadStudentDetails(){
-  if(!evalRoll.value) return;
-
-  const res = await fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({
-      action:"getStudentDetailsByRoll",
-      roll:evalRoll.value
-    })
-  }).then(r=>r.json());
-
-  studentInfo.style.display="block";
-  studentInfo.innerHTML=`
-    <b>${res.name}</b><br>
-    Project: ${res.projectName}<br>
-    Team size: ${res.team.length}
-  `;
-}
-
-async function loadLatestPerformance(){
-  if(!evalRoll.value || !evalType.value) return;
-
-  const res = await fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({
-      action:"getLatestPerformance",
-      roll:evalRoll.value,
-      type:evalType.value
-    })
-  }).then(r=>r.json());
-
-  positives.value = res.status==="FOUND" ? res.positives : "";
-  improvements.value = res.status==="FOUND" ? res.improvements : "";
-  marks.value = res.status==="FOUND" ? res.marks : "";
-}
-
-async function saveEvaluation(){
-  if(!evalRoll.value || !evalType.value){
-    alert("Select student and evaluation type");
-    return;
-  }
+async function saveGD(){
+  const topics=[...gdBox.querySelectorAll("input:checked")].map(i=>i.value);
 
   await fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({
-      action:"savePerformance",
-      roll:evalRoll.value,
-      type:evalType.value,
-      positives:positives.value,
-      improvements:improvements.value,
-      marks:marks.value
+      action:"saveGDAllocation",
+      date:date.value,
+      topics:topics.join(",")
     })
   });
 
-  alert("Evaluation saved successfully");
+  gdBox.style.display="none";
+  saveGDBtn.style.display="none";
+  semOpenBtn.disabled=false;
+  await loadExisting();
+}
+
+async function loadSeminar(){
+  semOpenBtn.disabled=true;
+  semBox.style.display="block";
+  saveSemBtn.style.display="block";
+  semBox.innerHTML="";
+
+  const res = await fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({action:"getSeminarStudentStatus",date:date.value})
+  }).then(r=>r.json());
+
+  res.students.forEach(s=>{
+    semBox.innerHTML+=`
+      <label>
+        <input type="checkbox" value="${s.roll}" ${s.checked?"checked":""}>
+        ${s.name}
+      </label><br>`;
+  });
+}
+
+async function saveSeminar(){
+  const rolls=[...semBox.querySelectorAll("input:checked")].map(i=>i.value);
+
+  await fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"saveIndividualAllocation",
+      category:"SEMINAR",
+      date:date.value,
+      rolls:rolls.join(",")
+    })
+  });
+
+  semBox.style.display="none";
+  saveSemBtn.style.display="none";
+  piOpenBtn.disabled=false;
+  await loadExisting();
+}
+
+async function loadPI(){
+  piOpenBtn.disabled=true;
+  piBox.style.display="block";
+  savePIBtn.style.display="block";
+  piBox.innerHTML="";
+
+  const res = await fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({action:"getPIStudentStatus",date:date.value})
+  }).then(r=>r.json());
+
+  res.students.forEach(s=>{
+    piBox.innerHTML+=`
+      <label>
+        <input type="checkbox" value="${s.roll}" ${s.checked?"checked":""}>
+        ${s.name}
+      </label><br>`;
+  });
+}
+
+async function savePI(){
+  const rolls=[...piBox.querySelectorAll("input:checked")].map(i=>i.value);
+
+  await fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"saveIndividualAllocation",
+      category:"PI",
+      date:date.value,
+      rolls:rolls.join(",")
+    })
+  });
+
+  piBox.style.display="none";
+  savePIBtn.style.display="none";
+  await loadExisting();
+}
+
+/* ================= EVALUATION ================= */
+
+function loadStudents(){
+  fetch(BACKEND+"?action=getAllStudents")
+    .then(r=>r.json())
+    .then(res=>{
+      studentSelect.innerHTML='<option value="">Select Student</option>';
+      res.students.forEach(s=>{
+        studentSelect.innerHTML+=
+          `<option value="${s.roll}">${s.roll} – ${s.name}</option>`;
+      });
+    });
+}
+
+studentSelect.onchange = loadStudent;
+typeSelect.onchange = loadPerformance;
+
+function loadStudent(){
+  if(!studentSelect.value) return;
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getStudentDetailsByRoll",
+      roll:studentSelect.value
+    })
+  })
+  .then(r=>r.json())
+  .then(d=>{
+    studentInfo.innerHTML = `<b>${d.name}</b><br>${d.roll}`;
+    gdInfo.innerHTML = d.projectName || "Not assigned";
+    seminarInfo.innerHTML = d.seminarTopic || "Not submitted";
+    loadPerformance();
+  });
+}
+
+function loadPerformance(){
+  if(!studentSelect.value) return;
+
+  evalAction.innerHTML="Loading…";
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getLatestPerformance",
+      roll:studentSelect.value,
+      type:typeSelect.value
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    marks.value = res.marks || "";
+    positives.value = res.positives || "";
+    improvements.value = res.improvements || "";
+    evalAction.innerHTML =
+      `<button class="btn" onclick="savePerformance()">Save / Update</button>`;
+  });
+}
+
+function savePerformance(){
+  evalAction.innerHTML="Saving…";
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"savePerformance",
+      roll:studentSelect.value,
+      type:typeSelect.value,
+      marks:marks.value,
+      positives:positives.value,
+      improvements:improvements.value
+    })
+  }).then(()=>{
+    evalAction.innerHTML="Saved ✔";
+  });
 }
 </script>
 
