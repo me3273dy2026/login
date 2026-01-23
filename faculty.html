@@ -81,7 +81,7 @@ input{
 <h1>Faculty Dashboard</h1>
 <h2>ME3273 · Weekly Allocation & Evaluation</h2>
 
-<!-- GLOBAL STATUS (TOP) -->
+<!-- GLOBAL STATUS -->
 <div id="status" class="status"></div>
 
 <!-- HOME -->
@@ -99,7 +99,7 @@ input{
   <input type="date" id="allocDate" onchange="onDateChange()">
 </div>
 
-<!-- GD DISPLAY (EXISTING FIRST) -->
+<!-- GD -->
 <div class="box">
   <h3>Group Discussion</h3>
 
@@ -107,13 +107,17 @@ input{
     <i>Select a date to view GD allocations</i>
   </div>
 
-  <button class="btn-main" onclick="loadGDSelection()">
+  <!-- Allocate button -->
+  <button id="gdOpenBtn"
+          class="btn-main"
+          onclick="loadGDSelection()">
     Allocate / Update GD Topics
   </button>
 
-  <!-- GD CHECKBOX LIST (LOADED ON DEMAND) -->
+  <!-- Checkbox list -->
   <div id="gdSelectBox" class="sublist" style="display:none"></div>
 
+  <!-- Save button -->
   <button id="saveGDBtn"
           class="btn-main"
           style="display:none"
@@ -185,12 +189,13 @@ async function onDateChange(){
 
   gdSelectBox.style.display="none";
   saveGDBtn.style.display="none";
+  gdOpenBtn.style.display="block";   // 👈 restore button on date change
 
   await loadExistingAllocations();
   unlock();
 }
 
-/* ---------- LOAD EXISTING ALLOCATIONS ---------- */
+/* ---------- LOAD EXISTING ---------- */
 async function loadExistingAllocations(){
   const res = await fetch(BACKEND,{
     method:"POST",
@@ -220,10 +225,11 @@ async function loadExistingAllocations(){
     : "<i>No PI</i>";
 }
 
-/* ---------- LOAD GD CHECKBOX LIST ---------- */
+/* ---------- OPEN GD SELECTION ---------- */
 async function loadGDSelection(){
   lock("Loading… Please wait");
 
+  gdOpenBtn.style.display="none";     // 👈 hide immediately
   gdSelectBox.innerHTML="";
   gdSelectBox.style.display="block";
   saveGDBtn.style.display="block";
@@ -264,12 +270,15 @@ async function saveGD(){
   });
 
   await loadExistingAllocations();
+
   gdSelectBox.style.display="none";
   saveGDBtn.style.display="none";
+  gdOpenBtn.style.display="block";    // 👈 reappear ONLY after save
+
   unlock();
 }
 
-/* ---------- SEMINAR & PI (UNCHANGED BACKEND) ---------- */
+/* ---------- SEMINAR / PI (UNCHANGED) ---------- */
 function saveSeminar(){
   lock("Updating Seminar… Please wait");
   setTimeout(unlock,800);
