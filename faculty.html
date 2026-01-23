@@ -65,12 +65,6 @@ input{
   border-radius:10px;
   border:1px solid #ccc;
 }
-
-.footer{
-  margin-top:30px;text-align:center;
-  font-size:13px;color:#5f6f78;font-weight:600;
-}
-.footer div{font-size:12px;color:#7a8a93;}
 </style>
 </head>
 
@@ -108,6 +102,7 @@ input{
 
   <button id="gdOpenBtn"
           class="btn-main"
+          disabled
           onclick="loadGDSelection()">
     Allocate / Update GD Topics
   </button>
@@ -126,9 +121,9 @@ input{
 <div class="box">
   <h3>Seminar</h3>
   <div id="seminarExisting" class="sublist"></div>
-  <div id="seminarList"></div>
   <button id="saveSemBtn"
           class="btn-main"
+          disabled
           onclick="saveSeminar()">
     Save / Update Seminar
   </button>
@@ -138,9 +133,9 @@ input{
 <div class="box">
   <h3>Personal Interview</h3>
   <div id="piExisting" class="sublist"></div>
-  <div id="piList"></div>
   <button id="savePIBtn"
           class="btn-main"
+          disabled
           onclick="savePI()">
     Save / Update PI
   </button>
@@ -157,43 +152,36 @@ input{
   <button class="btn-close" onclick="closeAll()">Close</button>
 </div>
 
-<div class="footer">
-  Developed by Dr. Rajesh Akula
-  <div>© 2026 · IIEST Shibpur</div>
-</div>
-
 </div>
 
 <script>
 const BACKEND = "https://script.google.com/macros/s/AKfycbwtR83WSVuSgQyhp0kxHV27SIClPA3_b-D_RoNJsdp0AvRxV7Mhenl4zOiYRw8X2MU7Cg/exec";
 
-/* ---------- UI STATE CONTROL ---------- */
-function setState(state){
-  // state: 0=only date, 1=GD, 2=Seminar, 3=PI
-  allocDate.disabled = false;
-
-  gdOpenBtn.disabled = state < 1;
-  saveSemBtn.disabled = state < 2;
-  savePIBtn.disabled = state < 3;
+/* ---------- BUTTON CONTROL ---------- */
+function disableWorkflowButtons(){
+  gdOpenBtn.disabled = true;
+  saveGDBtn.disabled = true;
+  saveSemBtn.disabled = true;
+  savePIBtn.disabled = true;
 }
-
-/* ---------- UI LOCK ---------- */
-function lock(msg){
-  status.textContent = msg;
-  document.querySelectorAll("button:not(.btn-logout)").forEach(b=>b.disabled=true);
-}
-function unlock(state){
-  status.textContent = "";
-  setState(state);
+function enableLogout(){
+  document.querySelectorAll(".btn-logout").forEach(b=>b.disabled=false);
 }
 
 /* ---------- NAV ---------- */
 function openAllocate(){
   home.style.display="none";
   allocate.style.display="block";
-  setState(0);                 // 👈 only date enabled
+
+  allocDate.disabled = false;
+  disableWorkflowButtons();
+  enableLogout();
 }
-function openEvaluate(){home.style.display="none";evaluate.style.display="block";}
+function openEvaluate(){
+  home.style.display="none";
+  evaluate.style.display="block";
+  enableLogout();
+}
 function closeAll(){
   allocate.style.display="none";
   evaluate.style.display="none";
@@ -203,14 +191,19 @@ function closeAll(){
 /* ---------- DATE CHANGE ---------- */
 async function onDateChange(){
   if(!allocDate.value) return;
-  lock("Loading… Please wait");
 
-  gdSelectBox.style.display="none";
-  saveGDBtn.style.display="none";
+  status.textContent = "Loading… Please wait";
+  disableWorkflowButtons();
+  enableLogout();
+
   gdOpenBtn.style.display="block";
+  saveGDBtn.style.display="none";
+  gdSelectBox.style.display="none";
 
   await loadExistingAllocations();
-  unlock(1);                   // 👈 enable GD only
+
+  gdOpenBtn.disabled = false;   // 👈 enable GD only
+  status.textContent = "";
 }
 
 /* ---------- LOAD EXISTING ---------- */
@@ -223,40 +216,42 @@ async function loadExistingAllocations(){
     })
   }).then(r=>r.json());
 
-  let gd=false, sem=false;
+  let hasGD=false, hasSem=false;
 
-  const gdArr=[], semArr=[], piArr=[];
+  const gd=[], sem=[], pi=[];
   res.allocations.forEach(a=>{
-    if(a.category==="GD"){gdArr.push(a);gd=true;}
-    if(a.category==="SEMINAR"){semArr.push(a);sem=true;}
-    if(a.category==="PI"){piArr.push(a);}
+    if(a.category==="GD"){gd.push(a);hasGD=true;}
+    if(a.category==="SEMINAR"){sem.push(a);hasSem=true;}
+    if(a.category==="PI"){pi.push(a);}
   });
 
-  gdExisting.innerHTML = gdArr.length
-    ? gdArr.map(x=>`${x.roll} – ${x.name} <b>[${x.topic}]</b>`).join("<br>")
+  gdExisting.innerHTML = gd.length
+    ? gd.map(x=>`${x.roll} – ${x.name} <b>[${x.topic}]</b>`).join("<br>")
     : "<i>No GD scheduled</i>";
 
-  seminarExisting.innerHTML = semArr.length
-    ? semArr.map(x=>`${x.roll} – ${x.name}`).join("<br>")
+  seminarExisting.innerHTML = sem.length
+    ? sem.map(x=>`${x.roll} – ${x.name}`).join("<br>")
     : "<i>No Seminar</i>";
 
-  piExisting.innerHTML = piArr.length
-    ? piArr.map(x=>`${x.roll} – ${x.name}`).join("<br>")
+  piExisting.innerHTML = pi.length
+    ? pi.map(x=>`${x.roll} – ${x.name}`).join("<br>")
     : "<i>No PI</i>";
 
-  // auto state progression if already allocated
-  if(gd && sem) setState(3);
-  else if(gd) setState(2);
+  if(hasGD) saveSemBtn.disabled = false;
+  if(hasGD && hasSem) savePIBtn.disabled = false;
 }
 
 /* ---------- GD ---------- */
 async function loadGDSelection(){
-  lock("Loading… Please wait");
-  gdOpenBtn.style.display="none";
+  status.textContent = "Loading… Please wait";
+  disableWorkflowButtons();
+  enableLogout();
 
+  gdOpenBtn.style.display="none";
   gdSelectBox.innerHTML="";
   gdSelectBox.style.display="block";
   saveGDBtn.style.display="block";
+  saveGDBtn.disabled = true;
 
   const res = await fetch(BACKEND,{
     method:"POST",
@@ -267,18 +262,22 @@ async function loadGDSelection(){
   }).then(r=>r.json());
 
   res.topics.forEach(t=>{
-    gdSelectBox.innerHTML+=`
+    gdSelectBox.innerHTML += `
       <label>
         <input type="checkbox" value="${t.topic}" ${t.checked?"checked":""}>
         ${t.topic}
       </label><br>`;
   });
 
-  unlock(1);
+  saveGDBtn.disabled = false;   // 👈 ENABLE SAVE BUTTON
+  status.textContent = "";
 }
 
+/* ---------- SAVE GD ---------- */
 async function saveGD(){
-  lock("Updating Group Discussion… Please wait");
+  status.textContent = "Updating Group Discussion… Please wait";
+  disableWorkflowButtons();
+  enableLogout();
 
   const topics=[...gdSelectBox.querySelectorAll("input:checked")]
     .map(i=>i.value);
@@ -297,25 +296,32 @@ async function saveGD(){
   gdSelectBox.style.display="none";
   saveGDBtn.style.display="none";
   gdOpenBtn.style.display="block";
+  gdOpenBtn.disabled = false;
+  saveSemBtn.disabled = false;
 
-  unlock(2);                   // 👈 enable Seminar
+  status.textContent = "";
 }
 
 /* ---------- SEMINAR ---------- */
 function saveSeminar(){
-  lock("Updating Seminar… Please wait");
-  setTimeout(()=>unlock(3),800); // backend already works
+  status.textContent = "Updating Seminar… Please wait";
+  saveSemBtn.disabled = true;
+  setTimeout(()=>{
+    savePIBtn.disabled = false;
+    status.textContent = "";
+  },800);
 }
 
 /* ---------- PI ---------- */
 function savePI(){
-  lock("Updating Personal Interview… Please wait");
-  setTimeout(()=>unlock(3),800);
+  status.textContent = "Updating Personal Interview… Please wait";
+  savePIBtn.disabled = true;
+  setTimeout(()=>status.textContent="",800);
 }
 
 /* ---------- LOGOUT ---------- */
 function logout(){
-  if(confirm("Logout?")) location.href="login.html";
+  location.href="login.html";
 }
 </script>
 
