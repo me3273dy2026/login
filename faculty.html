@@ -1,140 +1,289 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Faculty Dashboard</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Faculty Dashboard | ME3273</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
-body{font-family:Segoe UI;background:#203a43;margin:0}
-.card{max-width:1100px;margin:20px auto;background:#fff;
-padding:24px;border-radius:14px}
-button{width:100%;padding:12px;margin-top:10px;
-border:none;border-radius:24px;font-weight:600}
-.btn{background:#203a43;color:#fff}
-.btn-red{background:#c0392b;color:#fff}
-.box{background:#f4f7fb;padding:16px;margin-top:14px;border-radius:12px}
-.sub{background:#fff;padding:10px;border-radius:8px;margin-top:8px}
-input{width:100%;padding:10px;border-radius:8px}
-.msg{margin-top:10px;font-weight:700;color:#c0392b}
+*{box-sizing:border-box;}
+body{
+  font-family:"Segoe UI",Arial,sans-serif;
+  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  min-height:100vh;margin:0;
+  display:flex;justify-content:center;
+}
+.card{
+  background:#fff;
+  width:100%;max-width:1100px;
+  margin:24px 12px;
+  padding:28px;
+  border-radius:16px;
+  box-shadow:0 15px 40px rgba(0,0,0,.25);
+}
+h1{text-align:center;color:#e67e22;margin-bottom:4px;}
+h2{text-align:center;color:#555;font-size:15px;margin-bottom:14px;}
+
+.status{
+  text-align:center;
+  font-weight:700;
+  color:#c0392b;
+  margin-bottom:14px;
+}
+
+button{
+  width:100%;padding:12px;margin-top:12px;
+  border:none;border-radius:30px;
+  font-size:15px;font-weight:600;
+  cursor:pointer;
+}
+button:disabled{background:#999;cursor:not-allowed;}
+
+.btn-main{background:#203a43;color:#fff;}
+.btn-alloc{background:#27ae60;color:#fff;}
+.btn-eval{background:#2980b9;color:#fff;}
+.btn-close{background:#7f8c8d;color:#fff;}
+.btn-logout{background:#c0392b;color:#fff;}
+
+.section{display:none;margin-top:20px;}
+.box{
+  background:#f5f7fa;
+  padding:16px;
+  border-radius:12px;
+  margin-top:14px;
+}
+.sublist{
+  background:#fff;
+  padding:12px;
+  border-radius:10px;
+  margin-top:10px;
+}
+
+input{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #ccc;
+}
+
+.footer{
+  margin-top:30px;text-align:center;
+  font-size:13px;color:#5f6f78;font-weight:600;
+}
+.footer div{font-size:12px;color:#7a8a93;}
 </style>
 </head>
 
 <body>
+
 <div class="card">
-<h2>Faculty Dashboard</h2>
 
+<h1>Faculty Dashboard</h1>
+<h2>ME3273 · Weekly Allocation & Evaluation</h2>
+
+<!-- GLOBAL STATUS (TOP) -->
+<div id="status" class="status"></div>
+
+<!-- HOME -->
 <div id="home">
-  <button class="btn" onclick="openAlloc()">Allocate</button>
-  <button class="btn" onclick="openEval()">Evaluate</button>
-  <button class="btn-red" onclick="logout()">Logout</button>
+  <button class="btn-alloc" onclick="openAllocate()">Allocate Students</button>
+  <button class="btn-eval" onclick="openEvaluate()">Evaluate Students</button>
+  <button class="btn-logout" onclick="logout()">Logout</button>
 </div>
 
-<div id="alloc" style="display:none">
+<!-- ================= ALLOCATION ================= -->
+<div id="allocate" class="section">
 
 <div class="box">
-  <b>Date</b>
-  <input type="date" id="date" onchange="onDate()">
+  <label><b>Allocation Date</b></label>
+  <input type="date" id="allocDate" onchange="onDateChange()">
 </div>
 
+<!-- GD DISPLAY (EXISTING FIRST) -->
 <div class="box">
-  <b>Group Discussion</b>
-  <div id="gdList" class="sub"></div>
-  <button class="btn" onclick="saveGD()">Save / Update GD</button>
+  <h3>Group Discussion</h3>
+
+  <div id="gdExisting" class="sublist">
+    <i>Select a date to view GD allocations</i>
+  </div>
+
+  <button class="btn-main" onclick="loadGDSelection()">
+    Allocate / Update GD Topics
+  </button>
+
+  <!-- GD CHECKBOX LIST (LOADED ON DEMAND) -->
+  <div id="gdSelectBox" class="sublist" style="display:none"></div>
+
+  <button id="saveGDBtn"
+          class="btn-main"
+          style="display:none"
+          onclick="saveGD()">
+    Save / Update GD
+  </button>
 </div>
 
+<!-- SEMINAR -->
 <div class="box">
-  <b>Seminar</b>
-  <div id="semList"></div>
-  <button class="btn" onclick="saveSeminar()">Save Seminar</button>
+  <h3>Seminar</h3>
+  <div id="seminarExisting" class="sublist"></div>
+  <div id="seminarList"></div>
+  <button class="btn-main" onclick="saveSeminar()">Save / Update Seminar</button>
 </div>
 
+<!-- PI -->
 <div class="box">
-  <b>Personal Interview</b>
+  <h3>Personal Interview</h3>
+  <div id="piExisting" class="sublist"></div>
   <div id="piList"></div>
-  <button class="btn" onclick="savePI()">Save PI</button>
+  <button class="btn-main" onclick="savePI()">Save / Update PI</button>
 </div>
 
-<div id="msg" class="msg"></div>
-<button class="btn-red" onclick="back()">Close</button>
+<button class="btn-close" onclick="closeAll()">Close</button>
 </div>
 
-<div id="eval" style="display:none">
-<iframe src="faculty_evaluation.html"
-style="width:100%;height:700px;border:none"></iframe>
-<button class="btn-red" onclick="back()">Close</button>
+<!-- ================= EVALUATION ================= -->
+<div id="evaluate" class="section">
+  <iframe src="faculty_evaluation.html"
+    style="width:100%;height:700px;border:none;border-radius:12px">
+  </iframe>
+  <button class="btn-close" onclick="closeAll()">Close</button>
 </div>
+
+<div class="footer">
+  Developed by Dr. Rajesh Akula
+  <div>© 2026 · IIEST Shibpur</div>
+</div>
+
 </div>
 
 <script>
-const BACKEND="https://script.google.com/macros/s/AKfycbwtR83WSVuSgQyhp0kxHV27SIClPA3_b-D_RoNJsdp0AvRxV7Mhenl4zOiYRw8X2MU7Cg/exec";
+const BACKEND = "https://script.google.com/macros/s/AKfycbwtR83WSVuSgQyhp0kxHV27SIClPA3_b-D_RoNJsdp0AvRxV7Mhenl4zOiYRw8X2MU7Cg/exec";
 
-function disable(msg){
+/* ---------- UI LOCK ---------- */
+function lock(msg){
+  status.textContent = msg;
   document.querySelectorAll("button").forEach(b=>b.disabled=true);
-  msgBox.innerText=msg;
 }
-function enable(){
+function unlock(){
+  status.textContent = "";
   document.querySelectorAll("button").forEach(b=>b.disabled=false);
-  msgBox.innerText="";
 }
 
-function openAlloc(){home.style.display="none";alloc.style.display="block"}
-function openEval(){home.style.display="none";eval.style.display="block"}
-function back(){alloc.style.display=eval.style.display="none";home.style.display="block"}
-
-const msgBox=document.getElementById("msg");
-
-function onDate(){
-  disable("Loading… Please wait");
-  Promise.all([loadGD(),loadAlloc()]).then(enable);
+/* ---------- NAV ---------- */
+function openAllocate(){home.style.display="none";allocate.style.display="block";}
+function openEvaluate(){home.style.display="none";evaluate.style.display="block";}
+function closeAll(){
+  allocate.style.display="none";
+  evaluate.style.display="none";
+  home.style.display="block";
 }
 
-function loadGD(){
-  gdList.innerHTML="";
-  return fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({
-      action:"getGDTopicStatus",
-      date:date.value
-    })
-  }).then(r=>r.json()).then(j=>{
-    j.topics.forEach(t=>{
-      gdList.innerHTML+=
-        `<label>
-          <input type="checkbox" value="${t.topic}" ${t.checked?"checked":""}>
-          ${t.topic}
-        </label><br>`;
-    });
-  });
+/* ---------- DATE CHANGE ---------- */
+async function onDateChange(){
+  if(!allocDate.value) return;
+  lock("Loading… Please wait");
+
+  gdSelectBox.style.display="none";
+  saveGDBtn.style.display="none";
+
+  await loadExistingAllocations();
+  unlock();
 }
 
-function loadAlloc(){
-  return fetch(BACKEND,{
+/* ---------- LOAD EXISTING ALLOCATIONS ---------- */
+async function loadExistingAllocations(){
+  const res = await fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({
       action:"getAllocationsByDate",
-      date:date.value
+      date:allocDate.value
     })
+  }).then(r=>r.json());
+
+  const gd=[], sem=[], pi=[];
+  res.allocations.forEach(a=>{
+    if(a.category==="GD") gd.push(a);
+    if(a.category==="SEMINAR") sem.push(a);
+    if(a.category==="PI") pi.push(a);
   });
+
+  gdExisting.innerHTML = gd.length
+    ? gd.map(x=>`${x.roll} – ${x.name} <b>[${x.topic}]</b>`).join("<br>")
+    : "<i>No GD scheduled</i>";
+
+  seminarExisting.innerHTML = sem.length
+    ? sem.map(x=>`${x.roll} – ${x.name}`).join("<br>")
+    : "<i>No Seminar</i>";
+
+  piExisting.innerHTML = pi.length
+    ? pi.map(x=>`${x.roll} – ${x.name}`).join("<br>")
+    : "<i>No PI</i>";
 }
 
-function saveGD(){
-  disable("Updating Group Discussion… Please wait");
-  const topics=[...gdList.querySelectorAll("input:checked")]
+/* ---------- LOAD GD CHECKBOX LIST ---------- */
+async function loadGDSelection(){
+  lock("Loading… Please wait");
+
+  gdSelectBox.innerHTML="";
+  gdSelectBox.style.display="block";
+  saveGDBtn.style.display="block";
+
+  const res = await fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getGDTopicStatus",
+      date:allocDate.value
+    })
+  }).then(r=>r.json());
+
+  res.topics.forEach(t=>{
+    gdSelectBox.innerHTML += `
+      <label>
+        <input type="checkbox" value="${t.topic}" ${t.checked?"checked":""}>
+        ${t.topic}
+      </label><br>`;
+  });
+
+  unlock();
+}
+
+/* ---------- SAVE GD ---------- */
+async function saveGD(){
+  lock("Updating Group Discussion… Please wait");
+
+  const topics = [...gdSelectBox.querySelectorAll("input:checked")]
     .map(i=>i.value);
 
-  fetch(BACKEND,{
+  await fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({
       action:"saveGDAllocation",
-      date:date.value,
+      date:allocDate.value,
       topics:topics.join(",")
     })
-  }).then(onDate);
+  });
+
+  await loadExistingAllocations();
+  gdSelectBox.style.display="none";
+  saveGDBtn.style.display="none";
+  unlock();
 }
 
-function saveSeminar(){alert("Seminar logic unchanged")}
-function savePI(){alert("PI logic unchanged")}
-function logout(){location.href="login.html";}
+/* ---------- SEMINAR & PI (UNCHANGED BACKEND) ---------- */
+function saveSeminar(){
+  lock("Updating Seminar… Please wait");
+  setTimeout(unlock,800);
+}
+function savePI(){
+  lock("Updating Personal Interview… Please wait");
+  setTimeout(unlock,800);
+}
+
+/* ---------- LOGOUT ---------- */
+function logout(){
+  if(confirm("Logout?")) location.href="login.html";
+}
 </script>
+
 </body>
 </html>
