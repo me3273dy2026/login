@@ -135,10 +135,10 @@ async function loadExisting(){
     ? pi.map(x=>`${x.name}`).join("<br>")
     : "<i>No PI</i>";
 
-  /* STRICT FLOW */
+  /* STRICT FLOW — ALWAYS START FROM GD */
   gdOpenBtn.disabled = false;
-  semOpenBtn.disabled = gd.length === 0;
-  piOpenBtn.disabled = sem.length === 0;
+  semOpenBtn.disabled = true;
+  piOpenBtn.disabled = true;
 }
 
 /* ---------- GD ---------- */
@@ -183,8 +183,10 @@ async function saveGD(){
 
   gdBox.style.display="none";
   saveGDBtn.style.display="none";
+
   gdOpenBtn.disabled=true;
   semOpenBtn.disabled=false;
+  piOpenBtn.disabled=true;
 
   await loadExisting();
   saveGDBtn.innerText="Save / Update GD";
@@ -234,6 +236,8 @@ async function saveSeminar(){
 
   semBox.style.display="none";
   saveSemBtn.style.display="none";
+
+  gdOpenBtn.disabled=true;
   semOpenBtn.disabled=true;
   piOpenBtn.disabled=false;
 
