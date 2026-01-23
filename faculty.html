@@ -10,23 +10,18 @@
 body{
   font-family:"Segoe UI",Arial,sans-serif;
   background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-  min-height:100vh;
-  margin:0;
-  display:flex;
-  justify-content:center;
+  min-height:100vh;margin:0;
+  display:flex;justify-content:center;
 }
 .card{
   background:#fff;
-  width:100%;
-  max-width:1200px;
-  margin:24px 12px;
-  padding:28px;
+  width:100%;max-width:1200px;
+  margin:24px 12px;padding:28px;
   border-radius:14px;
   box-shadow:0 15px 40px rgba(0,0,0,.25);
 }
-
 h1{text-align:center;color:#e67e22;margin-bottom:6px;}
-h2{text-align:center;color:#555;font-size:15px;margin-bottom:22px;}
+h2{text-align:center;color:#555;font-size:15px;margin-bottom:20px;}
 
 button{
   width:100%;
@@ -38,83 +33,45 @@ button{
   font-weight:600;
   cursor:pointer;
 }
-button:disabled{
-  background:#999;
-  cursor:not-allowed;
-}
+button:disabled{background:#999;cursor:not-allowed;}
+.btn-main{background:linear-gradient(135deg,#f39c12,#e67e22);color:#fff;}
+.btn-close{background:#7f8c8d;color:#fff;}
+.btn-logout{background:linear-gradient(135deg,#c0392b,#a93226);color:#fff;}
 
-.btn-main{
-  background:linear-gradient(135deg,#f39c12,#e67e22);
-  color:#fff;
-}
-.btn-close{
-  background:#7f8c8d;
-  color:#fff;
-}
-.btn-logout{
-  background:linear-gradient(135deg,#c0392b,#a93226);
-  color:#fff;
-}
-
-.section{
-  display:none;
-  margin-top:24px;
-}
-
-label{
-  font-weight:600;
-  margin-top:12px;
-  display:block;
-}
+.section{display:none;margin-top:24px;}
+label{font-weight:600;margin-top:12px;display:block;}
 select,input,textarea{
-  width:100%;
-  padding:10px 12px;
-  margin-top:6px;
-  border-radius:6px;
-  border:1px solid #ccc;
-  font-size:15px;
+  width:100%;padding:10px 12px;
+  border-radius:6px;border:1px solid #ccc;
+  font-size:15px;margin-top:6px;
 }
 textarea{min-height:90px;}
 
-.row{
-  display:flex;
-  gap:16px;
-  margin-top:18px;
-}
+.row{display:flex;gap:16px;margin-top:18px;}
 .box{
-  flex:1;
-  background:#f8f9fa;
-  padding:16px;
-  border-radius:12px;
+  flex:1;background:#f8f9fa;
+  padding:16px;border-radius:12px;
 }
 .box h3{
-  margin-top:0;
-  color:#203a43;
-  border-bottom:1px solid #ddd;
-  padding-bottom:6px;
+  margin-top:0;color:#203a43;
+  border-bottom:1px solid #ddd;padding-bottom:6px;
 }
 
-.loading{
-  text-align:center;
-  font-weight:600;
-  margin-top:14px;
+.loading{text-align:center;font-weight:600;margin-top:10px;}
+.listBox{
+  background:#fff;border:1px solid #ccc;
+  border-radius:8px;padding:10px;
+  margin-top:10px;max-height:240px;overflow:auto;
 }
 
 .footer{
   margin-top:32px;
   text-align:center;
-  font-size:13px;
-  color:#5f6f78;
-  font-weight:600;
+  font-size:13px;color:#5f6f78;font-weight:600;
 }
-.footer div{
-  font-size:12px;
-  color:#7a8a93;
-}
+.footer div{font-size:12px;color:#7a8a93;}
 
-@media(max-width:900px){
-  .row{flex-direction:column;}
-}
+@media(max-width:900px){.row{flex-direction:column;}}
 </style>
 </head>
 
@@ -123,7 +80,7 @@ textarea{min-height:90px;}
 <div class="card">
 
 <h1>Faculty Dashboard</h1>
-<h2>ME3273 · Group Discussion · Seminar · Personal Interview</h2>
+<h2>ME3273 · Evaluation & Weekly Allocation</h2>
 
 <!-- ================= HOME ================= -->
 <div id="home">
@@ -142,7 +99,6 @@ textarea{min-height:90px;}
   </select>
 
   <div class="row">
-
     <div class="box">
       <h3>Student Details</h3>
       <div id="studentInfo"></div>
@@ -157,7 +113,7 @@ textarea{min-height:90px;}
     <div class="box">
       <h3>Evaluation</h3>
 
-      <label>Evaluation Type</label>
+      <label>Type</label>
       <select id="typeSelect">
         <option value="GD">Group Discussion</option>
         <option value="SEMINAR">Seminar</option>
@@ -175,7 +131,6 @@ textarea{min-height:90px;}
 
       <div id="evalAction" class="loading">Select student…</div>
     </div>
-
   </div>
 
   <button class="btn-close" onclick="closeSection()">Close</button>
@@ -190,6 +145,7 @@ textarea{min-height:90px;}
 
   <div class="row">
 
+    <!-- GD -->
     <div class="box">
       <h3>Group Discussion</h3>
       <label>GD Topic</label>
@@ -199,17 +155,22 @@ textarea{min-height:90px;}
         <option>T4</option><option>T5</option><option>T6</option>
         <option>T7</option><option>T8</option><option>T9</option>
       </select>
-      <button class="btn-main">Allocate GD</button>
+      <button class="btn-main" onclick="allocateGD()">Allocate GD</button>
+      <div id="gdAllocated" class="listBox"></div>
     </div>
 
+    <!-- SEMINAR -->
     <div class="box">
       <h3>Seminar</h3>
-      <div class="loading">Auto-filtered list will appear here</div>
+      <div id="seminarList" class="listBox"></div>
+      <button class="btn-main" onclick="allocateSeminar()">Save Seminar Allocation</button>
     </div>
 
+    <!-- PI -->
     <div class="box">
       <h3>Personal Interview</h3>
-      <div class="loading">Auto-filtered list will appear here</div>
+      <div id="piList" class="listBox"></div>
+      <button class="btn-main" onclick="allocatePI()">Save PI Allocation</button>
     </div>
 
   </div>
@@ -217,7 +178,6 @@ textarea{min-height:90px;}
   <button class="btn-close" onclick="closeSection()">Close</button>
 </div>
 
-<!-- ================= FOOTER ================= -->
 <div class="footer">
   Developed by Dr. Rajesh Akula
   <div>© 2026 · IIEST Shibpur</div>
@@ -226,14 +186,29 @@ textarea{min-height:90px;}
 </div>
 
 <script>
-/* ACCESS GUARD */
+/* ===== ACCESS GUARD ===== */
 if(sessionStorage.getItem("facultyLoggedIn")!=="YES"){
   location.replace("login.html");
 }
 
 const BACKEND = "https://script.google.com/macros/s/AKfycbxkFC04HnDu-qV-yOEJpg3GYOEaLIVbont-lgP8Gja0GsgqI39dPYr2fY88UeJNNn3xgA/exec";
 
-/* NAVIGATION */
+/* ===== UTIL ===== */
+function disableAll(state,text){
+  document.querySelectorAll("button").forEach(b=>{
+    b.disabled=state;
+    if(text && state) b.innerText=text;
+  });
+}
+function requireDate(){
+  if(!allocDate.value){
+    alert("Please select Date of Allocation first");
+    return false;
+  }
+  return true;
+}
+
+/* ===== NAV ===== */
 function openEvaluate(){
   home.style.display="none";
   allocate.style.display="none";
@@ -251,17 +226,150 @@ function closeSection(){
   home.style.display="block";
 }
 
-/* LOAD STUDENTS (evaluation) */
+/* ================= EVALUATION ================= */
 function loadStudents(){
   fetch(BACKEND+"?action=getAllStudents")
   .then(r=>r.json())
   .then(res=>{
     studentSelect.innerHTML='<option value="">Select Student</option>';
     res.students.forEach(s=>{
-      studentSelect.innerHTML+=
-        `<option value="${s.roll}">${s.roll} – ${s.name}</option>`;
+      studentSelect.innerHTML+=`<option value="${s.roll}">${s.roll} – ${s.name}</option>`;
     });
   });
+}
+
+studentSelect.onchange=loadStudent;
+typeSelect.onchange=loadPerformance;
+
+function loadStudent(){
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({action:"getStudentDetailsByRoll",roll:studentSelect.value})
+  })
+  .then(r=>r.json())
+  .then(d=>{
+    studentInfo.innerHTML=`<b>${d.name}</b><br>${d.roll}`;
+    gdInfo.innerHTML=d.projectName||"Not assigned";
+    seminarInfo.innerHTML=d.seminarTopic||"Not submitted";
+    loadPerformance();
+  });
+}
+
+function loadPerformance(){
+  evalAction.innerHTML="Loading…";
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getLatestPerformance",
+      roll:studentSelect.value,
+      type:typeSelect.value
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    marks.value=res.marks||"";
+    positives.value=res.positives||"";
+    improvements.value=res.improvements||"";
+    evalAction.innerHTML=`<button class="btn-main" onclick="savePerformance()">Save / Update</button>`;
+  });
+}
+
+function savePerformance(){
+  disableAll(true,"Saving…");
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"savePerformance",
+      roll:studentSelect.value,
+      type:typeSelect.value,
+      marks:marks.value,
+      positives:positives.value,
+      improvements:improvements.value
+    })
+  }).then(()=>{disableAll(false);alert("Saved");});
+}
+
+/* ================= ALLOCATION ================= */
+allocDate.onchange=loadAllocationLists;
+
+function loadAllocationLists(){
+  if(!requireDate()) return;
+
+  gdAllocated.innerHTML="";
+  seminarList.innerHTML="<div class='loading'>Loading…</div>";
+  piList.innerHTML="<div class='loading'>Loading…</div>";
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getAllocationCandidates",
+      date:allocDate.value
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    renderList(seminarList,res.SEMINAR);
+    renderList(piList,res.PI);
+    renderAllocated(res.ALLOCATED);
+  });
+}
+
+function renderList(box,list){
+  if(!list.length){
+    box.innerHTML="<i>No eligible students</i>";
+    return;
+  }
+  box.innerHTML=list.map(s=>`
+    <label>
+      <input type="checkbox" value="${s.roll}"> ${s.roll} – ${s.name}
+    </label><br>`).join("");
+}
+
+function renderAllocated(data){
+  gdAllocated.innerHTML=data.GD.join("<br>")||"";
+}
+
+function allocateGD(){
+  if(!requireDate()||!gdTopic.value) return alert("Select GD topic");
+  disableAll(true,"Allocating… Please wait");
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"saveGDAllocation",
+      topic:gdTopic.value,
+      date:allocDate.value
+    })
+  }).then(()=>{loadAllocationLists();disableAll(false);});
+}
+
+function allocateSeminar(){
+  const rolls=[...seminarList.querySelectorAll("input:checked")].map(i=>i.value);
+  if(!rolls.length) return alert("Select students");
+  disableAll(true,"Allocating… Please wait");
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"saveIndividualAllocation",
+      category:"SEMINAR",
+      date:allocDate.value,
+      rolls:rolls.join(",")
+    })
+  }).then(()=>{loadAllocationLists();disableAll(false);});
+}
+
+function allocatePI(){
+  const rolls=[...piList.querySelectorAll("input:checked")].map(i=>i.value);
+  if(!rolls.length) return alert("Select students");
+  disableAll(true,"Allocating… Please wait");
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"saveIndividualAllocation",
+      category:"PI",
+      date:allocDate.value,
+      rolls:rolls.join(",")
+    })
+  }).then(()=>{loadAllocationLists();disableAll(false);});
 }
 
 /* LOGOUT */
