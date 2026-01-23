@@ -18,19 +18,52 @@ body{
   width:100%;max-width:1100px;
   margin:24px 12px;
   padding:28px;
-  border-radius:16px;
-  box-shadow:0 15px 40px rgba(0,0,0,.25);
+  border-radius:18px;
+  box-shadow:0 20px 45px rgba(0,0,0,.28);
 }
-h1{text-align:center;color:#e67e22;margin-bottom:6px;}
-h2{text-align:center;color:#555;font-size:15px;margin-bottom:22px;}
+h1{text-align:center;color:#e67e22;margin-bottom:4px;}
+h2{text-align:center;color:#555;font-size:15px;margin-bottom:24px;}
+
+.section{display:none;margin-top:20px;}
+.box{
+  background:#f4f7fb;
+  padding:18px;
+  border-radius:14px;
+  margin-top:18px;
+}
+
+.label{
+  font-weight:700;
+  color:#2c3e50;
+  margin-bottom:6px;
+  display:block;
+}
+
+.input-wrap{
+  display:flex;
+  gap:12px;
+  margin-top:8px;
+}
+
+input[type="date"], select{
+  flex:1;
+  padding:12px 14px;
+  border-radius:10px;
+  border:1px solid #ccd6dd;
+  font-size:14px;
+  background:#fff;
+}
 
 button{
-  width:100%;padding:12px;margin-top:12px;
-  border:none;border-radius:30px;
-  font-size:15px;font-weight:600;
+  width:100%;
+  padding:12px;
+  margin-top:14px;
+  border:none;
+  border-radius:28px;
+  font-size:15px;
+  font-weight:600;
   cursor:pointer;
 }
-button:disabled{background:#999;cursor:not-allowed;}
 
 .btn-main{background:#203a43;color:#fff;}
 .btn-alloc{background:#27ae60;color:#fff;}
@@ -38,34 +71,27 @@ button:disabled{background:#999;cursor:not-allowed;}
 .btn-close{background:#7f8c8d;color:#fff;}
 .btn-logout{background:#c0392b;color:#fff;}
 
-.section{display:none;margin-top:20px;}
-.box{
-  background:#f5f7fa;
-  padding:16px;
-  border-radius:12px;
-  margin-top:14px;
-}
-.loading{text-align:center;font-weight:700;margin-top:12px;}
-ul{margin-left:18px;}
-
 .sublist{
   background:#fff;
-  border-radius:8px;
-  padding:10px;
-  margin-top:8px;
+  border-radius:10px;
+  padding:12px;
+  margin-top:10px;
   font-size:14px;
 }
 
+.loading{text-align:center;font-weight:700;}
+ul{margin-left:18px;}
+
 .footer{
-  margin-top:30px;text-align:center;
-  font-size:13px;color:#5f6f78;font-weight:600;
+  margin-top:30px;
+  text-align:center;
+  font-size:13px;
+  color:#5f6f78;
 }
-.footer div{font-size:12px;color:#7a8a93;}
 </style>
 </head>
 
 <body>
-
 <div class="card">
 
 <h1>Faculty Dashboard</h1>
@@ -77,33 +103,34 @@ ul{margin-left:18px;}
   <button class="btn-logout" onclick="logout()">Logout</button>
 </div>
 
-<!-- ================= ALLOCATION ================= -->
 <div id="allocate" class="section">
 
 <div class="box">
-  <label><b>Date of Allocation</b></label>
-  <input type="date" id="allocDate" onchange="loadAllocationsByCategory()">
+  <label class="label">Allocation Date</label>
+  <input type="date" id="allocDate" onchange="resetAll()">
 </div>
 
 <!-- GD -->
 <div class="box">
-  <h3>Group Discussion</h3>
-  <div id="gdExisting" class="sublist"></div>
+  <h3>Group Discussion (<span id="gdDate"></span>)</h3>
 
-  <select id="gdTopic">
-    <option value="">Select GD Topic</option>
-    <option>T1</option><option>T2</option><option>T3</option>
-    <option>T4</option><option>T5</option><option>T6</option>
-    <option>T7</option><option>T8</option><option>T9</option>
-  </select>
+  <div class="input-wrap">
+    <select id="gdTopic">
+      <option value="">Select / Update GD Topic</option>
+      <option>T1</option><option>T2</option><option>T3</option>
+      <option>T4</option><option>T5</option><option>T6</option>
+      <option>T7</option><option>T8</option><option>T9</option>
+    </select>
+  </div>
 
   <button class="btn-main" onclick="allocateGD()">Allocate GD</button>
-  <div id="gdResult"></div>
+
+  <div id="gdExisting" class="sublist"></div>
 </div>
 
 <!-- SEMINAR -->
 <div class="box">
-  <h3>Seminar</h3>
+  <h3>Seminar (<span id="semDate"></span>)</h3>
   <div id="seminarExisting" class="sublist"></div>
   <div id="seminarList"></div>
   <button class="btn-main" onclick="saveSeminar()">Save Seminar Allocation</button>
@@ -111,120 +138,75 @@ ul{margin-left:18px;}
 
 <!-- PI -->
 <div class="box">
-  <h3>Personal Interview</h3>
+  <h3>Personal Interview (<span id="piDate"></span>)</h3>
   <div id="piExisting" class="sublist"></div>
   <div id="piList"></div>
   <button class="btn-main" onclick="savePI()">Save PI Allocation</button>
 </div>
 
 <button class="btn-close" onclick="closeAll()">Close</button>
-
 </div>
 
-<!-- EVALUATION -->
 <div id="evaluate" class="section">
   <iframe src="faculty_evaluation.html"
-    style="width:100%;height:700px;border:none;border-radius:12px">
-  </iframe>
+    style="width:100%;height:700px;border:none;border-radius:14px"></iframe>
   <button class="btn-close" onclick="closeAll()">Close</button>
 </div>
 
 <div class="footer">
-  Developed by Dr. Rajesh Akula
-  <div>© 2026 · IIEST Shibpur</div>
+  Developed by Dr. Rajesh Akula<br>© 2026 · IIEST Shibpur
 </div>
 
 </div>
 
 <script>
-const BACKEND =
-"https://script.google.com/macros/s/AKfycbwbaRyzcaGcw4XOHWtX3v4_-e9jByu11zlsSvFRPP_4zbFm57p0QB-eJJdjezj8juZsDA/exec";
+const BACKEND="https://script.google.com/macros/s/AKfycbxbb1jVd5GSYDmH9HJ7_zadV5n9Q4NqTOFEA0ZalZY3_IJvVCgEt-a5GVICSbfgFHHNYg/exec";
 
-/* NAV */
-function openAllocate(){ home.style.display="none"; allocate.style.display="block"; }
-function openEvaluate(){ home.style.display="none"; evaluate.style.display="block"; }
-function closeAll(){
-  allocate.style.display="none";
-  evaluate.style.display="none";
-  home.style.display="block";
+function openAllocate(){home.style.display="none";allocate.style.display="block";}
+function openEvaluate(){home.style.display="none";evaluate.style.display="block";}
+function closeAll(){allocate.style.display="none";evaluate.style.display="none";home.style.display="block";}
+
+function resetAll(){
+  gdDate.textContent=semDate.textContent=piDate.textContent=allocDate.value;
+  gdExisting.innerHTML=seminarExisting.innerHTML=piExisting.innerHTML="";
+  seminarList.innerHTML=piList.innerHTML="";
+  loadAllocations();
 }
 
-function disableAll(state){
-  document.querySelectorAll("button").forEach(b=>b.disabled=state);
-}
-
-/* LOAD ALLOCATIONS BY CATEGORY */
-function loadAllocationsByCategory(){
-  if(!allocDate.value) return;
-
-  gdExisting.innerHTML =
-  seminarExisting.innerHTML =
-  piExisting.innerHTML =
-    "<div class='loading'>Loading…</div>";
-
+function loadAllocations(){
   fetch(BACKEND,{
     method:"POST",
-    body:new URLSearchParams({
-      action:"getAllocationsByDate",
-      date:allocDate.value
-    })
-  })
-  .then(r=>r.json())
-  .then(res=>{
-    const byCat={GD:[],SEMINAR:[],PI:[]};
+    body:new URLSearchParams({action:"getAllocationsByDate",date:allocDate.value})
+  }).then(r=>r.json()).then(res=>{
+    const g={GD:[],SEMINAR:[],PI:[]};
+    res.allocations.forEach(a=>g[a.category].push(a));
 
-    res.allocations.forEach(a=>{
-      byCat[a.category]?.push(a);
-    });
+    gdExisting.innerHTML=g.GD.length
+      ? "<ul>"+g.GD.map(x=>`<li>${x.roll} – ${x.name} <b>[${x.topic}]</b></li>`).join("")+"</ul>"
+      : "<i>No GD</i>";
 
-    renderList(gdExisting,byCat.GD);
-    renderList(seminarExisting,byCat.SEMINAR);
-    renderList(piExisting,byCat.PI);
+    seminarExisting.innerHTML=g.SEMINAR.length
+      ? "<ul>"+g.SEMINAR.map(x=>`<li>${x.roll} – ${x.name}</li>`).join("")+"</ul>"
+      : "<i>No Seminar</i>";
 
-    loadSeminarEligible();
-    loadPIEligible();
+    piExisting.innerHTML=g.PI.length
+      ? "<ul>"+g.PI.map(x=>`<li>${x.roll} – ${x.name}</li>`).join("")+"</ul>"
+      : "<i>No PI</i>";
   });
 }
 
-function renderList(el,list){
-  if(!list.length){
-    el.innerHTML="<i>No allocations</i>";
-    return;
-  }
-  el.innerHTML="<ul>"+list.map(s=>
-    `<li>${s.roll} – ${s.name}</li>`
-  ).join("")+"</ul>";
-}
-
-/* GD */
 function allocateGD(){
-  if(!allocDate.value || !gdTopic.value){
-    alert("Select date and GD topic");
-    return;
-  }
-
-  disableAll(true);
-  gdResult.innerHTML="<div class='loading'>Allocating GD…</div>";
-
   fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({
       action:"saveGDAllocation",
-      topic:gdTopic.value,
-      date:allocDate.value
+      date:allocDate.value,
+      topic:gdTopic.value
     })
-  })
-  .then(r=>r.json())
-  .then(res=>{
-    gdResult.innerHTML=`<b>${res.count} students allocated</b>`;
-    loadAllocationsByCategory();
-  })
-  .finally(()=>disableAll(false));
+  }).then(()=>{loadAllocations();loadSeminarEligible();});
 }
 
-/* SEMINAR */
 function loadSeminarEligible(){
-  seminarList.innerHTML="<div class='loading'>Loading…</div>";
   fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({
@@ -234,14 +216,15 @@ function loadSeminarEligible(){
   }).then(r=>r.json()).then(res=>{
     seminarList.innerHTML=res.students.map(s=>
       `<label><input type="checkbox" value="${s.roll}"> ${s.roll} – ${s.name}</label><br>`
-    ).join("") || "No eligible students";
+    ).join("")||"<i>No eligible students</i>";
   });
 }
-function saveSeminar(){ saveIndividuals("SEMINAR","seminarList"); }
 
-/* PI */
+function saveSeminar(){
+  save("SEMINAR","seminarList",()=>{loadAllocations();loadPIEligible();});
+}
+
 function loadPIEligible(){
-  piList.innerHTML="<div class='loading'>Loading…</div>";
   fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({
@@ -251,19 +234,14 @@ function loadPIEligible(){
   }).then(r=>r.json()).then(res=>{
     piList.innerHTML=res.students.map(s=>
       `<label><input type="checkbox" value="${s.roll}"> ${s.roll} – ${s.name}</label><br>`
-    ).join("") || "No eligible students";
+    ).join("")||"<i>No eligible students</i>";
   });
 }
-function savePI(){ saveIndividuals("PI","piList"); }
 
-/* SAVE */
-function saveIndividuals(cat,box){
-  const rolls=[...document.querySelectorAll(`#${box} input:checked`)]
-    .map(i=>i.value);
+function savePI(){save("PI","piList",loadAllocations);}
 
-  if(!rolls.length){ alert("Select students"); return; }
-
-  disableAll(true);
+function save(cat,id,cb){
+  const rolls=[...document.querySelectorAll(`#${id} input:checked`)].map(i=>i.value);
   fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({
@@ -272,15 +250,10 @@ function saveIndividuals(cat,box){
       date:allocDate.value,
       rolls:rolls.join(",")
     })
-  })
-  .then(()=>loadAllocationsByCategory())
-  .finally(()=>disableAll(false));
+  }).then(cb);
 }
 
-function logout(){
-  if(confirm("Logout?")) location.href="login.html";
-}
+function logout(){location.href="login.html";}
 </script>
-
 </body>
 </html>
