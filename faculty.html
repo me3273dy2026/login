@@ -1,120 +1,280 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Faculty Dashboard</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Faculty Dashboard | ME3273</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
-body{font-family:Segoe UI;background:#203a43;margin:0}
-.card{max-width:1100px;margin:20px auto;background:#fff;
-padding:24px;border-radius:14px}
-button{width:100%;padding:12px;margin-top:10px;
-border:none;border-radius:24px;font-weight:600}
-.btn{background:#203a43;color:#fff}
-.btn-red{background:#c0392b;color:#fff}
-.box{background:#f4f7fb;padding:16px;margin-top:14px;border-radius:12px}
-.sub{background:#fff;padding:10px;border-radius:8px;margin-top:8px}
-input,select{width:100%;padding:10px;border-radius:8px}
-.msg{margin-top:10px;font-weight:700;color:#c0392b}
+*{box-sizing:border-box;}
+body{
+  font-family:"Segoe UI",Arial,sans-serif;
+  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  min-height:100vh;margin:0;
+  display:flex;justify-content:center;
+}
+.card{
+  background:#fff;
+  width:100%;max-width:1100px;
+  margin:24px 12px;
+  padding:28px;
+  border-radius:16px;
+  box-shadow:0 15px 40px rgba(0,0,0,.25);
+}
+h1{text-align:center;color:#e67e22;margin-bottom:6px;}
+h2{text-align:center;color:#555;font-size:15px;margin-bottom:22px;}
+
+button{
+  width:100%;padding:12px;margin-top:12px;
+  border:none;border-radius:30px;
+  font-size:15px;font-weight:600;
+  cursor:pointer;
+}
+button:disabled{background:#999;cursor:not-allowed;}
+
+.btn-main{background:#203a43;color:#fff;}
+.btn-alloc{background:#27ae60;color:#fff;}
+.btn-eval{background:#2980b9;color:#fff;}
+.btn-close{background:#7f8c8d;color:#fff;}
+.btn-logout{background:#c0392b;color:#fff;}
+
+.section{display:none;margin-top:20px;}
+.box{
+  background:#f5f7fa;
+  padding:16px;
+  border-radius:12px;
+  margin-top:14px;
+}
+.sublist{
+  background:#fff;
+  padding:12px;
+  border-radius:10px;
+  margin-top:10px;
+}
+
+input,select{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #ccc;
+}
+
+.status{
+  margin-top:14px;
+  text-align:center;
+  font-weight:700;
+  color:#c0392b;
+}
+
+.footer{
+  margin-top:30px;text-align:center;
+  font-size:13px;color:#5f6f78;font-weight:600;
+}
+.footer div{font-size:12px;color:#7a8a93;}
 </style>
 </head>
 
 <body>
+
 <div class="card">
-<h2>Faculty Dashboard</h2>
 
+<h1>Faculty Dashboard</h1>
+<h2>ME3273 · Weekly Allocation & Evaluation</h2>
+
+<!-- HOME -->
 <div id="home">
-  <button class="btn" onclick="openAlloc()">Allocate</button>
-  <button class="btn" onclick="openEval()">Evaluate</button>
-  <button class="btn-red" onclick="logout()">Logout</button>
+  <button class="btn-alloc" onclick="openAllocate()">Allocate Students</button>
+  <button class="btn-eval" onclick="openEvaluate()">Evaluate Students</button>
+  <button class="btn-logout" onclick="logout()">Logout</button>
 </div>
 
-<div id="alloc" style="display:none">
+<!-- ================= ALLOCATION ================= -->
+<div id="allocate" class="section">
 
 <div class="box">
-  <b>Date</b>
-  <input type="date" id="date" onchange="onDate()">
+  <label><b>Allocation Date</b></label>
+  <input type="date" id="allocDate" onchange="onDateChange()">
 </div>
 
+<div id="status" class="status"></div>
+
+<!-- GD -->
 <div class="box">
-  <b>Group Discussion</b>
-  <select id="gd"></select>
-  <button class="btn" onclick="run('gd')">Save GD</button>
-  <div id="gdList" class="sub"></div>
+  <h3>Group Discussion</h3>
+  <select id="gdTopic"></select>
+  <button class="btn-main" onclick="allocateGD()">Save / Update GD</button>
+  <div id="gdExisting" class="sublist"></div>
 </div>
 
+<!-- SEMINAR -->
 <div class="box">
-  <b>Seminar</b>
-  <div id="semList"></div>
-  <button class="btn" onclick="run('sem')">Save Seminar</button>
+  <h3>Seminar</h3>
+  <div id="seminarExisting" class="sublist"></div>
+  <div id="seminarList"></div>
+  <button class="btn-main" onclick="saveSeminar()">Save / Update Seminar</button>
 </div>
 
+<!-- PI -->
 <div class="box">
-  <b>Personal Interview</b>
+  <h3>Personal Interview</h3>
+  <div id="piExisting" class="sublist"></div>
   <div id="piList"></div>
-  <button class="btn" onclick="run('pi')">Save PI</button>
+  <button class="btn-main" onclick="savePI()">Save / Update PI</button>
 </div>
 
-<div id="msg" class="msg"></div>
-<button class="btn-red" onclick="back()">Close</button>
+<button class="btn-close" onclick="closeAll()">Close</button>
 </div>
 
-<div id="eval" style="display:none">
-<iframe src="faculty_evaluation.html"
-style="width:100%;height:700px;border:none"></iframe>
-<button class="btn-red" onclick="back()">Close</button>
+<!-- ================= EVALUATION ================= -->
+<div id="evaluate" class="section">
+  <iframe src="faculty_evaluation.html"
+    style="width:100%;height:700px;border:none;border-radius:12px">
+  </iframe>
+  <button class="btn-close" onclick="closeAll()">Close</button>
+</div>
+
+<div class="footer">
+  Developed by Dr. Rajesh Akula
+  <div>© 2026 · IIEST Shibpur</div>
 </div>
 
 </div>
 
 <script>
-const BACKEND="https://script.google.com/macros/s/AKfycbyhesv5WFOs8MTKfh0SGoUjEbCqF4ZeKkALqrvhNu_iJAwwVF7o409PP5XLQ_1pgYXFHw/exec";
+const BACKEND = "https://script.google.com/macros/s/AKfycbyhesv5WFOs8MTKfh0SGoUjEbCqF4ZeKkALqrvhNu_iJAwwVF7o409PP5XLQ_1pgYXFHw/exec";
 
-function disable(v,msg){
-  document.querySelectorAll("button").forEach(b=>b.disabled=v);
-  document.getElementById("msg").innerText=msg||"";
+/* ---------- GLOBAL UI LOCK ---------- */
+function lockUI(msg){
+  document.querySelectorAll("button").forEach(b=>b.disabled=true);
+  status.textContent = msg || "";
+}
+function unlockUI(){
+  document.querySelectorAll("button").forEach(b=>b.disabled=false);
+  status.textContent = "";
 }
 
-function openAlloc(){home.style.display="none";alloc.style.display="block"}
-function openEval(){home.style.display="none";eval.style.display="block"}
-function back(){alloc.style.display=eval.style.display="none";home.style.display="block"}
-
-function onDate(){
-  loadGD();
-  loadAlloc();
+/* ---------- NAV ---------- */
+function openAllocate(){home.style.display="none";allocate.style.display="block";}
+function openEvaluate(){home.style.display="none";evaluate.style.display="block";}
+function closeAll(){
+  allocate.style.display="none";
+  evaluate.style.display="none";
+  home.style.display="block";
 }
 
-function loadGD(){
-  gd.innerHTML="<option value=''>Select GD Topic</option>";
-  fetch(BACKEND,{method:"POST",
-    body:new URLSearchParams({action:"getAvailableGDTopics",date:date.value})
-  }).then(r=>r.json()).then(j=>{
-    j.topics.forEach(t=>{
-      gd.innerHTML+=`<option>${t}</option>`;
+/* ---------- DATE CHANGE ---------- */
+async function onDateChange(){
+  if(!allocDate.value) return;
+
+  lockUI("Loading… Please wait");
+
+  gdTopic.innerHTML="";
+  seminarList.innerHTML="";
+  piList.innerHTML="";
+  gdExisting.innerHTML="";
+  seminarExisting.innerHTML="";
+  piExisting.innerHTML="";
+
+  try{
+    await Promise.all([
+      loadGDTopics(),
+      loadAllocations()
+    ]);
+  } finally {
+    unlockUI();
+  }
+}
+
+/* ---------- LOAD GD TOPICS ---------- */
+function loadGDTopics(){
+  gdTopic.innerHTML="<option value=''>Select / Update GD Topic</option>";
+  return fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getAvailableGDTopics",
+      date:allocDate.value
+    })
+  }).then(r=>r.json()).then(res=>{
+    res.topics.forEach(t=>{
+      const o=document.createElement("option");
+      o.value=t;o.textContent=t;
+      gdTopic.appendChild(o);
     });
   });
 }
 
-function loadAlloc(){
-  fetch(BACKEND,{method:"POST",
-    body:new URLSearchParams({action:"getAllocationsByDate",date:date.value})
-  }).then(r=>r.json()).then(j=>{
+/* ---------- LOAD EXISTING ---------- */
+function loadAllocations(){
+  return fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getAllocationsByDate",
+      date:allocDate.value
+    })
+  }).then(r=>r.json()).then(res=>{
     const g={GD:[],SEMINAR:[],PI:[]};
-    j.allocations.forEach(a=>g[a.category].push(a));
-    gdList.innerHTML=g.GD.map(x=>`${x.name} (${x.topic})`).join("<br>");
+    res.allocations.forEach(a=>g[a.category].push(a));
+
+    gdExisting.innerHTML = g.GD.length
+      ? g.GD.map(x=>`${x.roll} – ${x.name} [${x.topic}]`).join("<br>")
+      : "<i>No GD</i>";
+
+    seminarExisting.innerHTML = g.SEMINAR.length
+      ? g.SEMINAR.map(x=>`${x.roll} – ${x.name}`).join("<br>")
+      : "<i>No Seminar</i>";
+
+    piExisting.innerHTML = g.PI.length
+      ? g.PI.map(x=>`${x.roll} – ${x.name}`).join("<br>")
+      : "<i>No PI</i>";
   });
 }
 
-function run(t){
-  disable(true,"Updating… please wait");
-  if(t==="gd"){
-    fetch(BACKEND,{method:"POST",
-      body:new URLSearchParams({action:"saveGDAllocation",date:date.value,topic:gd.value})
-    }).then(()=>{disable(false);onDate()});
-  }
+/* ---------- GD ---------- */
+function allocateGD(){
+  lockUI("Updating Group Discussion… Please wait");
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"saveGDAllocation",
+      date:allocDate.value,
+      topic:gdTopic.value
+    })
+  }).then(onDateChange);
 }
 
-function logout(){location.href="login.html";}
+/* ---------- SEMINAR ---------- */
+function saveSeminar(){
+  lockUI("Updating Seminar… Please wait");
+  save("SEMINAR","seminarList",onDateChange);
+}
+
+/* ---------- PI ---------- */
+function savePI(){
+  lockUI("Updating Personal Interview… Please wait");
+  save("PI","piList",onDateChange);
+}
+
+/* ---------- SAVE HELPER ---------- */
+function save(cat,box,cb){
+  const rolls=[...document.querySelectorAll(`#${box} input:checked`)]
+    .map(i=>i.value);
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"saveIndividualAllocation",
+      category:cat,
+      date:allocDate.value,
+      rolls:rolls.join(",")
+    })
+  }).then(cb);
+}
+
+/* ---------- LOGOUT ---------- */
+function logout(){
+  if(confirm("Logout?")) location.href="login.html";
+}
 </script>
+
 </body>
 </html>
