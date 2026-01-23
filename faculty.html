@@ -36,6 +36,7 @@ input{width:100%;padding:10px;border-radius:8px}
 <div class="box">
   <b>Date</b>
   <input type="date" id="date" onchange="onDate()">
+  <div id="dateStatus" style="margin-top:6px;color:#c0392b;font-weight:600;"></div>
 </div>
 
 <!-- GD -->
@@ -91,7 +92,7 @@ function back(){
 /* ---------- DATE ---------- */
 async function onDate(){
   date.disabled = true;
-
+  dateStatus.innerText = "Loading… Please wait";
   gdOpenBtn.disabled = true;
   semOpenBtn.disabled = true;
   piOpenBtn.disabled = true;
@@ -104,6 +105,7 @@ async function onDate(){
   savePIBtn.style.display="none";
 
   await loadExisting();
+  dateStatus.innerText = "";
 }
 
 /* ---------- LOAD EXISTING ---------- */
