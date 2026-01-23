@@ -92,7 +92,7 @@ input{
   <input type="date" id="allocDate" onchange="onDateChange()">
 </div>
 
-<!-- GD -->
+<!-- ================= GD ================= -->
 <div class="box">
   <h3>Group Discussion</h3>
 
@@ -117,10 +117,13 @@ input{
   </button>
 </div>
 
-<!-- SEMINAR -->
+<!-- ================= SEMINAR ================= -->
 <div class="box">
   <h3>Seminar</h3>
+
   <div id="seminarExisting" class="sublist"></div>
+  <div id="seminarList" class="sublist"></div>
+
   <button id="saveSemBtn"
           class="btn-main"
           disabled
@@ -129,10 +132,13 @@ input{
   </button>
 </div>
 
-<!-- PI -->
+<!-- ================= PI ================= -->
 <div class="box">
   <h3>Personal Interview</h3>
+
   <div id="piExisting" class="sublist"></div>
+  <div id="piList" class="sublist"></div>
+
   <button id="savePIBtn"
           class="btn-main"
           disabled
@@ -157,30 +163,15 @@ input{
 <script>
 const BACKEND = "https://script.google.com/macros/s/AKfycbwtR83WSVuSgQyhp0kxHV27SIClPA3_b-D_RoNJsdp0AvRxV7Mhenl4zOiYRw8X2MU7Cg/exec";
 
-/* ---------- BUTTON CONTROL ---------- */
-function disableWorkflowButtons(){
-  gdOpenBtn.disabled = true;
-  saveGDBtn.disabled = true;
-  saveSemBtn.disabled = true;
-  savePIBtn.disabled = true;
-}
-function enableLogout(){
-  document.querySelectorAll(".btn-logout").forEach(b=>b.disabled=false);
-}
-
 /* ---------- NAV ---------- */
 function openAllocate(){
   home.style.display="none";
   allocate.style.display="block";
-
-  allocDate.disabled = false;
-  disableWorkflowButtons();
-  enableLogout();
+  resetState();
 }
 function openEvaluate(){
   home.style.display="none";
   evaluate.style.display="block";
-  enableLogout();
 }
 function closeAll(){
   allocate.style.display="none";
@@ -188,21 +179,27 @@ function closeAll(){
   home.style.display="block";
 }
 
+/* ---------- STATE RESET ---------- */
+function resetState(){
+  gdOpenBtn.disabled = true;
+  saveSemBtn.disabled = true;
+  savePIBtn.disabled = true;
+}
+
 /* ---------- DATE CHANGE ---------- */
 async function onDateChange(){
   if(!allocDate.value) return;
 
   status.textContent = "Loading… Please wait";
-  disableWorkflowButtons();
-  enableLogout();
+  resetState();
 
   gdOpenBtn.style.display="block";
-  saveGDBtn.style.display="none";
   gdSelectBox.style.display="none";
+  saveGDBtn.style.display="none";
 
   await loadExistingAllocations();
 
-  gdOpenBtn.disabled = false;   // 👈 enable GD only
+  gdOpenBtn.disabled = false;   // enable GD step
   status.textContent = "";
 }
 
@@ -237,21 +234,24 @@ async function loadExistingAllocations(){
     ? pi.map(x=>`${x.roll} – ${x.name}`).join("<br>")
     : "<i>No PI</i>";
 
-  if(hasGD) saveSemBtn.disabled = false;
-  if(hasGD && hasSem) savePIBtn.disabled = false;
+  if(hasGD){
+    saveSemBtn.disabled = false;
+    await loadSeminarSelection();   // 🔥 restore seminar list
+  }
+  if(hasGD && hasSem){
+    savePIBtn.disabled = false;
+  }
 }
 
 /* ---------- GD ---------- */
 async function loadGDSelection(){
   status.textContent = "Loading… Please wait";
-  disableWorkflowButtons();
-  enableLogout();
 
   gdOpenBtn.style.display="none";
-  gdSelectBox.innerHTML="";
   gdSelectBox.style.display="block";
   saveGDBtn.style.display="block";
   saveGDBtn.disabled = true;
+  gdSelectBox.innerHTML="";
 
   const res = await fetch(BACKEND,{
     method:"POST",
@@ -269,15 +269,12 @@ async function loadGDSelection(){
       </label><br>`;
   });
 
-  saveGDBtn.disabled = false;   // 👈 ENABLE SAVE BUTTON
+  saveGDBtn.disabled = false;
   status.textContent = "";
 }
 
-/* ---------- SAVE GD ---------- */
 async function saveGD(){
   status.textContent = "Updating Group Discussion… Please wait";
-  disableWorkflowButtons();
-  enableLogout();
 
   const topics=[...gdSelectBox.querySelectorAll("input:checked")]
     .map(i=>i.value);
@@ -291,32 +288,101 @@ async function saveGD(){
     })
   });
 
-  await loadExistingAllocations();
-
   gdSelectBox.style.display="none";
   saveGDBtn.style.display="none";
   gdOpenBtn.style.display="block";
-  gdOpenBtn.disabled = false;
-  saveSemBtn.disabled = false;
 
+  await loadExistingAllocations();
   status.textContent = "";
 }
 
-/* ---------- SEMINAR ---------- */
-function saveSeminar(){
-  status.textContent = "Updating Seminar… Please wait";
-  saveSemBtn.disabled = true;
-  setTimeout(()=>{
-    savePIBtn.disabled = false;
-    status.textContent = "";
-  },800);
+/* ---------- SEMINAR (RESTORED) ---------- */
+async function loadSeminarSelection(){
+  seminarList.innerHTML="";
+
+  const eligible = await fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getEligibleSeminar",
+      date:allocDate.value
+    })
+  }).then(r=>r.json());
+
+  const existing = await fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getAllocationsByDate",
+      date:allocDate.value
+    })
+  }).then(r=>r.json());
+
+  const assignedToday = new Set(
+    existing.allocations
+      .filter(a=>a.category==="SEMINAR")
+      .map(a=>a.roll)
+  );
+
+  if(eligible.students.length===0){
+    seminarList.innerHTML="<i>No eligible students</i>";
+    return;
+  }
+
+  eligible.students.forEach(s=>{
+    seminarList.innerHTML += `
+      <label>
+        <input type="checkbox"
+               value="${s.roll}"
+               ${assignedToday.has(s.roll)?"checked":""}>
+        ${s.roll} – ${s.name}
+      </label><br>`;
+  });
+}
+
+async function saveSeminar(){
+  status.textContent="Updating Seminar… Please wait";
+  saveSemBtn.disabled=true;
+
+  const rolls=[...seminarList.querySelectorAll("input:checked")]
+    .map(i=>i.value);
+
+  await fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"saveIndividualAllocation",
+      category:"SEMINAR",
+      date:allocDate.value,
+      rolls:rolls.join(",")
+    })
+  });
+
+  await loadExistingAllocations();
+  savePIBtn.disabled=false;
+  status.textContent="";
 }
 
 /* ---------- PI ---------- */
-function savePI(){
-  status.textContent = "Updating Personal Interview… Please wait";
-  savePIBtn.disabled = true;
-  setTimeout(()=>status.textContent="",800);
+async function savePI(){
+  status.textContent="Updating Personal Interview… Please wait";
+  savePIBtn.disabled=true;
+
+  const eligible = await fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getEligiblePI",
+      date:allocDate.value
+    })
+  }).then(r=>r.json());
+
+  piList.innerHTML="";
+  eligible.students.forEach(s=>{
+    piList.innerHTML+=`
+      <label>
+        <input type="checkbox" value="${s.roll}">
+        ${s.roll} – ${s.name}
+      </label><br>`;
+  });
+
+  status.textContent="";
 }
 
 /* ---------- LOGOUT ---------- */
