@@ -134,6 +134,33 @@ async function loadExisting(){
     if(a.category==="PI") pi.push(a);
   });
 
+  // Show existing allocations
+  gdExisting.innerHTML = gd.length
+    ? gd.map(x=>`${x.name} [${x.topic}]`).join("<br>")
+    : "<i>No GD</i>";
+
+  semExisting.innerHTML = sem.length
+    ? sem.map(x=>`${x.name}`).join("<br>")
+    : "<i>No Seminar</i>";
+
+  piExisting.innerHTML = pi.length
+    ? pi.map(x=>`${x.name}`).join("<br>")
+    : "<i>No PI</i>";
+
+  /* ===============================
+     STRICT FLOW ENFORCEMENT
+     =============================== */
+
+  // Always allow GD edit
+  gdOpenBtn.disabled = false;
+
+  // Seminar only after GD exists
+  semOpenBtn.disabled = gd.length === 0;
+
+  // PI only after Seminar exists
+  piOpenBtn.disabled = sem.length === 0;
+}
+
   // display existing
   gdExisting.innerHTML = gd.length
     ? gd.map(x=>`${x.name} [${x.topic}]`).join("<br>")
