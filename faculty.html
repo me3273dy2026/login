@@ -4,25 +4,26 @@
 <meta charset="UTF-8">
 <title>Faculty Dashboard</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
+
 <style>
 body{font-family:Segoe UI;background:#203a43;margin:0}
 .card{max-width:1100px;margin:20px auto;background:#fff;
 padding:24px;border-radius:14px}
 button{width:100%;padding:12px;margin-top:10px;
-border:none;border-radius:24px;font-weight:600}
+border:none;border-radius:24px;font-weight:600;cursor:pointer}
+button:disabled{background:#aaa;cursor:not-allowed}
 .btn{background:#203a43;color:#fff}
 .btn-red{background:#c0392b;color:#fff}
 .box{background:#f4f7fb;padding:16px;margin-top:14px;border-radius:12px}
 .sub{background:#fff;padding:10px;border-radius:8px;margin-top:8px}
 input{width:100%;padding:10px;border-radius:8px}
-.status{text-align:center;font-weight:700;color:#c0392b;margin-bottom:10px}
 </style>
 </head>
 
 <body>
 <div class="card">
+
 <h2>Faculty Dashboard</h2>
-<div id="status" class="status"></div>
 
 <div id="home">
   <button class="btn" onclick="openAlloc()">Allocate</button>
@@ -31,6 +32,7 @@ input{width:100%;padding:10px;border-radius:8px}
 
 <div id="alloc" style="display:none">
 
+<!-- DATE -->
 <div class="box">
   <b>Date</b>
   <input type="date" id="date" onchange="onDate()">
@@ -70,31 +72,44 @@ input{width:100%;padding:10px;border-radius:8px}
 <script>
 const BACKEND="https://script.google.com/macros/s/AKfycbwi-6_KbaFA3-JKZOGcxL-h5DUViqw0_1_OVAJsk02P5lJdpng7QSSwJ56akQXduxwEIw/exec";
 
+/* ---------- UTIL ---------- */
+function setLoading(btn){
+  btn.dataset.txt = btn.innerText;
+  btn.innerText = "Loading… Please wait";
+  btn.disabled = true;
+}
+function clearLoading(btn){
+  btn.innerText = btn.dataset.txt;
+}
+
+/* ---------- NAV ---------- */
 function openAlloc(){
   home.style.display="none";
   alloc.style.display="block";
+
+  // Rule 1
+  date.disabled=false;
+  gdOpenBtn.disabled=true;
+  semOpenBtn.disabled=true;
+  piOpenBtn.disabled=true;
 }
 function back(){
   alloc.style.display="none";
   home.style.display="block";
 }
 
-function onDate(){
-  status.innerText="Loading… Please wait";
-  gdOpenBtn.disabled=true;
-  semOpenBtn.disabled=true;
-  piOpenBtn.disabled=true;
+/* ---------- DATE ---------- */
+async function onDate(){
+  date.disabled=true;              // Rule 2
+  setLoading(date);
 
-  gdBox.style.display="none";
-  semBox.style.display="none";
-  piBox.style.display="none";
-  saveGDBtn.style.display="none";
-  saveSemBtn.style.display="none";
-  savePIBtn.style.display="none";
+  await loadExisting();
 
-  loadExisting();
+  clearLoading(date);
+  gdOpenBtn.disabled=false;        // only GD enabled
 }
 
+/* ---------- EXISTING ---------- */
 async function loadExisting(){
   const res = await fetch(BACKEND,{
     method:"POST",
@@ -111,17 +126,12 @@ async function loadExisting(){
   gdExisting.innerHTML = gd.length ? gd.map(x=>`${x.name} [${x.topic}]`).join("<br>") : "<i>No GD</i>";
   semExisting.innerHTML = sem.length ? sem.map(x=>`${x.name}`).join("<br>") : "<i>No Seminar</i>";
   piExisting.innerHTML = pi.length ? pi.map(x=>`${x.name}`).join("<br>") : "<i>No PI</i>";
-
-  gdOpenBtn.disabled=false;
-  if(gd.length) semOpenBtn.disabled=false;
-  if(sem.length) piOpenBtn.disabled=false;
-
-  status.innerText="";
 }
 
+/* ---------- GD ---------- */
 async function loadGD(){
-  status.innerText="Loading… Please wait";
-  gdOpenBtn.style.display="none";
+  setLoading(gdOpenBtn);
+
   gdBox.style.display="block";
   saveGDBtn.style.display="block";
   gdBox.innerHTML="";
@@ -132,17 +142,16 @@ async function loadGD(){
   }).then(r=>r.json());
 
   res.topics.forEach(t=>{
-    gdBox.innerHTML+=`
-      <label><input type="checkbox" value="${t.topic}" ${t.checked?"checked":""}> ${t.topic}</label><br>`;
+    gdBox.innerHTML+=`<label><input type="checkbox" value="${t.topic}" ${t.checked?"checked":""}> ${t.topic}</label><br>`;
   });
 
-  status.innerText="";
+  clearLoading(gdOpenBtn);
 }
 
 async function saveGD(){
-  status.innerText="Saving GD…";
-  const topics=[...gdBox.querySelectorAll("input:checked")].map(i=>i.value);
+  setLoading(saveGDBtn);
 
+  const topics=[...gdBox.querySelectorAll("input:checked")].map(i=>i.value);
   await fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({action:"saveGDAllocation",date:date.value,topics:topics.join(",")})
@@ -150,14 +159,17 @@ async function saveGD(){
 
   gdBox.style.display="none";
   saveGDBtn.style.display="none";
-  gdOpenBtn.style.display="block";
+  gdOpenBtn.disabled=true;          // Rule 3
+  semOpenBtn.disabled=false;
 
   await loadExisting();
+  clearLoading(saveGDBtn);
 }
 
+/* ---------- SEMINAR ---------- */
 async function loadSeminar(){
-  status.innerText="Loading… Please wait";
-  semOpenBtn.style.display="none";
+  setLoading(semOpenBtn);
+
   semBox.style.display="block";
   saveSemBtn.style.display="block";
   semBox.innerHTML="";
@@ -168,37 +180,34 @@ async function loadSeminar(){
   }).then(r=>r.json());
 
   res.students.forEach(s=>{
-    semBox.innerHTML+=`
-      <label><input type="checkbox" value="${s.roll}" ${s.checked?"checked":""}> ${s.name}</label><br>`;
+    semBox.innerHTML+=`<label><input type="checkbox" value="${s.roll}" ${s.checked?"checked":""}> ${s.name}</label><br>`;
   });
 
-  status.innerText="";
+  clearLoading(semOpenBtn);
 }
 
 async function saveSeminar(){
-  status.innerText="Saving Seminar…";
-  const rolls=[...semBox.querySelectorAll("input:checked")].map(i=>i.value);
+  setLoading(saveSemBtn);
 
+  const rolls=[...semBox.querySelectorAll("input:checked")].map(i=>i.value);
   await fetch(BACKEND,{
     method:"POST",
-    body:new URLSearchParams({
-      action:"saveIndividualAllocation",
-      category:"SEMINAR",
-      date:date.value,
-      rolls:rolls.join(",")
-    })
+    body:new URLSearchParams({action:"saveIndividualAllocation",category:"SEMINAR",date:date.value,rolls:rolls.join(",")})
   });
 
   semBox.style.display="none";
   saveSemBtn.style.display="none";
-  semOpenBtn.style.display="block";
+  semOpenBtn.disabled=true;         // Rule 4
+  piOpenBtn.disabled=false;
 
   await loadExisting();
+  clearLoading(saveSemBtn);
 }
 
+/* ---------- PI ---------- */
 async function loadPI(){
-  status.innerText="Loading… Please wait";
-  piOpenBtn.style.display="none";
+  setLoading(piOpenBtn);
+
   piBox.style.display="block";
   savePIBtn.style.display="block";
   piBox.innerHTML="";
@@ -209,34 +218,34 @@ async function loadPI(){
   }).then(r=>r.json());
 
   res.students.forEach(s=>{
-    piBox.innerHTML+=`
-      <label><input type="checkbox" value="${s.roll}" ${s.checked?"checked":""}> ${s.name}</label><br>`;
+    piBox.innerHTML+=`<label><input type="checkbox" value="${s.roll}" ${s.checked?"checked":""}> ${s.name}</label><br>`;
   });
 
-  status.innerText="";
+  clearLoading(piOpenBtn);
 }
 
 async function savePI(){
-  status.innerText="Saving PI…";
-  const rolls=[...piBox.querySelectorAll("input:checked")].map(i=>i.value);
+  setLoading(savePIBtn);
 
+  const rolls=[...piBox.querySelectorAll("input:checked")].map(i=>i.value);
   await fetch(BACKEND,{
     method:"POST",
-    body:new URLSearchParams({
-      action:"saveIndividualAllocation",
-      category:"PI",
-      date:date.value,
-      rolls:rolls.join(",")
-    })
+    body:new URLSearchParams({action:"saveIndividualAllocation",category:"PI",date:date.value,rolls:rolls.join(",")})
   });
 
   piBox.style.display="none";
   savePIBtn.style.display="none";
-  piOpenBtn.style.display="block";
+
+  // Rule 5: everything disabled
+  gdOpenBtn.disabled=true;
+  semOpenBtn.disabled=true;
+  piOpenBtn.disabled=true;
 
   await loadExisting();
+  clearLoading(savePIBtn);
 }
 
+/* ---------- LOGOUT ---------- */
 function logout(){location.href="login.html";}
 </script>
 </body>
