@@ -17,7 +17,10 @@ button:disabled{background:#aaa;cursor:not-allowed}
 .btn-red{background:#c0392b;color:#fff}
 .box{background:#f4f7fb;padding:16px;margin-top:14px;border-radius:12px}
 .sub{background:#fff;padding:10px;border-radius:8px;margin-top:8px}
-input{width:100%;padding:10px;border-radius:8px}
+input,select,textarea{
+  width:100%;padding:10px;border-radius:8px;border:1px solid #ccc
+}
+textarea{resize:vertical}
 </style>
 </head>
 
@@ -26,7 +29,7 @@ input{width:100%;padding:10px;border-radius:8px}
 
 <h2>Faculty Dashboard</h2>
 
-<!-- HOME -->
+<!-- ================= HOME ================= -->
 <div id="home">
   <button class="btn" onclick="openAlloc()">Allocation</button>
   <button class="btn-blue" onclick="openEval()">Evaluation</button>
@@ -70,11 +73,45 @@ input{width:100%;padding:10px;border-radius:8px}
 </div>
 
 <!-- ================= EVALUATION ================= -->
-<div id="evalSection" style="display:none">
-  <iframe src="faculty_evaluation.html"
-    style="width:100%;height:720px;border:none;border-radius:12px">
-  </iframe>
-  <button class="btn-red" onclick="closeEval()">Close</button>
+<div id="evaluation" style="display:none">
+
+<div class="box">
+  <b>Select Student</b>
+  <select id="evalRoll" onchange="loadStudentDetails()">
+    <option value="">Select Roll Number</option>
+  </select>
+</div>
+
+<div id="studentInfo" class="box" style="display:none"></div>
+
+<div class="box">
+  <b>Evaluation Type</b>
+  <select id="evalType" onchange="loadLatestPerformance()">
+    <option value="">Select</option>
+    <option value="GD">Group Discussion</option>
+    <option value="SEMINAR">Seminar</option>
+    <option value="PI">Personal Interview</option>
+  </select>
+</div>
+
+<div class="box">
+  <b>Positives</b>
+  <textarea id="positives"></textarea>
+</div>
+
+<div class="box">
+  <b>Improvements</b>
+  <textarea id="improvements"></textarea>
+</div>
+
+<div class="box">
+  <b>Marks</b>
+  <input type="number" id="marks" min="0" max="100">
+</div>
+
+<button class="btn-blue" onclick="saveEvaluation()">Save Evaluation</button>
+<button class="btn-red" onclick="closeEval()">Close</button>
+
 </div>
 
 </div>
@@ -82,91 +119,96 @@ input{width:100%;padding:10px;border-radius:8px}
 <script>
 const BACKEND="https://script.google.com/macros/s/AKfycbwi-6_KbaFA3-JKZOGcxL-h5DUViqw0_1_OVAJsk02P5lJdpng7QSSwJ56akQXduxwEIw/exec";
 
-/* ---------- NAV ---------- */
+/* ================= NAV ================= */
 function openAlloc(){
   home.style.display="none";
-  evalSection.style.display="none";
+  evaluation.style.display="none";
   alloc.style.display="block";
-
-  date.disabled=false;
-  gdOpenBtn.disabled=true;
-  semOpenBtn.disabled=true;
-  piOpenBtn.disabled=true;
 }
-
-function openEval(){
-  home.style.display="none";
-  alloc.style.display="none";
-  evalSection.style.display="block";
-}
-
 function closeAlloc(){
   alloc.style.display="none";
   home.style.display="block";
 }
-
+function openEval(){
+  home.style.display="none";
+  alloc.style.display="none";
+  evaluation.style.display="block";
+  loadAllStudents();
+}
 function closeEval(){
-  evalSection.style.display="none";
+  evaluation.style.display="none";
   home.style.display="block";
 }
+function logout(){ location.href="login.html"; }
 
-/* ---------- DATE ---------- */
-async function onDate(){
-  date.disabled=true;
-  dateStatus.innerText="Loading… Please wait";
+/* ================= EVALUATION ================= */
+async function loadAllStudents(){
+  const res = await fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({action:"getAllStudents"})
+  }).then(r=>r.json());
 
-  gdOpenBtn.disabled=true;
-  semOpenBtn.disabled=true;
-  piOpenBtn.disabled=true;
-
-  gdBox.style.display="none";
-  semBox.style.display="none";
-  piBox.style.display="none";
-  saveGDBtn.style.display="none";
-  saveSemBtn.style.display="none";
-  savePIBtn.style.display="none";
-
-  await loadExisting();
-  dateStatus.innerText="";
+  evalRoll.innerHTML='<option value="">Select Roll Number</option>';
+  res.students.forEach(s=>{
+    evalRoll.innerHTML+=`<option value="${s.roll}">${s.roll} – ${s.name}</option>`;
+  });
 }
 
-/* ---------- LOAD EXISTING ---------- */
-async function loadExisting(){
+async function loadStudentDetails(){
+  if(!evalRoll.value) return;
+
   const res = await fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({
-      action:"getAllocationsByDate",
-      date:date.value
+      action:"getStudentDetailsByRoll",
+      roll:evalRoll.value
     })
   }).then(r=>r.json());
 
-  const gd=[], sem=[], pi=[];
-  res.allocations.forEach(a=>{
-    if(a.category==="GD") gd.push(a);
-    if(a.category==="SEMINAR") sem.push(a);
-    if(a.category==="PI") pi.push(a);
-  });
-
-  gdExisting.innerHTML = gd.length
-    ? gd.map(x=>`${x.name} [${x.topic}]`).join("<br>")
-    : "<i>No GD</i>";
-
-  semExisting.innerHTML = sem.length
-    ? sem.map(x=>`${x.name}`).join("<br>")
-    : "<i>No Seminar</i>";
-
-  piExisting.innerHTML = pi.length
-    ? pi.map(x=>`${x.name}`).join("<br>")
-    : "<i>No PI</i>";
-
-  gdOpenBtn.disabled=false;
-  semOpenBtn.disabled=true;
-  piOpenBtn.disabled=true;
+  studentInfo.style.display="block";
+  studentInfo.innerHTML=`
+    <b>${res.name}</b><br>
+    Project: ${res.projectName}<br>
+    Team size: ${res.team.length}
+  `;
 }
 
-/* ---------- LOGOUT ---------- */
-function logout(){
-  location.href="login.html";
+async function loadLatestPerformance(){
+  if(!evalRoll.value || !evalType.value) return;
+
+  const res = await fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getLatestPerformance",
+      roll:evalRoll.value,
+      type:evalType.value
+    })
+  }).then(r=>r.json());
+
+  positives.value = res.status==="FOUND" ? res.positives : "";
+  improvements.value = res.status==="FOUND" ? res.improvements : "";
+  marks.value = res.status==="FOUND" ? res.marks : "";
+}
+
+async function saveEvaluation(){
+  if(!evalRoll.value || !evalType.value){
+    alert("Select student and evaluation type");
+    return;
+  }
+
+  await fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"savePerformance",
+      roll:evalRoll.value,
+      type:evalType.value,
+      positives:positives.value,
+      improvements:improvements.value,
+      marks:marks.value
+    })
+  });
+
+  alert("Evaluation saved successfully");
 }
 </script>
 
