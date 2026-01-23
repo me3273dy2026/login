@@ -48,6 +48,14 @@ button:disabled{background:#999;cursor:not-allowed;}
 .loading{text-align:center;font-weight:700;margin-top:12px;}
 ul{margin-left:18px;}
 
+.sublist{
+  background:#fff;
+  border-radius:8px;
+  padding:10px;
+  margin-top:8px;
+  font-size:14px;
+}
+
 .footer{
   margin-top:30px;text-align:center;
   font-size:13px;color:#5f6f78;font-weight:600;
@@ -63,7 +71,6 @@ ul{margin-left:18px;}
 <h1>Faculty Dashboard</h1>
 <h2>ME3273 · Weekly Allocation</h2>
 
-<!-- HOME -->
 <div id="home">
   <button class="btn-alloc" onclick="openAllocate()">Allocate Students</button>
   <button class="btn-eval" onclick="openEvaluate()">Evaluate Students</button>
@@ -75,18 +82,13 @@ ul{margin-left:18px;}
 
 <div class="box">
   <label><b>Date of Allocation</b></label>
-  <input type="date" id="allocDate" onchange="loadExistingAllocations()">
-</div>
-
-<!-- EXISTING ALLOCATIONS -->
-<div class="box">
-  <h3>Existing Allocations (Selected Date)</h3>
-  <div id="existingAlloc"></div>
+  <input type="date" id="allocDate" onchange="loadAllocationsByCategory()">
 </div>
 
 <!-- GD -->
 <div class="box">
   <h3>Group Discussion</h3>
+  <div id="gdExisting" class="sublist"></div>
 
   <select id="gdTopic">
     <option value="">Select GD Topic</option>
@@ -102,14 +104,16 @@ ul{margin-left:18px;}
 <!-- SEMINAR -->
 <div class="box">
   <h3>Seminar</h3>
-  <div id="seminarList">Auto-filtered list will appear here</div>
+  <div id="seminarExisting" class="sublist"></div>
+  <div id="seminarList"></div>
   <button class="btn-main" onclick="saveSeminar()">Save Seminar Allocation</button>
 </div>
 
 <!-- PI -->
 <div class="box">
   <h3>Personal Interview</h3>
-  <div id="piList">Auto-filtered list will appear here</div>
+  <div id="piExisting" class="sublist"></div>
+  <div id="piList"></div>
   <button class="btn-main" onclick="savePI()">Save PI Allocation</button>
 </div>
 
@@ -149,11 +153,14 @@ function disableAll(state){
   document.querySelectorAll("button").forEach(b=>b.disabled=state);
 }
 
-/* ================= FIX #1: LOAD EXISTING ================= */
-function loadExistingAllocations(){
+/* LOAD ALLOCATIONS BY CATEGORY */
+function loadAllocationsByCategory(){
   if(!allocDate.value) return;
 
-  existingAlloc.innerHTML="<div class='loading'>Loading allocations…</div>";
+  gdExisting.innerHTML =
+  seminarExisting.innerHTML =
+  piExisting.innerHTML =
+    "<div class='loading'>Loading…</div>";
 
   fetch(BACKEND,{
     method:"POST",
@@ -164,29 +171,32 @@ function loadExistingAllocations(){
   })
   .then(r=>r.json())
   .then(res=>{
-    if(res.allocations.length===0){
-      existingAlloc.innerHTML="<i>No allocations yet</i>";
-      return;
-    }
+    const byCat={GD:[],SEMINAR:[],PI:[]};
 
-    const grouped={};
     res.allocations.forEach(a=>{
-      if(!grouped[a.category]) grouped[a.category]=[];
-      grouped[a.category].push(a);
+      byCat[a.category]?.push(a);
     });
 
-    let html="";
-    Object.keys(grouped).forEach(cat=>{
-      html+=`<b>${cat}</b><ul>`+
-        grouped[cat].map(s=>`<li>${s.roll} – ${s.name}</li>`).join("")+
-        `</ul>`;
-    });
+    renderList(gdExisting,byCat.GD);
+    renderList(seminarExisting,byCat.SEMINAR);
+    renderList(piExisting,byCat.PI);
 
-    existingAlloc.innerHTML=html;
+    loadSeminarEligible();
+    loadPIEligible();
   });
 }
 
-/* ================= FIX #2: GD LIST ================= */
+function renderList(el,list){
+  if(!list.length){
+    el.innerHTML="<i>No allocations</i>";
+    return;
+  }
+  el.innerHTML="<ul>"+list.map(s=>
+    `<li>${s.roll} – ${s.name}</li>`
+  ).join("")+"</ul>";
+}
+
+/* GD */
 function allocateGD(){
   if(!allocDate.value || !gdTopic.value){
     alert("Select date and GD topic");
@@ -206,10 +216,8 @@ function allocateGD(){
   })
   .then(r=>r.json())
   .then(res=>{
-    gdResult.innerHTML=
-      `<b>${res.count} students allocated for GD</b>`;
-    loadExistingAllocations();   // 🔥 refresh list
-    loadSeminarEligible();       // 🔥 auto-filter
+    gdResult.innerHTML=`<b>${res.count} students allocated</b>`;
+    loadAllocationsByCategory();
   })
   .finally(()=>disableAll(false));
 }
@@ -229,9 +237,7 @@ function loadSeminarEligible(){
     ).join("") || "No eligible students";
   });
 }
-function saveSeminar(){
-  saveIndividuals("SEMINAR","seminarList");
-}
+function saveSeminar(){ saveIndividuals("SEMINAR","seminarList"); }
 
 /* PI */
 function loadPIEligible(){
@@ -248,11 +254,9 @@ function loadPIEligible(){
     ).join("") || "No eligible students";
   });
 }
-function savePI(){
-  saveIndividuals("PI","piList");
-}
+function savePI(){ saveIndividuals("PI","piList"); }
 
-/* SAVE INDIVIDUAL */
+/* SAVE */
 function saveIndividuals(cat,box){
   const rolls=[...document.querySelectorAll(`#${box} input:checked`)]
     .map(i=>i.value);
@@ -269,7 +273,7 @@ function saveIndividuals(cat,box){
       rolls:rolls.join(",")
     })
   })
-  .then(()=>loadExistingAllocations())
+  .then(()=>loadAllocationsByCategory())
   .finally(()=>disableAll(false));
 }
 
