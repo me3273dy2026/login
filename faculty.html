@@ -100,20 +100,31 @@ function back(){
 
 /* ---------- DATE ---------- */
 async function onDate(){
-  date.disabled=true;              // Rule 2
-  setLoading(date);
+  date.disabled = true;
 
-  await loadExisting();
+  // reset all buttons
+  gdOpenBtn.disabled = true;
+  semOpenBtn.disabled = true;
+  piOpenBtn.disabled = true;
 
-  clearLoading(date);
-  gdOpenBtn.disabled=false;        // only GD enabled
+  gdBox.style.display="none";
+  semBox.style.display="none";
+  piBox.style.display="none";
+  saveGDBtn.style.display="none";
+  saveSemBtn.style.display="none";
+  savePIBtn.style.display="none";
+
+  await loadExisting();   // 🔥 decision made here
 }
 
 /* ---------- EXISTING ---------- */
 async function loadExisting(){
   const res = await fetch(BACKEND,{
     method:"POST",
-    body:new URLSearchParams({action:"getAllocationsByDate",date:date.value})
+    body:new URLSearchParams({
+      action:"getAllocationsByDate",
+      date:date.value
+    })
   }).then(r=>r.json());
 
   const gd=[], sem=[], pi=[];
@@ -123,11 +134,40 @@ async function loadExisting(){
     if(a.category==="PI") pi.push(a);
   });
 
-  gdExisting.innerHTML = gd.length ? gd.map(x=>`${x.name} [${x.topic}]`).join("<br>") : "<i>No GD</i>";
-  semExisting.innerHTML = sem.length ? sem.map(x=>`${x.name}`).join("<br>") : "<i>No Seminar</i>";
-  piExisting.innerHTML = pi.length ? pi.map(x=>`${x.name}`).join("<br>") : "<i>No PI</i>";
-}
+  // display existing
+  gdExisting.innerHTML = gd.length
+    ? gd.map(x=>`${x.name} [${x.topic}]`).join("<br>")
+    : "<i>No GD</i>";
 
+  semExisting.innerHTML = sem.length
+    ? sem.map(x=>`${x.name}`).join("<br>")
+    : "<i>No Seminar</i>";
+
+  piExisting.innerHTML = pi.length
+    ? pi.map(x=>`${x.name}`).join("<br>")
+    : "<i>No PI</i>";
+
+  /* 🔑 DECIDE EDIT PERMISSION */
+
+  if(!gd.length && !sem.length && !pi.length){
+    // fresh date
+    gdOpenBtn.disabled = false;
+  }
+  else if(gd.length && !sem.length){
+    // GD done, Seminar pending
+    semOpenBtn.disabled = false;
+  }
+  else if(gd.length && sem.length && !pi.length){
+    // PI pending
+    piOpenBtn.disabled = false;
+  }
+  else{
+    // everything exists → allow edit of all
+    gdOpenBtn.disabled = false;
+    semOpenBtn.disabled = false;
+    piOpenBtn.disabled = false;
+  }
+}
 /* ---------- GD ---------- */
 async function loadGD(){
   setLoading(gdOpenBtn);
