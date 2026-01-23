@@ -36,14 +36,12 @@ input{width:100%;padding:10px;border-radius:8px}
 <!-- ================= ALLOCATION ================= -->
 <div id="alloc" style="display:none">
 
-<!-- DATE -->
 <div class="box">
   <b>Date</b>
   <input type="date" id="date" onchange="onDate()">
   <div id="dateStatus" style="margin-top:6px;color:#c0392b;font-weight:600;"></div>
 </div>
 
-<!-- GD -->
 <div class="box">
   <b>Group Discussion</b>
   <div id="gdExisting" class="sub"></div>
@@ -52,7 +50,6 @@ input{width:100%;padding:10px;border-radius:8px}
   <button id="saveGDBtn" class="btn" style="display:none" onclick="saveGD()">Save / Update GD</button>
 </div>
 
-<!-- SEMINAR -->
 <div class="box">
   <b>Seminar</b>
   <div id="semExisting" class="sub"></div>
@@ -61,7 +58,6 @@ input{width:100%;padding:10px;border-radius:8px}
   <button id="saveSemBtn" class="btn" style="display:none" onclick="saveSeminar()">Save / Update Seminar</button>
 </div>
 
-<!-- PI -->
 <div class="box">
   <b>Personal Interview</b>
   <div id="piExisting" class="sub"></div>
@@ -74,7 +70,7 @@ input{width:100%;padding:10px;border-radius:8px}
 </div>
 
 <!-- ================= EVALUATION ================= -->
-<div id="eval" style="display:none">
+<div id="evalSection" style="display:none">
   <iframe src="faculty_evaluation.html"
     style="width:100%;height:720px;border:none;border-radius:12px">
   </iframe>
@@ -89,7 +85,7 @@ const BACKEND="https://script.google.com/macros/s/AKfycbwi-6_KbaFA3-JKZOGcxL-h5D
 /* ---------- NAV ---------- */
 function openAlloc(){
   home.style.display="none";
-  eval.style.display="none";
+  evalSection.style.display="none";
   alloc.style.display="block";
 
   date.disabled=false;
@@ -101,7 +97,7 @@ function openAlloc(){
 function openEval(){
   home.style.display="none";
   alloc.style.display="none";
-  eval.style.display="block";
+  evalSection.style.display="block";
 }
 
 function closeAlloc(){
@@ -110,7 +106,7 @@ function closeAlloc(){
 }
 
 function closeEval(){
-  eval.style.display="none";
+  evalSection.style.display="none";
   home.style.display="block";
 }
 
@@ -163,166 +159,9 @@ async function loadExisting(){
     ? pi.map(x=>`${x.name}`).join("<br>")
     : "<i>No PI</i>";
 
-  // STRICT FLOW – ALWAYS START FROM GD
   gdOpenBtn.disabled=false;
   semOpenBtn.disabled=true;
   piOpenBtn.disabled=true;
-}
-
-/* ---------- GD ---------- */
-async function loadGD(){
-  gdOpenBtn.innerText="Loading… Please wait";
-  gdOpenBtn.disabled=true;
-
-  gdBox.style.display="block";
-  saveGDBtn.style.display="block";
-  gdBox.innerHTML="";
-
-  const res = await fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({action:"getGDTopicStatus",date:date.value})
-  }).then(r=>r.json());
-
-  res.topics.forEach(t=>{
-    gdBox.innerHTML+=`
-      <label>
-        <input type="checkbox" value="${t.topic}" ${t.checked?"checked":""}>
-        ${t.topic}
-      </label><br>`;
-  });
-
-  gdOpenBtn.innerText="Allocate / Update GD";
-}
-
-async function saveGD(){
-  saveGDBtn.innerText="Saving… Please wait";
-  saveGDBtn.disabled=true;
-
-  const topics=[...gdBox.querySelectorAll("input:checked")].map(i=>i.value);
-
-  await fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({
-      action:"saveGDAllocation",
-      date:date.value,
-      topics:topics.join(",")
-    })
-  });
-
-  gdBox.style.display="none";
-  saveGDBtn.style.display="none";
-
-  gdOpenBtn.disabled=true;
-  semOpenBtn.disabled=false;
-
-  await loadExisting();
-  saveGDBtn.innerText="Save / Update GD";
-  saveGDBtn.disabled=false;
-}
-
-/* ---------- SEMINAR ---------- */
-async function loadSeminar(){
-  semOpenBtn.innerText="Loading… Please wait";
-  semOpenBtn.disabled=true;
-
-  semBox.style.display="block";
-  saveSemBtn.style.display="block";
-  semBox.innerHTML="";
-
-  const res = await fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({action:"getSeminarStudentStatus",date:date.value})
-  }).then(r=>r.json());
-
-  res.students.forEach(s=>{
-    semBox.innerHTML+=`
-      <label>
-        <input type="checkbox" value="${s.roll}" ${s.checked?"checked":""}>
-        ${s.name}
-      </label><br>`;
-  });
-
-  semOpenBtn.innerText="Allocate / Update Seminar";
-}
-
-async function saveSeminar(){
-  saveSemBtn.innerText="Saving… Please wait";
-  saveSemBtn.disabled=true;
-
-  const rolls=[...semBox.querySelectorAll("input:checked")].map(i=>i.value);
-
-  await fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({
-      action:"saveIndividualAllocation",
-      category:"SEMINAR",
-      date:date.value,
-      rolls:rolls.join(",")
-    })
-  });
-
-  semBox.style.display="none";
-  saveSemBtn.style.display="none";
-
-  semOpenBtn.disabled=true;
-  piOpenBtn.disabled=false;
-
-  await loadExisting();
-  saveSemBtn.innerText="Save / Update Seminar";
-  saveSemBtn.disabled=false;
-}
-
-/* ---------- PI ---------- */
-async function loadPI(){
-  piOpenBtn.innerText="Loading… Please wait";
-  piOpenBtn.disabled=true;
-
-  piBox.style.display="block";
-  savePIBtn.style.display="block";
-  piBox.innerHTML="";
-
-  const res = await fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({action:"getPIStudentStatus",date:date.value})
-  }).then(r=>r.json());
-
-  res.students.forEach(s=>{
-    piBox.innerHTML+=`
-      <label>
-        <input type="checkbox" value="${s.roll}" ${s.checked?"checked":""}>
-        ${s.name}
-      </label><br>`;
-  });
-
-  piOpenBtn.innerText="Allocate / Update PI";
-}
-
-async function savePI(){
-  savePIBtn.innerText="Saving… Please wait";
-  savePIBtn.disabled=true;
-
-  const rolls=[...piBox.querySelectorAll("input:checked")].map(i=>i.value);
-
-  await fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({
-      action:"saveIndividualAllocation",
-      category:"PI",
-      date:date.value,
-      rolls:rolls.join(",")
-    })
-  });
-
-  piBox.style.display="none";
-  savePIBtn.style.display="none";
-
-  gdOpenBtn.disabled=true;
-  semOpenBtn.disabled=true;
-  piOpenBtn.disabled=true;
-
-  await loadExisting();
-  savePIBtn.innerText="Save / Update PI";
-  savePIBtn.disabled=false;
 }
 
 /* ---------- LOGOUT ---------- */
