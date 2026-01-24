@@ -187,57 +187,42 @@ textarea{min-height:90px;}
 </div>
 
 <script>
+/* ================= STATE ================= */
+let allocStage = 0;
+// 0=init, 1=dateSelected, 2=gdDone, 3=semDone
+
+function updateAllocationButtons(){
+  gdOpenBtn.disabled = true;
+  semOpenBtn.disabled = true;
+  piOpenBtn.disabled = true;
+
+  if(allocStage === 1) gdOpenBtn.disabled = false;
+  else if(allocStage === 2) semOpenBtn.disabled = false;
+  else if(allocStage === 3) piOpenBtn.disabled = false;
+}
+
 /* ================= CONFIG ================= */
 const BACKEND="https://script.google.com/macros/s/AKfycbxT6R3zk-0XtBUeKMQtjQHgqYXq0hC-5tM-xZL50vFNWarJae1QM2VGRhYajB6JCTB97w/exec";
 
-/* ================= NAV ================= */
-function openAllocate(){
-  home.style.display="none";
-  evaluate.style.display="none";
-  allocate.style.display="block";
-}
-function openEvaluate(){
-  home.style.display="none";
-  allocate.style.display="none";
-  evaluate.style.display="block";
-  loadStudents();
-}
-function closeSection(){
-  allocate.style.display="none";
-  evaluate.style.display="none";
-  home.style.display="block";
-}
-function logout(){ location.href="login.html"; }
 /* ================= UI HELPERS ================= */
-
 function disableAllButtons(){
   document.querySelectorAll("button").forEach(b=>b.disabled=true);
 }
-
-function enableButton(btn){
-  btn.disabled=false;
-}
-
 function setLoading(btn, text){
   btn.dataset.originalText = btn.innerText;
   btn.innerText = text;
 }
-
 function resetButton(btn){
   btn.innerText = btn.dataset.originalText;
 }
-/* ================= ALLOCATION LOGIC (UNCHANGED) ================= */
-// ⬇️ EXACT SAME JS FUNCTIONS FROM YOUR ALLOCATION FILE
-// onDate(), loadExisting(), loadGD(), saveGD(),
-// loadSeminar(), saveSeminar(), loadPI(), savePI()
-// (kept intentionally unchanged for reliability)
-async function onDate(){
-  date.disabled=true;
-  dateStatus.innerText="Loading… Please wait";
 
-  gdOpenBtn.disabled=true;
-  semOpenBtn.disabled=true;
-  piOpenBtn.disabled=true;
+/* ================= DATE ================= */
+async function onDate(){
+  allocStage = 1;
+  updateAllocationButtons();
+
+  date.disabled = false;
+  dateStatus.innerText="Loading… Please wait";
 
   gdBox.style.display="none";
   semBox.style.display="none";
@@ -248,9 +233,9 @@ async function onDate(){
 
   await loadExisting();
   dateStatus.innerText="";
-  date.disabled=false;
 }
 
+/* ================= LOAD EXISTING ================= */
 async function loadExisting(){
   const res = await fetch(BACKEND,{
     method:"POST",
@@ -261,30 +246,30 @@ async function loadExisting(){
   }).then(r=>r.json());
 
   const gd=[], sem=[], pi=[];
-
   res.allocations.forEach(a=>{
     if(a.category==="GD") gd.push(a);
     if(a.category==="SEMINAR") sem.push(a);
     if(a.category==="PI") pi.push(a);
   });
 
-  gdExisting.innerHTML =
-    gd.length ? gd.map(x=>`${x.name} [${x.topic}]`).join("<br>") : "<i>No GD</i>";
+  gdExisting.innerHTML = gd.length
+    ? gd.map(x=>`${x.name} [${x.topic}]`).join("<br>")
+    : "<i>No GD</i>";
 
-  semExisting.innerHTML =
-    sem.length ? sem.map(x=>`${x.name}`).join("<br>") : "<i>No Seminar</i>";
+  semExisting.innerHTML = sem.length
+    ? sem.map(x=>`${x.name}`).join("<br>")
+    : "<i>No Seminar</i>";
 
-  piExisting.innerHTML =
-    pi.length ? pi.map(x=>`${x.name}`).join("<br>") : "<i>No PI</i>";
-
-  gdOpenBtn.disabled=false;
+  piExisting.innerHTML = pi.length
+    ? pi.map(x=>`${x.name}`).join("<br>")
+    : "<i>No PI</i>";
 }
 
+/* ================= GD ================= */
 async function loadGD(){
   disableAllButtons();
   setLoading(gdOpenBtn,"Loading… Please wait");
-
-  date.disabled = true; // 🔒 lock date immediately
+  date.disabled = true;
 
   gdOpenBtn.style.display="none";
   gdBox.style.display="block";
@@ -300,8 +285,8 @@ async function loadGD(){
   }).then(r=>r.json());
 
   res.topics.forEach(t=>{
-    gdBox.innerHTML +=
-      `<label>
+    gdBox.innerHTML+=`
+      <label>
         <input type="checkbox" value="${t.topic}" ${t.checked?"checked":""}>
         ${t.topic}
       </label><br>`;
@@ -328,17 +313,17 @@ async function saveGD(){
 
   gdBox.style.display="none";
   saveGDBtn.style.display="none";
-
   gdOpenBtn.style.display="block";
-  gdOpenBtn.disabled=true;   // 🔒 GD locked permanently
+  gdOpenBtn.disabled=true;
 
-  await loadExisting();      // 🔁 refresh list
+  await loadExisting();
 
+  allocStage = 2;
   resetButton(saveGDBtn);
-
-  semOpenBtn.disabled=false; // ✅ unlock Seminar
+  updateAllocationButtons();
 }
 
+/* ================= SEMINAR ================= */
 async function loadSeminar(){
   disableAllButtons();
   setLoading(semOpenBtn,"Loading… Please wait");
@@ -357,8 +342,8 @@ async function loadSeminar(){
   }).then(r=>r.json());
 
   res.students.forEach(s=>{
-    semBox.innerHTML +=
-      `<label>
+    semBox.innerHTML+=`
+      <label>
         <input type="checkbox" value="${s.roll}" ${s.checked?"checked":""}>
         ${s.name}
       </label><br>`;
@@ -386,17 +371,17 @@ async function saveSeminar(){
 
   semBox.style.display="none";
   saveSemBtn.style.display="none";
-
   semOpenBtn.style.display="block";
-  semOpenBtn.disabled=true;   // 🔒 Seminar locked
+  semOpenBtn.disabled=true;
 
   await loadExisting();
 
+  allocStage = 3;
   resetButton(saveSemBtn);
-
-  piOpenBtn.disabled=false;   // ✅ unlock PI
+  updateAllocationButtons();
 }
 
+/* ================= PI ================= */
 async function loadPI(){
   disableAllButtons();
   setLoading(piOpenBtn,"Loading… Please wait");
@@ -415,8 +400,8 @@ async function loadPI(){
   }).then(r=>r.json());
 
   res.students.forEach(s=>{
-    piBox.innerHTML +=
-      `<label>
+    piBox.innerHTML+=`
+      <label>
         <input type="checkbox" value="${s.roll}" ${s.checked?"checked":""}>
         ${s.name}
       </label><br>`;
@@ -444,73 +429,18 @@ async function savePI(){
 
   piBox.style.display="none";
   savePIBtn.style.display="none";
-
   piOpenBtn.style.display="block";
-  piOpenBtn.disabled=true;   // 🔒 PI locked
+  piOpenBtn.disabled=true;
 
   await loadExisting();
 
+  allocStage = 1;      // 🔁 cycle reset
+  date.disabled=false;
+
   resetButton(savePIBtn);
-}
-/* ================= EVALUATION LOGIC ================= */
-function loadStudents(){
-  fetch(BACKEND+"?action=getAllStudents")
-  .then(r=>r.json())
-  .then(res=>{
-    studentSelect.innerHTML='<option value="">Select Student</option>';
-    res.students.forEach(s=>{
-      studentSelect.innerHTML+=`<option value="${s.roll}">${s.roll} – ${s.name}</option>`;
-    });
-  });
+  updateAllocationButtons();
 }
 
-function loadStudentDetails(){
-  const roll=studentSelect.value;
-  if(!roll) return;
-
-  fetch(BACKEND+"?action=getStudentDetailsByRoll&roll="+roll)
-  .then(r=>r.json())
-  .then(d=>{
-    studentInfo.innerHTML=`<b>${d.name}</b><br>${d.roll}`;
-    seminarInfo.innerText=d.seminarTopic||"-";
-  });
-
-  loadLatestPerformance();
-}
-
-function loadLatestPerformance(){
-  const roll=studentSelect.value;
-  const type=typeSelect.value;
-  if(!roll) return;
-
-  fetch(BACKEND+"?action=getLatestPerformance&roll="+roll+"&type="+type)
-  .then(r=>r.json())
-  .then(d=>{
-    if(d.status==="FOUND"){
-      marks.value=d.marks;
-      positives.value=d.positives;
-      improvements.value=d.improvements;
-    }else{
-      marks.value="";
-      positives.value="";
-      improvements.value="";
-    }
-  });
-}
-
-function saveEvaluation(){
-  fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({
-      action:"savePerformance",
-      roll:studentSelect.value,
-      type:typeSelect.value,
-      marks:marks.value,
-      positives:positives.value,
-      improvements:improvements.value
-    })
-  }).then(()=>alert("Evaluation saved"));
-}
 </script>
 </body>
 </html>
