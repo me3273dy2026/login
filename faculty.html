@@ -312,7 +312,200 @@ async function loadExisting(){
 }
 
 /* ================= GD / SEMINAR / PI ================= */
-/* (same allocation functions you already validated; omitted here for brevity) */
+/* ================= GD ================= */
+async function loadGD(){
+
+  // Lock date
+  date.disabled = true;
+
+  // Disable other allocation buttons
+  semOpenBtn.disabled = true;
+  piOpenBtn.disabled = true;
+
+  // Visual feedback
+  setLoading(gdOpenBtn,"Loading… Please wait");
+
+  // Hide open button, show editor
+  gdOpenBtn.style.display="none";
+  gdBox.style.display="block";
+  saveGDBtn.style.display="block";
+  gdBox.innerHTML="";
+
+  // Disable everything else safely
+  disableAllButtons();
+
+  const res = await fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getGDTopicStatus",
+      date:date.value
+    })
+  }).then(r=>r.json());
+
+  res.topics.forEach(t=>{
+    gdBox.innerHTML += `
+      <label>
+        <input type="checkbox" value="${t.topic}" ${t.checked?"checked":""}>
+        ${t.topic}
+      </label><br>`;
+  });
+
+  resetButton(gdOpenBtn);
+  saveGDBtn.disabled=false;
+}
+
+async function saveGD(){
+  disableAllButtons();
+  setLoading(saveGDBtn,"Updating… Please wait");
+
+  const topics=[...gdBox.querySelectorAll("input:checked")].map(i=>i.value);
+
+  await fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"saveGDAllocation",
+      date:date.value,
+      topics:topics.join(",")
+    })
+  });
+
+  gdBox.style.display="none";
+  saveGDBtn.style.display="none";
+
+  gdOpenBtn.style.display="block";
+  gdOpenBtn.disabled=true;
+
+  await loadExisting();
+
+  allocStage = 2;
+  resetButton(saveGDBtn);
+  updateAllocationButtons();
+}
+
+/* ================= SEMINAR ================= */
+async function loadSeminar(){
+
+  setLoading(semOpenBtn,"Loading… Please wait");
+
+  semOpenBtn.style.display="none";
+  semBox.style.display="block";
+  saveSemBtn.style.display="block";
+  semBox.innerHTML="";
+
+  disableAllButtons();
+
+  const res = await fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getSeminarStudentStatus",
+      date:date.value
+    })
+  }).then(r=>r.json());
+
+  res.students.forEach(s=>{
+    semBox.innerHTML += `
+      <label>
+        <input type="checkbox" value="${s.roll}" ${s.checked?"checked":""}>
+        ${s.name}
+      </label><br>`;
+  });
+
+  resetButton(semOpenBtn);
+  saveSemBtn.disabled=false;
+}
+
+async function saveSeminar(){
+  disableAllButtons();
+  setLoading(saveSemBtn,"Updating… Please wait");
+
+  const rolls=[...semBox.querySelectorAll("input:checked")].map(i=>i.value);
+
+  await fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"saveIndividualAllocation",
+      category:"SEMINAR",
+      date:date.value,
+      rolls:rolls.join(",")
+    })
+  });
+
+  semBox.style.display="none";
+  saveSemBtn.style.display="none";
+
+  semOpenBtn.style.display="block";
+  semOpenBtn.disabled=true;
+
+  await loadExisting();
+
+  allocStage = 3;
+  resetButton(saveSemBtn);
+  updateAllocationButtons();
+}
+
+/* ================= PI ================= */
+async function loadPI(){
+
+  setLoading(piOpenBtn,"Loading… Please wait");
+
+  piOpenBtn.style.display="none";
+  piBox.style.display="block";
+  savePIBtn.style.display="block";
+  piBox.innerHTML="";
+
+  disableAllButtons();
+
+  const res = await fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getPIStudentStatus",
+      date:date.value
+    })
+  }).then(r=>r.json());
+
+  res.students.forEach(s=>{
+    piBox.innerHTML += `
+      <label>
+        <input type="checkbox" value="${s.roll}" ${s.checked?"checked":""}>
+        ${s.name}
+      </label><br>`;
+  });
+
+  resetButton(piOpenBtn);
+  savePIBtn.disabled=false;
+}
+
+async function savePI(){
+  disableAllButtons();
+  setLoading(savePIBtn,"Updating… Please wait");
+
+  const rolls=[...piBox.querySelectorAll("input:checked")].map(i=>i.value);
+
+  await fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"saveIndividualAllocation",
+      category:"PI",
+      date:date.value,
+      rolls:rolls.join(",")
+    })
+  });
+
+  piBox.style.display="none";
+  savePIBtn.style.display="none";
+
+  piOpenBtn.style.display="block";
+  piOpenBtn.disabled=true;
+
+  await loadExisting();
+
+  // 🔁 Reset cycle
+  allocStage = 1;
+  date.disabled = false;
+
+  resetButton(savePIBtn);
+  updateAllocationButtons();
+}
 
 /* ================= EVALUATION ================= */
 function loadStudents(){
