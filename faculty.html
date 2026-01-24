@@ -264,7 +264,9 @@ async function loadExisting(){
 }
 
 async function loadGD(){
+  gdOpenBtn.style.display="none";      // 👈 hide Allocate
   gdOpenBtn.disabled=true;
+
   gdBox.style.display="block";
   saveGDBtn.style.display="block";
   gdBox.innerHTML="";
@@ -279,8 +281,10 @@ async function loadGD(){
 
   res.topics.forEach(t=>{
     gdBox.innerHTML +=
-      `<label><input type="checkbox" value="${t.topic}" ${t.checked?"checked":""}>
-      ${t.topic}</label><br>`;
+      `<label>
+        <input type="checkbox" value="${t.topic}" ${t.checked?"checked":""}>
+        ${t.topic}
+      </label><br>`;
   });
 }
 
@@ -296,13 +300,22 @@ async function saveGD(){
     })
   });
 
+  // Reset UI
   gdBox.style.display="none";
   saveGDBtn.style.display="none";
+  gdOpenBtn.style.display="block";     // 👈 show Allocate again
+  gdOpenBtn.disabled=false;
+
+  // 🔁 Refresh allocations immediately
+  await loadExisting();
+
   semOpenBtn.disabled=false;
 }
 
 async function loadSeminar(){
+  semOpenBtn.style.display="none";
   semOpenBtn.disabled=true;
+
   semBox.style.display="block";
   saveSemBtn.style.display="block";
   semBox.innerHTML="";
@@ -317,8 +330,10 @@ async function loadSeminar(){
 
   res.students.forEach(s=>{
     semBox.innerHTML +=
-      `<label><input type="checkbox" value="${s.roll}" ${s.checked?"checked":""}>
-      ${s.name}</label><br>`;
+      `<label>
+        <input type="checkbox" value="${s.roll}" ${s.checked?"checked":""}>
+        ${s.name}
+      </label><br>`;
   });
 }
 
@@ -337,11 +352,18 @@ async function saveSeminar(){
 
   semBox.style.display="none";
   saveSemBtn.style.display="none";
+  semOpenBtn.style.display="block";
+  semOpenBtn.disabled=false;
+
+  await loadExisting();
+
   piOpenBtn.disabled=false;
 }
 
 async function loadPI(){
+  piOpenBtn.style.display="none";
   piOpenBtn.disabled=true;
+
   piBox.style.display="block";
   savePIBtn.style.display="block";
   piBox.innerHTML="";
@@ -356,8 +378,10 @@ async function loadPI(){
 
   res.students.forEach(s=>{
     piBox.innerHTML +=
-      `<label><input type="checkbox" value="${s.roll}" ${s.checked?"checked":""}>
-      ${s.name}</label><br>`;
+      `<label>
+        <input type="checkbox" value="${s.roll}" ${s.checked?"checked":""}>
+        ${s.name}
+      </label><br>`;
   });
 }
 
@@ -376,6 +400,10 @@ async function savePI(){
 
   piBox.style.display="none";
   savePIBtn.style.display="none";
+  piOpenBtn.style.display="block";
+  piOpenBtn.disabled=false;
+
+  await loadExisting();
 }
 /* ================= EVALUATION LOGIC ================= */
 function loadStudents(){
