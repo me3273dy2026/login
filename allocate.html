@@ -130,7 +130,36 @@ button:disabled{
   overflow:hidden;
   border:1px solid #e0e0e0;
 }
+/* Upcoming (Attention) Box */
+.upcomingBox{
+  background:#fdecea;
+  border:2px solid #e53935;
+  color:#b71c1c;
+  font-weight:700;
+  text-align:center;
+  padding:14px;
+  border-radius:14px;
+  margin-top:14px;
+  animation:blink 1.5s infinite;
+}
 
+@keyframes blink{
+  0%{opacity:1}
+  50%{opacity:.45}
+  100%{opacity:1}
+}
+
+/* Past (Completed) Box */
+.pastBox{
+  background:#e8f5e9;
+  border:1px solid #c8e6c9;
+  color:#1b5e20;
+  font-weight:600;
+  text-align:center;
+  padding:12px;
+  border-radius:14px;
+  margin-top:10px;
+}
 .section-header{
   background:#fafafa;
   padding:12px 14px;
@@ -209,7 +238,8 @@ footer div{
     Fetching your details…
   </div>
 
-  <div id="allocBox" class="infoBox notice" style="display:none"></div>
+  <div id="upcomingBox" style="display:none"></div>
+  <div id="pastBox" style="display:none"></div>
 
   <button id="perfBtn" class="btn-primary" disabled onclick="togglePanel()">
     View Performance Evaluation
@@ -273,6 +303,9 @@ function prettyDate(iso){
   return `${day}${suffix} ${month} ${year}`;
 }
 function loadAll(){
+  const upcomingBox = document.getElementById("upcomingBox");
+  const pastBox = document.getElementById("pastBox");
+
   Promise.all([
     fetch(BACKEND,{method:"POST",
       body:new URLSearchParams({action:"dashboard",token})
@@ -290,30 +323,41 @@ function loadAll(){
     loadingBox.style.display="none";
     welcome.innerText=`Welcome ${dash.name} (${dash.roll})`;
 
-    let html="";
+    let upcomingHTML = "";
+    let pastHTML = "";
 
     /* Upcoming */
     if(alloc.status==="ALLOCATED"){
-      html += `Upcoming: You have <b>${alloc.category}</b> on 
-               <b>${prettyDate(alloc.date)}</b>`;
-      if(alloc.topic){
-        html += ` · Topic: ${alloc.topic}`;
-      }
+      upcomingHTML = `
+        <div class="upcomingBox">
+          Upcoming: You have <b>${alloc.category}</b><br>
+          on <b>${prettyDate(alloc.date)}</b>
+          ${alloc.topic ? `<br>Topic: ${alloc.topic}` : ""}
+        </div>`;
     }else{
-      html += "Your upcoming allocation will be announced soon.";
+      upcomingHTML = `
+        <div class="infoBox notice">
+          Your upcoming allocation will be announced soon.
+        </div>`;
     }
 
-    /* Past (from PERFORMANCE) */
+    /* Past (Completed) */
     if(past.status==="FOUND"){
-      html += `<br><br>
-        <span style="font-weight:600;color:#555">
-          Past: You had <b>${past.category}</b> on 
-          <b>${prettyDate(past.date)}</b>
-        </span>`;
+      pastHTML = `
+        <div class="pastBox">
+          Completed: You had <b>${past.category}</b><br>
+          on <b>${prettyDate(past.date)}</b>
+        </div>`;
     }
 
-    allocBox.style.display="block";
-    allocBox.innerHTML=html;
+    /* Inject into page */
+    upcomingBox.style.display="block";
+    upcomingBox.innerHTML = upcomingHTML;
+
+    if(pastHTML){
+      pastBox.style.display="block";
+      pastBox.innerHTML = pastHTML;
+    }
 
     perfBtn.disabled=false;
     logoutBtn.disabled=false;
