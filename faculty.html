@@ -198,11 +198,13 @@ function openAllocate(){
   evaluate.style.display = "none";
   allocate.style.display = "block";
 
-  // 🔒 RESET allocation state
+  // Reset allocation state
   allocStage = 0;
 
-  // Enable date, disable everything else
   date.disabled = false;
+  date.value = "";
+
+  dateStatus.innerText = "";
 
   gdOpenBtn.disabled = true;
   semOpenBtn.disabled = true;
@@ -215,8 +217,6 @@ function openAllocate(){
   gdBox.style.display = "none";
   semBox.style.display = "none";
   piBox.style.display = "none";
-
-  dateStatus.innerText = "";
 }
 function openEvaluate(){
   home.style.display="none";
@@ -238,7 +238,7 @@ let allocStage = 0;
 // 0=init, 1=dateSelected, 2=gdDone, 3=semDone
 
 function updateAllocationButtons(){
-  gdOpenBtn.disabled = true;
+ gdOpenBtn.disabled = true;
   semOpenBtn.disabled = true;
   piOpenBtn.disabled = true;
 
@@ -275,10 +275,21 @@ function resetButton(btn){
 /* ================= DATE ================= */
 async function onDate(){
   allocStage = 1;
-  updateAllocationButtons();
-  dateStatus.innerText="Loading… Please wait";
-  await loadExisting();
-  dateStatus.innerText="";
+
+  dateStatus.innerText = "Loading… Please wait";
+
+  gdBox.style.display="none";
+  semBox.style.display="none";
+  piBox.style.display="none";
+  saveGDBtn.style.display="none";
+  saveSemBtn.style.display="none";
+  savePIBtn.style.display="none";
+
+  await loadExisting();   // wait for async work
+
+  dateStatus.innerText = "";
+
+  updateAllocationButtons(); // ✅ ENABLE GD NOW
 }
 
 /* ================= LOAD EXISTING ================= */
