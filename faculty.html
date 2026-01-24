@@ -599,33 +599,45 @@ function loadStudentDetails(){
 
   showLoader("Fetching student details…");
 
-  // basic student info
-  fetch(BACKEND+"?action=getStudentDetailsByRoll&roll="+roll)
-    .then(r=>r.json())
-    .then(d=>{
-      studentInfo.innerHTML = `<b>${d.name}</b><br>Roll: ${d.roll}`;
-      seminarInfo.innerText = d.seminarTopic || "-";
-    });
-
-  // latest GD group
-  fetch(BACKEND+"?action=getLatestGDGroupByRoll&roll="+roll)
-    .then(r=>r.json())
-    .then(res=>{
-      if(res.status !== "OK"){
-        gdTopicInfo.innerHTML = "<i>Not assigned</i>";
-        gdGroupInfo.innerHTML = "<i>No group</i>";
-        return;
-      }
-
-      gdTopicInfo.innerText = res.topic;
-      gdGroupInfo.innerHTML = res.group
-        .map(x=>`${x.name} (${x.roll})`)
-        .join("<br>");
+  // 1️⃣ Basic student info
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getStudentDetailsByRoll",
+      roll: roll
     })
-    .finally(()=>{
-      loadLatestPerformance();
-      hideLoader();
-    });
+  })
+  .then(r=>r.json())
+  .then(d=>{
+    studentInfo.innerHTML = `<b>${d.name}</b><br>Roll: ${d.roll}`;
+    seminarInfo.innerText = d.seminarTopic || "-";
+  });
+
+  // 2️⃣ Latest GD group (POST — NOT GET)
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getLatestGDGroupByRoll",
+      roll: roll
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    if(res.status !== "OK"){
+      gdTopicInfo.innerHTML = "<i>Not assigned</i>";
+      gdGroupInfo.innerHTML = "<i>No group</i>";
+      return;
+    }
+
+    gdTopicInfo.innerText = res.topic;
+    gdGroupInfo.innerHTML = res.group
+      .map(x=>`${x.name} (${x.roll})`)
+      .join("<br>");
+  })
+  .finally(()=>{
+    loadLatestPerformance();
+    hideLoader();
+  });
 }
 
 
