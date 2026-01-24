@@ -184,6 +184,12 @@ textarea{min-height:90px;}
       <h3>Student Details</h3>
       <div id="studentInfo"></div>
 
+      <h3>Project</h3>
+      <div id="projectInfo"></div>
+
+      <h3>Team Members</h3>
+      <div id="teamInfo"></div>
+
       <h3>Seminar Topic</h3>
       <div id="seminarInfo"></div>
     </div>
@@ -593,27 +599,38 @@ function loadStudentDetails(){
 
   showLoader("Fetching student details…");
 
-  Promise.all([
-    fetch(BACKEND+"?action=getStudentDetailsByRoll&roll="+roll).then(r=>r.json()),
-    fetch(BACKEND+"?action=getLatestPerformance&roll="+roll+"&type="+typeSelect.value).then(r=>r.json())
-  ]).then(([d, p])=>{
+  fetch(BACKEND + "?action=getStudentDetailsByRoll&roll=" + roll)
+    .then(r => r.json())
+    .then(d => {
 
-    studentInfo.innerHTML = `<b>${d.name}</b><br>${d.roll}`;
-    seminarInfo.innerText = d.seminarTopic || "-";
+      // Basic info
+      studentInfo.innerHTML = `
+        <b>${d.name}</b><br>
+        Roll: ${d.roll}
+      `;
 
-    if(p.status==="FOUND"){
-      marks.value = p.marks;
-      positives.value = p.positives;
-      improvements.value = p.improvements;
-    }else{
-      marks.value = "";
-      positives.value = "";
-      improvements.value = "";
-    }
+      // Project
+      projectInfo.innerHTML = d.projectName
+        ? d.projectName
+        : "<i>Not assigned</i>";
 
-  }).finally(()=>{
-    hideLoader();
-  });
+      // Team
+      if(d.team && d.team.length){
+        teamInfo.innerHTML = d.team
+          .map(m => `${m.name} (${m.roll})`)
+          .join("<br>");
+      }else{
+        teamInfo.innerHTML = "<i>No team members</i>";
+      }
+
+      // Seminar topic
+      seminarInfo.innerText = d.seminarTopic || "-";
+
+    })
+    .finally(()=>{
+      loadLatestPerformance();   // load marks/comments
+      hideLoader();
+    });
 }
 
 function loadLatestPerformance(){
