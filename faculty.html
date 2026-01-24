@@ -214,7 +214,169 @@ function logout(){ location.href="login.html"; }
 // onDate(), loadExisting(), loadGD(), saveGD(),
 // loadSeminar(), saveSeminar(), loadPI(), savePI()
 // (kept intentionally unchanged for reliability)
+async function onDate(){
+  date.disabled=true;
+  dateStatus.innerText="Loading… Please wait";
 
+  gdOpenBtn.disabled=true;
+  semOpenBtn.disabled=true;
+  piOpenBtn.disabled=true;
+
+  gdBox.style.display="none";
+  semBox.style.display="none";
+  piBox.style.display="none";
+  saveGDBtn.style.display="none";
+  saveSemBtn.style.display="none";
+  savePIBtn.style.display="none";
+
+  await loadExisting();
+  dateStatus.innerText="";
+  date.disabled=false;
+}
+
+async function loadExisting(){
+  const res = await fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getAllocationsByDate",
+      date:date.value
+    })
+  }).then(r=>r.json());
+
+  const gd=[], sem=[], pi=[];
+
+  res.allocations.forEach(a=>{
+    if(a.category==="GD") gd.push(a);
+    if(a.category==="SEMINAR") sem.push(a);
+    if(a.category==="PI") pi.push(a);
+  });
+
+  gdExisting.innerHTML =
+    gd.length ? gd.map(x=>`${x.name} [${x.topic}]`).join("<br>") : "<i>No GD</i>";
+
+  semExisting.innerHTML =
+    sem.length ? sem.map(x=>`${x.name}`).join("<br>") : "<i>No Seminar</i>";
+
+  piExisting.innerHTML =
+    pi.length ? pi.map(x=>`${x.name}`).join("<br>") : "<i>No PI</i>";
+
+  gdOpenBtn.disabled=false;
+}
+
+async function loadGD(){
+  gdOpenBtn.disabled=true;
+  gdBox.style.display="block";
+  saveGDBtn.style.display="block";
+  gdBox.innerHTML="";
+
+  const res = await fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getGDTopicStatus",
+      date:date.value
+    })
+  }).then(r=>r.json());
+
+  res.topics.forEach(t=>{
+    gdBox.innerHTML +=
+      `<label><input type="checkbox" value="${t.topic}" ${t.checked?"checked":""}>
+      ${t.topic}</label><br>`;
+  });
+}
+
+async function saveGD(){
+  const topics=[...gdBox.querySelectorAll("input:checked")].map(i=>i.value);
+
+  await fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"saveGDAllocation",
+      date:date.value,
+      topics:topics.join(",")
+    })
+  });
+
+  gdBox.style.display="none";
+  saveGDBtn.style.display="none";
+  semOpenBtn.disabled=false;
+}
+
+async function loadSeminar(){
+  semOpenBtn.disabled=true;
+  semBox.style.display="block";
+  saveSemBtn.style.display="block";
+  semBox.innerHTML="";
+
+  const res = await fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getSeminarStudentStatus",
+      date:date.value
+    })
+  }).then(r=>r.json());
+
+  res.students.forEach(s=>{
+    semBox.innerHTML +=
+      `<label><input type="checkbox" value="${s.roll}" ${s.checked?"checked":""}>
+      ${s.name}</label><br>`;
+  });
+}
+
+async function saveSeminar(){
+  const rolls=[...semBox.querySelectorAll("input:checked")].map(i=>i.value);
+
+  await fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"saveIndividualAllocation",
+      category:"SEMINAR",
+      date:date.value,
+      rolls:rolls.join(",")
+    })
+  });
+
+  semBox.style.display="none";
+  saveSemBtn.style.display="none";
+  piOpenBtn.disabled=false;
+}
+
+async function loadPI(){
+  piOpenBtn.disabled=true;
+  piBox.style.display="block";
+  savePIBtn.style.display="block";
+  piBox.innerHTML="";
+
+  const res = await fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getPIStudentStatus",
+      date:date.value
+    })
+  }).then(r=>r.json());
+
+  res.students.forEach(s=>{
+    piBox.innerHTML +=
+      `<label><input type="checkbox" value="${s.roll}" ${s.checked?"checked":""}>
+      ${s.name}</label><br>`;
+  });
+}
+
+async function savePI(){
+  const rolls=[...piBox.querySelectorAll("input:checked")].map(i=>i.value);
+
+  await fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"saveIndividualAllocation",
+      category:"PI",
+      date:date.value,
+      rolls:rolls.join(",")
+    })
+  });
+
+  piBox.style.display="none";
+  savePIBtn.style.display="none";
+}
 /* ================= EVALUATION LOGIC ================= */
 function loadStudents(){
   fetch(BACKEND+"?action=getAllStudents")
