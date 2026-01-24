@@ -306,9 +306,17 @@ async function loadExisting(){
     if(a.category==="PI") pi.push(a);
   });
 
-  gdExisting.innerHTML = gd.length ? gd.map(x=>`${x.name} [${x.topic}]`).join("<br>") : "<i>No GD</i>";
-  semExisting.innerHTML = sem.length ? sem.map(x=>`${x.name}`).join("<br>") : "<i>No Seminar</i>";
-  piExisting.innerHTML = pi.length ? pi.map(x=>`${x.name}`).join("<br>") : "<i>No PI</i>";
+  gdExisting.innerHTML = gd.length
+  ? gd.map(x=>`${x.name} (${x.roll}) [${x.topic}]`).join("<br>")
+  : "<i>No GD</i>";
+
+semExisting.innerHTML = sem.length
+  ? sem.map(x=>`${x.name} (${x.roll})`).join("<br>")
+  : "<i>No Seminar</i>";
+
+piExisting.innerHTML = pi.length
+  ? pi.map(x=>`${x.name} (${x.roll})`).join("<br>")
+  : "<i>No PI</i>";
 }
 
 /* ================= GD / SEMINAR / PI ================= */
