@@ -306,16 +306,31 @@ async function loadExisting(){
     if(a.category==="PI") pi.push(a);
   });
 
-  gdExisting.innerHTML = gd.length
-  ? gd.map(x=>`${x.name} (${x.roll}) [${x.topic}]`).join("<br>")
+  const uniqGD = {};
+gd.forEach(x => uniqGD[x.roll] = x);
+
+gdExisting.innerHTML = Object.values(uniqGD).length
+  ? Object.values(uniqGD)
+      .map(x => `${x.name} (${x.roll}) [${x.topic}]`)
+      .join("<br>")
   : "<i>No GD</i>";
 
-semExisting.innerHTML = sem.length
-  ? sem.map(x=>`${x.name} (${x.roll})`).join("<br>")
-  : "<i>No Seminar</i>";
+const uniqSem = {};
+sem.forEach(x => uniqSem[x.roll] = x);
 
-piExisting.innerHTML = pi.length
-  ? pi.map(x=>`${x.name} (${x.roll})`).join("<br>")
+semExisting.innerHTML = Object.values(uniqSem).length
+  ? Object.values(uniqSem)
+      .map(x => `${x.name} (${x.roll})`)
+      .join("<br>")
+  : "<i>No Seminar</i>";
+  
+const uniqPI = {};
+pi.forEach(x => uniqPI[x.roll] = x);
+
+piExisting.innerHTML = Object.values(uniqPI).length
+  ? Object.values(uniqPI)
+      .map(x => `${x.name} (${x.roll})`)
+      .join("<br>")
   : "<i>No PI</i>";
 }
 
