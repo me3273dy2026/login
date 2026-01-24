@@ -194,9 +194,29 @@ textarea{min-height:90px;}
 <script>
 /* ================= NAVIGATION ================= */
 function openAllocate(){
-  home.style.display="none";
-  evaluate.style.display="none";
-  allocate.style.display="block";
+ home.style.display = "none";
+  evaluate.style.display = "none";
+  allocate.style.display = "block";
+
+  // 🔒 RESET allocation state
+  allocStage = 0;
+
+  // Enable date, disable everything else
+  date.disabled = false;
+
+  gdOpenBtn.disabled = true;
+  semOpenBtn.disabled = true;
+  piOpenBtn.disabled = true;
+
+  saveGDBtn.style.display = "none";
+  saveSemBtn.style.display = "none";
+  savePIBtn.style.display = "none";
+
+  gdBox.style.display = "none";
+  semBox.style.display = "none";
+  piBox.style.display = "none";
+
+  dateStatus.innerText = "";
 }
 function openEvaluate(){
   home.style.display="none";
@@ -222,9 +242,15 @@ function updateAllocationButtons(){
   semOpenBtn.disabled = true;
   piOpenBtn.disabled = true;
 
-  if(allocStage === 1) gdOpenBtn.disabled = false;
-  else if(allocStage === 2) semOpenBtn.disabled = false;
-  else if(allocStage === 3) piOpenBtn.disabled = false;
+  if(allocStage === 1 && date.value){
+    gdOpenBtn.disabled = false;
+  }
+  else if(allocStage === 2){
+    semOpenBtn.disabled = false;
+  }
+  else if(allocStage === 3){
+    piOpenBtn.disabled = false;
+  }
 }
 
 /* ================= CONFIG ================= */
