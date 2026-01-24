@@ -185,10 +185,10 @@ textarea{min-height:90px;}
       <div id="studentInfo"></div>
 
       <h3>Project</h3>
-      <div id="projectInfo"></div>
+      <div id="gdTopicInfo"></div>
 
       <h3>Team Members</h3>
-      <div id="teamInfo"></div>
+      <div id="gdGroupInfo"></div>
 
       <h3>Seminar Topic</h3>
       <div id="seminarInfo"></div>
@@ -603,32 +603,47 @@ function loadStudentDetails(){
     .then(r => r.json())
     .then(d => {
 
-      // Basic info
       studentInfo.innerHTML = `
         <b>${d.name}</b><br>
         Roll: ${d.roll}
       `;
 
-      // Project
-      projectInfo.innerHTML = d.projectName
-        ? d.projectName
-        : "<i>Not assigned</i>";
-
-      // Team
-      if(d.team && d.team.length){
-        teamInfo.innerHTML = d.team
-          .map(m => `${m.name} (${m.roll})`)
-          .join("<br>");
-      }else{
-        teamInfo.innerHTML = "<i>No team members</i>";
-      }
-
       // Seminar topic
       seminarInfo.innerText = d.seminarTopic || "-";
 
+      // Fetch GD allocation for this student
+      return fetch(BACKEND,{
+        method:"POST",
+        body:new URLSearchParams({
+          action:"getAllocationsByDate",
+          date: date.value   // same allocation date
+        })
+      }).then(r=>r.json())
+       .then(res => {
+         const myGD = res.allocations.find(
+           a => a.roll === roll && a.category === "GD"
+         );
+
+         if(!myGD){
+           gdTopicInfo.innerHTML = "<i>Not assigned</i>";
+           gdGroupInfo.innerHTML = "<i>No group</i>";
+           return;
+         }
+
+         gdTopicInfo.innerText = myGD.topic;
+
+         const group = res.allocations.filter(
+           a => a.category==="GD" && a.topic===myGD.topic
+         );
+
+         gdGroupInfo.innerHTML = group
+           .map(x => `${x.name} (${x.roll})`)
+           .join("<br>");
+       });
+
     })
     .finally(()=>{
-      loadLatestPerformance();   // load marks/comments
+      loadLatestPerformance();
       hideLoader();
     });
 }
