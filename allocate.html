@@ -171,9 +171,21 @@ function togglePanel(){
 
 function logout(){
   if(!confirm("Logout?")) return;
-  fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"logout",token})})
-    .finally(()=>location.href="login.html");
+
+  overlay.style.display = "flex";
+  document.querySelectorAll("button").forEach(b=>b.disabled=true);
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({ action:"logout", token })
+  })
+  .finally(()=>{
+    setTimeout(()=>{
+      location.href = "login.html";
+    }, 500);
+  });
 }
+
 </script>
 
 </body>
