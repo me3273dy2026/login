@@ -7,9 +7,6 @@
 
 <style>
 :root{
-  --bg1:#0f2027;
-  --bg2:#203a43;
-  --bg3:#2c5364;
   --primary:#203a43;
   --accent:#1abc9c;
   --danger:#c0392b;
@@ -19,47 +16,46 @@
 
 body{
   margin:0;
-  font-family:"Segoe UI",Arial,sans-serif;
   min-height:100vh;
-  background:linear-gradient(135deg,var(--bg1),var(--bg2),var(--bg3));
+  font-family:"Segoe UI",Arial,sans-serif;
+  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
   display:flex;
   justify-content:center;
-  align-items:flex-start;
-  padding:28px 12px 90px;
+  padding:30px 12px 90px;
 }
 
+/* ---------- LOADER ---------- */
+.overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.55);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:999;
+}
+.spinner{
+  width:54px;height:54px;
+  border:5px solid #eee;
+  border-top:5px solid var(--accent);
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---------- CARD ---------- */
 .card{
   background:#fff;
   width:100%;
-  max-width:560px;
+  max-width:580px;
   border-radius:20px;
-  padding:26px 26px 30px;
+  padding:26px;
   box-shadow:0 20px 50px rgba(0,0,0,.28);
-  animation:fadeIn .6s ease;
 }
 
-@keyframes fadeIn{
-  from{opacity:0;transform:translateY(20px)}
-  to{opacity:1;transform:translateY(0)}
-}
-
-.header{
-  text-align:center;
-  margin-bottom:18px;
-}
-
-.header h1{
-  margin:0;
-  color:var(--primary);
-  font-size:22px;
-}
-
-.header h2{
-  margin:4px 0 0;
-  font-size:14px;
-  color:#666;
-  font-weight:600;
-}
+.header{text-align:center}
+.header h1{margin:0;color:var(--primary);font-size:22px}
+.header h2{margin:6px 0 0;font-size:14px;color:#666}
 
 .infoBox{
   background:#f5f7fa;
@@ -68,29 +64,19 @@ body{
   margin-top:14px;
 }
 
-.loading{
-  text-align:center;
-  font-weight:600;
-  color:#555;
-}
-
 .notice{
-  background:linear-gradient(135deg,#e8f5e9,#f1f8e9);
+  background:#e8f5e9;
   color:#1b5e20;
   font-weight:700;
   text-align:center;
-  font-size:15px;
 }
 
-.badge{
-  display:inline-block;
-  padding:6px 14px;
-  border-radius:20px;
-  background:var(--accent);
-  color:#fff;
-  font-size:13px;
-  font-weight:700;
-  margin-top:10px;
+.pastBox{
+  background:#fff8e1;
+  border-left:5px solid #f9a825;
+  padding:12px;
+  border-radius:10px;
+  margin-top:14px;
 }
 
 button{
@@ -102,151 +88,48 @@ button{
   font-size:15px;
   font-weight:600;
   cursor:pointer;
-  transition:.15s ease;
 }
 
-button:disabled{
-  opacity:.6;
-  cursor:not-allowed;
-}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-logout{background:var(--danger);color:#fff}
 
-.btn-primary{
-  background:linear-gradient(135deg,#2c5364,#203a43);
-  color:#fff;
-}
-
-.btn-primary:hover{
-  transform:translateY(-1px);
-}
-
-.btn-logout{
-  background:linear-gradient(135deg,#e74c3c,#c0392b);
-  color:#fff;
-}
-
-.section{
-  margin-top:10px;
-  border-radius:14px;
-  overflow:hidden;
-  border:1px solid #e0e0e0;
-}
-
-.section-header{
-  background:#fafafa;
-  padding:12px 14px;
-  font-weight:700;
-  cursor:pointer;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-
-.section-body{
-  padding:14px;
-  display:none;
-}
-
-.section.open .section-body{
-  display:block;
-}
-
-.marksBox{
-  display:inline-block;
-  background:var(--primary);
-  color:#fff;
-  padding:10px 18px;
-  border-radius:10px;
-  font-size:18px;
-  font-weight:700;
-  margin:12px 0;
-}
-
-.greenBox{
-  background:#e8f5e9;
-  padding:12px;
-  border-radius:10px;
-  margin-top:8px;
-}
-
-.yellowBox{
-  background:#fffde7;
-  padding:12px;
-  border-radius:10px;
-  margin-top:8px;
-}
-
+/* ---------- FOOTER ---------- */
 footer{
   position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
+  bottom:0;left:0;right:0;
   background:#0f2027;
   color:#cfd8dc;
   text-align:center;
-  padding:10px 6px;
+  padding:10px;
   font-size:13px;
   font-weight:600;
 }
-
-footer div{
-  font-size:12px;
-  color:#90a4ae;
-}
+footer div{font-size:12px;color:#90a4ae}
 </style>
 </head>
 
 <body>
 
-<div class="card">
+<div class="overlay" id="overlay">
+  <div class="spinner"></div>
+</div>
 
+<div class="card">
   <div class="header">
     <h1 id="welcome"></h1>
-    <h2>ME3273 · Seminar & Group Discussion</h2>
-    <div class="badge">Student Dashboard</div>
+    <h2>ME3273 · Student Dashboard</h2>
   </div>
 
-  <div id="loadingBox" class="infoBox loading">
-    Fetching your details…
-  </div>
+  <div id="allocBox" class="infoBox notice"></div>
+  <div id="pastBox" class="pastBox" style="display:none"></div>
 
-  <div id="allocBox" class="infoBox notice" style="display:none"></div>
-
-  <button id="perfBtn" class="btn-primary" disabled onclick="togglePanel()">
-    View Performance Evaluation
+  <button class="btn-primary" onclick="togglePanel()">
+    View Performance
   </button>
 
-  <div id="perfPanel" style="display:none">
+  <div id="perfPanel" style="display:none"></div>
 
-    <div class="section" onclick="toggleSection('GD')">
-      <div class="section-header">
-        Group Discussion
-        <span>▾</span>
-      </div>
-      <div class="section-body" id="GD"></div>
-    </div>
-
-    <div class="section" onclick="toggleSection('SEMINAR')">
-      <div class="section-header">
-        Seminar
-        <span>▾</span>
-      </div>
-      <div class="section-body" id="SEMINAR"></div>
-    </div>
-
-    <div class="section" onclick="toggleSection('PI')">
-      <div class="section-header">
-        Personal Interview
-        <span>▾</span>
-      </div>
-      <div class="section-body" id="PI"></div>
-    </div>
-
-  </div>
-
-  <button id="logoutBtn" class="btn-logout" disabled onclick="logout()">
-    Logout
-  </button>
-
+  <button class="btn-logout" onclick="logout()">Logout</button>
 </div>
 
 <footer>
@@ -255,63 +138,35 @@ footer div{
 </footer>
 
 <script>
-const BACKEND="https://script.google.com/macros/s/AKfycbzDSb1x8BAe0XP6dC-xISPJDyXNwOJzU1ghw9E54y2TwOzjfnWG6i9oWQ0V5IIljweY7Q/exec";
+const BACKEND="https://script.google.com/macros/s/AKfycbw2viPscoDwvQrzkl4BlaY2XnDl0fK8jVvXAWI0j7A0diGcdxNGrKzWkr9jgXkgRn5vWg/exec";
 const token=new URLSearchParams(location.search).get("token");
 
-loadAll();
+Promise.all([
+  fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"dashboard",token})}).then(r=>r.json()),
+  fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getMyLatestAllocation",token})}).then(r=>r.json()),
+  fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getMyPastActivities",token})}).then(r=>r.json())
+]).then(([dash,alloc,past])=>{
+  overlay.style.display="none";
 
-function loadAll(){
-  Promise.all([
-    fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"dashboard",token})}).then(r=>r.json()),
-    fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getMyLatestAllocation",token})}).then(r=>r.json())
-  ]).then(([dash,alloc])=>{
-    loadingBox.style.display="none";
-    welcome.innerText=`Welcome ${dash.name} (${dash.roll})`;
+  welcome.innerText=`Welcome ${dash.name} (${dash.roll})`;
 
-    allocBox.style.display="block";
-    allocBox.innerText=
-      alloc.status==="ALLOCATED"
-      ? `You have ${alloc.category} on ${alloc.date}${alloc.topic?` · Topic: ${alloc.topic}`:""}`
-      : "Your allocation will be announced soon.";
+  allocBox.innerText =
+    alloc.status==="ALLOCATED"
+    ? `Upcoming: ${alloc.category} on ${alloc.date}${alloc.topic?` (Topic: ${alloc.topic})`:""}`
+    : "No upcoming allocation yet.";
 
-    perfBtn.disabled=false;
-    logoutBtn.disabled=false;
-  });
-}
+  if(past.status==="FOUND"){
+    pastBox.style.display="block";
+    pastBox.innerHTML =
+      "<b>Completed Activities:</b><ul>" +
+      past.past.map(p=>`<li>${p.category} on ${p.date}</li>`).join("") +
+      "</ul>";
+  }
+});
 
 function togglePanel(){
   perfPanel.style.display=
     perfPanel.style.display==="none"?"block":"none";
-}
-
-function toggleSection(type){
-  const sec=document.getElementById(type).parentElement;
-  sec.classList.toggle("open");
-
-  const box=document.getElementById(type);
-  if(box.innerHTML) return;
-
-  box.innerHTML="<div class='loading'>Loading…</div>";
-
-  fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({action:"getMyPerformance",token,type})
-  }).then(r=>r.json()).then(res=>{
-    if(res.status!=="FOUND"){
-      box.innerHTML="<b>Not yet evaluated.</b>";
-      return;
-    }
-    box.innerHTML=`
-      <div><b>Date:</b> ${res.evaluationDate}</div>
-      <div class="marksBox">Marks: ${res.marks}/100</div>
-      <div class="greenBox"><b>Positives</b><ol>${makeList(res.positives)}</ol></div>
-      <div class="yellowBox"><b>Improvements</b><ol>${makeList(res.improvements)}</ol></div>
-    `;
-  });
-}
-
-function makeList(t){
-  return t.split("\n").filter(Boolean).map(x=>`<li>${x}</li>`).join("");
 }
 
 function logout(){
