@@ -599,24 +599,21 @@ function loadStudentDetails(){
 
   showLoader("Fetching student details…");
 
-  // Basic student info
+  // basic student info
   fetch(BACKEND+"?action=getStudentDetailsByRoll&roll="+roll)
     .then(r=>r.json())
     .then(d=>{
-      studentInfo.innerHTML = `
-        <b>${d.name}</b><br>
-        Roll: ${d.roll}
-      `;
+      studentInfo.innerHTML = `<b>${d.name}</b><br>Roll: ${d.roll}`;
       seminarInfo.innerText = d.seminarTopic || "-";
     });
 
-  // Latest GD group (NO DATE NEEDED)
+  // latest GD group
   fetch(BACKEND+"?action=getLatestGDGroupByRoll&roll="+roll)
     .then(r=>r.json())
     .then(res=>{
-      if(res.status!=="OK"){
-        gdTopicInfo.innerHTML="<i>Not assigned</i>";
-        gdGroupInfo.innerHTML="<i>No group</i>";
+      if(res.status !== "OK"){
+        gdTopicInfo.innerHTML = "<i>Not assigned</i>";
+        gdGroupInfo.innerHTML = "<i>No group</i>";
         return;
       }
 
@@ -630,6 +627,7 @@ function loadStudentDetails(){
       hideLoader();
     });
 }
+
 
 function loadLatestPerformance(){
   const roll=studentSelect.value;
