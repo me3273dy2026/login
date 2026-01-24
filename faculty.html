@@ -297,7 +297,7 @@ function updateAllocationButtons(){
 }
 
 /* ================= CONFIG ================= */
-const BACKEND="https://script.google.com/macros/s/AKfycbwH0F4r_DSEzhfAKljTr_fXA8loxjaBqtgCu85lKt-01mbkMTyV2hMmvp6VsNH3v4VRxw/exec";
+const BACKEND="https://script.google.com/macros/s/AKfycbycSq38683c8gRYVBbrWbAoM1kT8PMrvHLIyA3BrGxObr2F3Ic09xkE1RhRyeZWOSUeEw/exec";
 
 /* ================= UI HELPERS ================= */
 function disableAllButtons(){
@@ -599,48 +599,31 @@ function loadStudentDetails(){
 
   showLoader("Fetching student details…");
 
-  fetch(BACKEND + "?action=getStudentDetailsByRoll&roll=" + roll)
-    .then(r => r.json())
-    .then(d => {
-
+  // Basic student info
+  fetch(BACKEND+"?action=getStudentDetailsByRoll&roll="+roll)
+    .then(r=>r.json())
+    .then(d=>{
       studentInfo.innerHTML = `
         <b>${d.name}</b><br>
         Roll: ${d.roll}
       `;
-
-      // Seminar topic
       seminarInfo.innerText = d.seminarTopic || "-";
+    });
 
-      // Fetch GD allocation for this student
-      return fetch(BACKEND,{
-        method:"POST",
-        body:new URLSearchParams({
-          action:"getAllocationsByDate",
-          date: date.value   // same allocation date
-        })
-      }).then(r=>r.json())
-       .then(res => {
-         const myGD = res.allocations.find(
-           a => a.roll === roll && a.category === "GD"
-         );
+  // Latest GD group (NO DATE NEEDED)
+  fetch(BACKEND+"?action=getLatestGDGroupByRoll&roll="+roll)
+    .then(r=>r.json())
+    .then(res=>{
+      if(res.status!=="OK"){
+        gdTopicInfo.innerHTML="<i>Not assigned</i>";
+        gdGroupInfo.innerHTML="<i>No group</i>";
+        return;
+      }
 
-         if(!myGD){
-           gdTopicInfo.innerHTML = "<i>Not assigned</i>";
-           gdGroupInfo.innerHTML = "<i>No group</i>";
-           return;
-         }
-
-         gdTopicInfo.innerText = myGD.topic;
-
-         const group = res.allocations.filter(
-           a => a.category==="GD" && a.topic===myGD.topic
-         );
-
-         gdGroupInfo.innerHTML = group
-           .map(x => `${x.name} (${x.roll})`)
-           .join("<br>");
-       });
-
+      gdTopicInfo.innerText = res.topic;
+      gdGroupInfo.innerHTML = res.group
+        .map(x=>`${x.name} (${x.roll})`)
+        .join("<br>");
     })
     .finally(()=>{
       loadLatestPerformance();
