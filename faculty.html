@@ -297,7 +297,7 @@ function updateAllocationButtons(){
 }
 
 /* ================= CONFIG ================= */
-const BACKEND="https://script.google.com/macros/s/AKfycbxRpJcmCyXvst8tkSGNe6-ylh-nCCvAqdchNCp31aqsdaV4fawg0MS83SyHqp7Kwjkc7g/exec";
+const BACKEND="https://script.google.com/macros/s/AKfycbznlpvKqHrpHIJoHH2cEIE_nDY7iYjrcmWIN8Z8nDCiCVTl5aT6XKuEjWefwW-8EBM-ag/exec";
 
 /* ================= UI HELPERS ================= */
 function disableAllButtons(){
@@ -592,14 +592,13 @@ function loadStudents(){
     });
   });
 }
-
 function loadStudentDetails(){
   const roll = studentSelect.value;
   if(!roll) return;
 
   showLoader("Fetching student details…");
 
-  // 1️⃣ Basic student info
+  /* --- Student basic details --- */
   fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({
@@ -613,25 +612,28 @@ function loadStudentDetails(){
     seminarInfo.innerText = d.seminarTopic || "-";
   });
 
-  // 2️⃣ Latest GD group (POST — NOT GET)
+  /* --- GD GROUP (AssignedProjectID based) --- */
   fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({
-      action:"getLatestGDGroupByRoll",
+      action:"getGDGroupByRoll",
       roll: roll
     })
   })
   .then(r=>r.json())
   .then(res=>{
     if(res.status !== "OK"){
-      gdTopicInfo.innerHTML = "<i>Not assigned</i>";
-      gdGroupInfo.innerHTML = "<i>No group</i>";
+      gdTopicInfo.innerHTML = "<i>Group not assigned</i>";
+      gdGroupInfo.innerHTML = "<i>No group members</i>";
       return;
     }
 
-    gdTopicInfo.innerText = res.topic;
+    // Show AssignedProjectID as group name
+    gdTopicInfo.innerText = res.groupId;
+
+    // Show all students in same group
     gdGroupInfo.innerHTML = res.group
-      .map(x=>`${x.name} (${x.roll})`)
+      .map(s => `${s.name} (${s.roll})`)
       .join("<br>");
   })
   .finally(()=>{
@@ -639,8 +641,6 @@ function loadStudentDetails(){
     hideLoader();
   });
 }
-
-
 function loadLatestPerformance(){
   const roll=studentSelect.value;
   const type=typeSelect.value;
