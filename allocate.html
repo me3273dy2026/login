@@ -204,6 +204,40 @@ button:disabled{
   margin-top:8px;
 }
 
+  /* Logout overlay */
+#logoutOverlay{
+  position:fixed;
+  inset:0;
+  background:rgba(15,32,39,.75);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+}
+
+/* Spinner */
+.logoutSpinner{
+  width:48px;
+  height:48px;
+  border:5px solid #cfd8dc;
+  border-top:5px solid #1abc9c;
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+
+.logoutText{
+  margin-top:14px;
+  color:#fff;
+  font-weight:700;
+  font-size:15px;
+}
+
+@keyframes spin{
+  from{transform:rotate(0deg)}
+  to{transform:rotate(360deg)}
+}
+
 footer{
   position:fixed;
   bottom:0;
@@ -400,11 +434,24 @@ function makeList(t){
 }
 
 function logout(){
-  if(!confirm("Logout?")) return;
-  fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"logout",token})})
-    .finally(()=>location.href="login.html");
+  if(!confirm("Are you sure you want to logout?")) return;
+
+  document.getElementById("logoutOverlay").style.display="flex";
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({action:"logout",token})
+  })
+  .finally(()=>{
+    setTimeout(()=>{
+      location.href="login.html";
+    }, 600); // small delay for smooth UX
+  });
 }
 </script>
-
+<div id="logoutOverlay" style="display:none">
+  <div class="logoutSpinner"></div>
+  <div class="logoutText">Logging out…</div>
+</div>
 </body>
 </html>
