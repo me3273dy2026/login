@@ -255,24 +255,51 @@ footer div{
 </footer>
 
 <script>
-const BACKEND="https://script.google.com/macros/s/AKfycbwWm1FprlMfyNX6tryU_tB_u8MOZ0DaHmQKY5sNrI_KecsvTdtiqI6Psz72zXFTAc1G8g/exec";
+const BACKEND="https://script.google.com/macros/s/AKfycbz62azTv00Onwn9HGPjuJ1sT9zDvUnn6cwSB-wnxx7ote83QaUcJQZ41Sllo67fOgrFdQ/exec";
 const token=new URLSearchParams(location.search).get("token");
 
 loadAll();
+function prettyDate(iso){
+  const d = new Date(iso);
+  const day = d.getDate();
+  const month = d.toLocaleString("en-US",{month:"short"});
+  const year = d.getFullYear();
 
+  const suffix =
+    day%10===1 && day!==11 ? "st" :
+    day%10===2 && day!==12 ? "nd" :
+    day%10===3 && day!==13 ? "rd" : "th";
+
+  return `${day}${suffix} ${month} ${year}`;
+}
 function loadAll(){
   Promise.all([
     fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"dashboard",token})}).then(r=>r.json()),
-    fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getMyLatestAllocation",token})}).then(r=>r.json())
-  ]).then(([dash,alloc])=>{
+    fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getMyLatestAllocation",token})}).then(r=>r.json()),
+    fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getMyPreviousAllocation",token})}).then(r=>r.json())
+  ]).then(([dash,alloc,prev])=>{
     loadingBox.style.display="none";
     welcome.innerText=`Welcome ${dash.name} (${dash.roll})`;
 
+    let msg = "";
+
+    if(alloc.status==="ALLOCATED"){
+      msg += `Upcoming: You have <b>${alloc.category}</b> on <b>${prettyDate(alloc.date)}</b>`;
+      if(alloc.topic){
+        msg += ` · Topic: ${alloc.topic}`;
+      }
+    }else{
+      msg += "Your upcoming allocation will be announced soon.";
+    }
+
+    if(prev.status==="FOUND"){
+      msg += `<br><br><span style="font-weight:600;color:#555">
+        Past: You had <b>${prev.category}</b> on <b>${prettyDate(prev.date)}</b>
+      </span>`;
+    }
+
     allocBox.style.display="block";
-    allocBox.innerText=
-      alloc.status==="ALLOCATED"
-      ? `You have ${alloc.category} on ${alloc.date}${alloc.topic?` · Topic: ${alloc.topic}`:""}`
-      : "Your allocation will be announced soon.";
+    allocBox.innerHTML = msg;
 
     perfBtn.disabled=false;
     logoutBtn.disabled=false;
