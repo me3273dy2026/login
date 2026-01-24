@@ -208,7 +208,24 @@ function closeSection(){
   home.style.display="block";
 }
 function logout(){ location.href="login.html"; }
+/* ================= UI HELPERS ================= */
 
+function disableAllButtons(){
+  document.querySelectorAll("button").forEach(b=>b.disabled=true);
+}
+
+function enableButton(btn){
+  btn.disabled=false;
+}
+
+function setLoading(btn, text){
+  btn.dataset.originalText = btn.innerText;
+  btn.innerText = text;
+}
+
+function resetButton(btn){
+  btn.innerText = btn.dataset.originalText;
+}
 /* ================= ALLOCATION LOGIC (UNCHANGED) ================= */
 // ⬇️ EXACT SAME JS FUNCTIONS FROM YOUR ALLOCATION FILE
 // onDate(), loadExisting(), loadGD(), saveGD(),
@@ -264,9 +281,12 @@ async function loadExisting(){
 }
 
 async function loadGD(){
-  gdOpenBtn.style.display="none";      // 👈 hide Allocate
-  gdOpenBtn.disabled=true;
+  disableAllButtons();
+  setLoading(gdOpenBtn,"Loading… Please wait");
 
+  date.disabled = true; // 🔒 lock date immediately
+
+  gdOpenBtn.style.display="none";
   gdBox.style.display="block";
   saveGDBtn.style.display="block";
   gdBox.innerHTML="";
@@ -286,9 +306,15 @@ async function loadGD(){
         ${t.topic}
       </label><br>`;
   });
+
+  resetButton(gdOpenBtn);
+  saveGDBtn.disabled=false;
 }
 
 async function saveGD(){
+  disableAllButtons();
+  setLoading(saveGDBtn,"Updating… Please wait");
+
   const topics=[...gdBox.querySelectorAll("input:checked")].map(i=>i.value);
 
   await fetch(BACKEND,{
@@ -300,22 +326,24 @@ async function saveGD(){
     })
   });
 
-  // Reset UI
   gdBox.style.display="none";
   saveGDBtn.style.display="none";
-  gdOpenBtn.style.display="block";     // 👈 show Allocate again
-  gdOpenBtn.disabled=false;
 
-  // 🔁 Refresh allocations immediately
-  await loadExisting();
+  gdOpenBtn.style.display="block";
+  gdOpenBtn.disabled=true;   // 🔒 GD locked permanently
 
-  semOpenBtn.disabled=false;
+  await loadExisting();      // 🔁 refresh list
+
+  resetButton(saveGDBtn);
+
+  semOpenBtn.disabled=false; // ✅ unlock Seminar
 }
 
 async function loadSeminar(){
-  semOpenBtn.style.display="none";
-  semOpenBtn.disabled=true;
+  disableAllButtons();
+  setLoading(semOpenBtn,"Loading… Please wait");
 
+  semOpenBtn.style.display="none";
   semBox.style.display="block";
   saveSemBtn.style.display="block";
   semBox.innerHTML="";
@@ -335,9 +363,15 @@ async function loadSeminar(){
         ${s.name}
       </label><br>`;
   });
+
+  resetButton(semOpenBtn);
+  saveSemBtn.disabled=false;
 }
 
 async function saveSeminar(){
+  disableAllButtons();
+  setLoading(saveSemBtn,"Updating… Please wait");
+
   const rolls=[...semBox.querySelectorAll("input:checked")].map(i=>i.value);
 
   await fetch(BACKEND,{
@@ -352,18 +386,22 @@ async function saveSeminar(){
 
   semBox.style.display="none";
   saveSemBtn.style.display="none";
+
   semOpenBtn.style.display="block";
-  semOpenBtn.disabled=false;
+  semOpenBtn.disabled=true;   // 🔒 Seminar locked
 
   await loadExisting();
 
-  piOpenBtn.disabled=false;
+  resetButton(saveSemBtn);
+
+  piOpenBtn.disabled=false;   // ✅ unlock PI
 }
 
 async function loadPI(){
-  piOpenBtn.style.display="none";
-  piOpenBtn.disabled=true;
+  disableAllButtons();
+  setLoading(piOpenBtn,"Loading… Please wait");
 
+  piOpenBtn.style.display="none";
   piBox.style.display="block";
   savePIBtn.style.display="block";
   piBox.innerHTML="";
@@ -383,9 +421,15 @@ async function loadPI(){
         ${s.name}
       </label><br>`;
   });
+
+  resetButton(piOpenBtn);
+  savePIBtn.disabled=false;
 }
 
 async function savePI(){
+  disableAllButtons();
+  setLoading(savePIBtn,"Updating… Please wait");
+
   const rolls=[...piBox.querySelectorAll("input:checked")].map(i=>i.value);
 
   await fetch(BACKEND,{
@@ -400,10 +444,13 @@ async function savePI(){
 
   piBox.style.display="none";
   savePIBtn.style.display="none";
+
   piOpenBtn.style.display="block";
-  piOpenBtn.disabled=false;
+  piOpenBtn.disabled=true;   // 🔒 PI locked
 
   await loadExisting();
+
+  resetButton(savePIBtn);
 }
 /* ================= EVALUATION LOGIC ================= */
 function loadStudents(){
