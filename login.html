@@ -125,7 +125,7 @@ button:disabled{background:#999;cursor:not-allowed;}
 </div>
 
 <script>
-const BACKEND_URL = "https://script.google.com/macros/s/AKfycbw1h6eHA_nmbYLrXao0rT6Lj3sb0HUj7Pl45uAdYyU8i3_QnuOIrqYjl7ztX5PlQCJPXQ/exec";
+const BACKEND_URL = "https://script.google.com/macros/s/AKfycbzH-gOw8qHiM6PdJcjQAH7aDwvW0UwE7aBSpc5JCJvrxtlNowyawipUkRKiqtQ4M1gg5Q/exec";
   
 
 function login(){
@@ -153,14 +153,26 @@ function login(){
   })
   .then(r=>r.json())
   .then(res=>{
-    if(res.token){
-      window.location.href="allocate.html?token="+res.token;
-    }else{
-      msg.style.color="red";
-      msg.innerText="Not registered";
-      btn.disabled=false;
-    }
-  })
+  if(res.status==="OK" && res.token){
+    window.location.href = "allocate.html?token=" + res.token;
+    return;
+  }
+
+  if(res.status==="ALREADY_LOGGED_IN"){
+    msg.style.color="red";
+    msg.innerText="You are already logged in from another device.";
+  }
+  else if(res.status==="NOT_REGISTERED"){
+    msg.style.color="red";
+    msg.innerText="Not registered.";
+  }
+  else{
+    msg.style.color="red";
+    msg.innerText="Login failed. Please try again.";
+  }
+
+  btn.disabled=false;
+})
   .catch(()=>{
     msg.style.color="red";
     msg.innerText="Server error";
