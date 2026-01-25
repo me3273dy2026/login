@@ -80,8 +80,6 @@ button:disabled{background:#999;cursor:not-allowed;}
 </div>
 
 <script>
-const BACKEND_URL = "https://script.google.com/macros/s/AKfycbybOygn6ZTQcoeLEMbwKx0pX9GkPI4pPjiKDk8jA-arTAinR8j8Y7q4DIMwhAmELUILFg/exec";
-
 function loginFaculty(){
 
   const fid = document.getElementById("fid").value.trim();
@@ -99,31 +97,17 @@ function loginFaculty(){
   msg.style.color="#555";
   msg.innerText = "Authenticating…";
 
-  fetch(BACKEND_URL,{
-    method:"POST",
-    body:new URLSearchParams({
-      action: "facultyLogin",
-      fid: fid,
-      pwd: pwd
-    })
-  })
-  .then(r => r.json())
-  .then(res => {
-
-    if(res.status === "OK" && res.token){
-      window.location.href = "faculty.html?token=" + res.token;
+  /* ===== HARD-CODED CREDENTIAL CHECK ===== */
+  setTimeout(()=>{
+    if(fid === "admin" && pwd === "me3273"){
+      window.location.href = "faculty.html?token=admin";
       return;
     }
 
     msg.style.color = "red";
     msg.innerText = "Invalid credentials.";
     btn.disabled = false;
-  })
-  .catch(()=>{
-    msg.style.color="red";
-    msg.innerText="Server error. Try again.";
-    btn.disabled=false;
-  });
+  }, 600);
 }
 </script>
 
