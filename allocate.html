@@ -260,7 +260,7 @@ function loadAll(){
     let hasUpcoming = false;
 
 if(
-  alloc.status === "ALLOCATED" &&
+  alloc.status === "FOUND" &&
   alloc.date &&
   !isPastOrToday(alloc.date)
 ){
@@ -288,7 +288,7 @@ if(past.status === "FOUND"){
     </div>`;
 }
 else if(
-  alloc.status === "ALLOCATED" &&
+  alloc.status === "FOUND" &&
   alloc.date &&
   isPastOrToday(alloc.date)
 ){
