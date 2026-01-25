@@ -1,234 +1,264 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Student Dashboard | ME3273</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <title>Student Dashboard | ME3273</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<style>
-:root{
-  --bg1:#0f2027;
-  --bg2:#203a43;
-  --bg3:#2c5364;
-  --primary:#203a43;
-  --accent:#1abc9c;
-}
+  <style>
+    :root{
+      --bg1:#0f2027;
+      --bg2:#203a43;
+      --bg3:#2c5364;
+      --primary:#203a43;
+      --accent:#1abc9c;
+      --danger:#c0392b;
+    }
 
-*{box-sizing:border-box}
+    *{ box-sizing:border-box; }
 
-body{
-  margin:0;
-  font-family:"Segoe UI",Arial,sans-serif;
-  min-height:100vh;
-  background:linear-gradient(135deg,var(--bg1),var(--bg2),var(--bg3));
-  display:flex;
-  justify-content:center;
-  align-items:flex-start;
-  padding:28px 12px 90px;
-}
+    body{
+      margin:0;
+      font-family:"Segoe UI",Arial,sans-serif;
+      min-height:100vh;
+      background:linear-gradient(135deg,var(--bg1),var(--bg2),var(--bg3));
+      display:flex;
+      justify-content:center;
+      align-items:flex-start;
+      padding:28px 12px 90px;
+    }
 
-.card{
-  background:#fff;
-  width:100%;
-  max-width:560px;
-  border-radius:20px;
-  padding:26px 26px 30px;
-  box-shadow:0 20px 50px rgba(0,0,0,.28);
-}
+    .card{
+      background:#fff;
+      width:100%;
+      max-width:560px;
+      border-radius:20px;
+      padding:26px 26px 30px;
+      box-shadow:0 20px 50px rgba(0,0,0,.28);
+      animation:fadeIn .6s ease;
+    }
 
-.header{text-align:center;margin-bottom:18px}
-.header h1{margin:0;color:var(--primary);font-size:22px}
-.header h2{margin:4px 0 0;font-size:14px;color:#666;font-weight:600}
+    @keyframes fadeIn{
+      from{opacity:0;transform:translateY(20px)}
+      to{opacity:1;transform:translateY(0)}
+    }
 
-.infoBox{
-  background:#f5f7fa;
-  border-radius:14px;
-  padding:14px;
-  margin-top:14px;
-}
+    .header{text-align:center;margin-bottom:18px;}
+    .header h1{margin:0;color:var(--primary);font-size:22px;}
+    .header h2{margin:4px 0 0;font-size:14px;color:#666;font-weight:600;}
 
-.loading{text-align:center;font-weight:600;color:#555}
+    .infoBox{
+      background:#f5f7fa;
+      border-radius:14px;
+      padding:14px;
+      margin-top:14px;
+    }
 
-.notice{
-  background:#e8f5e9;
-  color:#1b5e20;
-  font-weight:700;
-  text-align:center;
-}
+    .loading{text-align:center;font-weight:600;color:#555;}
 
-button{
-  width:100%;
-  padding:13px;
-  margin-top:14px;
-  border:none;
-  border-radius:30px;
-  font-size:15px;
-  font-weight:600;
-  cursor:pointer;
-}
+    .notice{
+      background:linear-gradient(135deg,#e8f5e9,#f1f8e9);
+      color:#1b5e20;
+      font-weight:700;
+      text-align:center;
+      font-size:15px;
+    }
 
-.btn-primary{
-  background:linear-gradient(135deg,#2c5364,#203a43);
-  color:#fff;
-}
+    .badge{
+      display:inline-block;
+      padding:6px 14px;
+      border-radius:20px;
+      background:var(--accent);
+      color:#fff;
+      font-size:13px;
+      font-weight:700;
+      margin-top:10px;
+    }
 
-.btn-logout{
-  background:linear-gradient(135deg,#e74c3c,#c0392b);
-  color:#fff;
-}
+    button{
+      width:100%;
+      padding:13px;
+      margin-top:14px;
+      border:none;
+      border-radius:30px;
+      font-size:15px;
+      font-weight:600;
+      cursor:pointer;
+      transition:.15s ease;
+    }
 
-/* Upcoming */
-.upcomingBox{
-  background:#fdecea;
-  border:2px solid #e53935;
-  color:#b71c1c;
-  font-weight:700;
-  text-align:center;
-  padding:14px;
-  border-radius:14px;
-  margin-top:14px;
-  animation:blink 1.5s infinite;
-}
-@keyframes blink{
-  0%{opacity:1}
-  50%{opacity:.45}
-  100%{opacity:1}
-}
+    button:disabled{opacity:.6;cursor:not-allowed;}
 
-/* Past */
-.pastBox{
-  background:#e8f5e9;
-  border:1px solid #c8e6c9;
-  color:#1b5e20;
-  font-weight:600;
-  text-align:center;
-  padding:12px;
-  border-radius:14px;
-  margin-top:10px;
-}
+    .btn-primary{
+      background:linear-gradient(135deg,#2c5364,#203a43);
+      color:#fff;
+    }
 
-.section{
-  margin-top:10px;
-  border-radius:14px;
-  overflow:hidden;
-  border:1px solid #e0e0e0;
-}
+    .btn-logout{
+      background:linear-gradient(135deg,#e74c3c,#c0392b);
+      color:#fff;
+    }
 
-.section-header{
-  background:#fafafa;
-  padding:12px 14px;
-  font-weight:700;
-  cursor:pointer;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
+    .section{
+      margin-top:10px;
+      border-radius:14px;
+      overflow:hidden;
+      border:1px solid #e0e0e0;
+    }
 
-.section-body{
-  padding:14px;
-  display:none;
-}
+    .upcomingBox{
+      background:#fdecea;
+      border:2px solid #e53935;
+      color:#b71c1c;
+      font-weight:700;
+      text-align:center;
+      padding:14px;
+      border-radius:14px;
+      margin-top:14px;
+      animation:blink 1.5s infinite;
+    }
 
-.section.open .section-body{display:block}
+    @keyframes blink{
+      0%{opacity:1}
+      50%{opacity:.45}
+      100%{opacity:1}
+    }
 
-/* Marks */
-.marksWrapper{text-align:center}
-.marksBox{
-  padding:12px 22px;
-  border-radius:10px;
-  font-size:20px;
-  font-weight:700;
-  margin:14px auto 6px;
-  display:inline-block;
-}
-.marks-green{background:#2e7d32;color:#fff}
-.marks-yellow{background:#f9a825;color:#000}
-.marks-orange{background:#ef6c00;color:#fff}
-.marks-red{background:#c62828;color:#fff}
-.marksMsg{font-weight:600;font-size:14px;margin-top:6px}
+    .pastBox{
+      background:#e8f5e9;
+      border:1px solid #c8e6c9;
+      color:#1b5e20;
+      font-weight:600;
+      text-align:center;
+      padding:12px;
+      border-radius:14px;
+      margin-top:10px;
+    }
 
-.greenBox{background:#e8f5e9;padding:12px;border-radius:10px;margin-top:8px}
-.yellowBox{background:#fffde7;padding:12px;border-radius:10px;margin-top:8px}
+    .section-header{
+      background:#fafafa;
+      padding:12px 14px;
+      font-weight:700;
+      cursor:pointer;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
 
-/* Logout overlay */
-#logoutOverlay{
-  position:fixed;
-  inset:0;
-  background:rgba(15,32,39,.75);
-  display:none;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  z-index:9999;
-}
-.logoutSpinner{
-  width:48px;
-  height:48px;
-  border:5px solid #cfd8dc;
-  border-top:5px solid #1abc9c;
-  border-radius:50%;
-  animation:spin 1s linear infinite;
-}
-@keyframes spin{to{transform:rotate(360deg)}}
-.logoutText{margin-top:14px;color:#fff;font-weight:700}
+    .section-body{padding:14px;display:none;}
+    .section.open .section-body{display:block;}
 
-footer{
-  position:fixed;
-  bottom:0;left:0;right:0;
-  background:#0f2027;
-  color:#cfd8dc;
-  text-align:center;
-  padding:10px 6px;
-  font-size:13px;
-  font-weight:600;
-}
-footer div{font-size:12px;color:#90a4ae}
-</style>
+    .marksWrapper{text-align:center;}
+
+    .marksBox{
+      display:inline-block;
+      padding:12px 22px;
+      border-radius:10px;
+      font-size:20px;
+      font-weight:700;
+      margin:14px auto 6px;
+      text-align:center;
+    }
+
+    .marks-green{background:#2e7d32;color:#fff;}
+    .marks-yellow{background:#f9a825;color:#000;}
+    .marks-orange{background:#ef6c00;color:#fff;}
+    .marks-red{background:#c62828;color:#fff;}
+
+    .marksMsg{margin-top:6px;font-weight:600;font-size:14px;}
+
+    .greenBox{background:#e8f5e9;padding:12px;border-radius:10px;margin-top:8px;}
+    .yellowBox{background:#fffde7;padding:12px;border-radius:10px;margin-top:8px;}
+
+    #logoutOverlay{
+      position:fixed;
+      inset:0;
+      background:rgba(15,32,39,.75);
+      display:none;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      z-index:9999;
+    }
+
+    .logoutSpinner{
+      width:48px;
+      height:48px;
+      border:5px solid #cfd8dc;
+      border-top:5px solid #1abc9c;
+      border-radius:50%;
+      animation:spin 1s linear infinite;
+    }
+
+    .logoutText{
+      margin-top:14px;
+      color:#fff;
+      font-weight:700;
+      font-size:15px;
+    }
+
+    @keyframes spin{
+      from{transform:rotate(0deg)}
+      to{transform:rotate(360deg)}
+    }
+
+    footer{
+      position:fixed;
+      bottom:0;
+      left:0;
+      right:0;
+      background:#0f2027;
+      color:#cfd8dc;
+      text-align:center;
+      padding:10px 6px;
+      font-size:13px;
+      font-weight:600;
+    }
+
+    footer div{font-size:12px;color:#90a4ae;}
+  </style>
 </head>
 
 <body>
 
 <div class="card">
-
-<div class="header">
-  <h1 id="welcome"></h1>
-  <h2>ME3273 · Seminar & GD · PI</h2>
-</div>
-
-<div id="loadingBox" class="infoBox loading">
-  Fetching your details…
-</div>
-
-<div id="upcomingBox" style="display:none"></div>
-<div id="pastBox" style="display:none"></div>
-
-<button id="perfBtn" class="btn-primary" disabled onclick="togglePanel()">
-  View Performance
-</button>
-
-<div id="perfPanel" style="display:none">
-
-  <div class="section" onclick="toggleSection('GD')">
-    <div class="section-header">Group Discussion <span>▾</span></div>
-    <div class="section-body" id="GD"></div>
+  <div class="header">
+    <h1 id="welcome"></h1>
+    <h2>ME3273 · Seminar & Group Discussion</h2>
+    <div class="badge">Student Dashboard</div>
   </div>
 
-  <div class="section" onclick="toggleSection('SEMINAR')">
-    <div class="section-header">Seminar <span>▾</span></div>
-    <div class="section-body" id="SEMINAR"></div>
+  <div id="loadingBox" class="infoBox loading">
+    Fetching your details…
   </div>
 
-  <div class="section" onclick="toggleSection('PI')">
-    <div class="section-header">Personal Interview <span>▾</span></div>
-    <div class="section-body" id="PI"></div>
+  <div id="upcomingBox" style="display:none"></div>
+  <div id="pastBox" style="display:none"></div>
+
+  <button id="perfBtn" class="btn-primary" disabled onclick="togglePanel()">
+    View Performance Evaluation
+  </button>
+
+  <div id="perfPanel" style="display:none">
+    <div class="section" onclick="toggleSection('GD')">
+      <div class="section-header">Group Discussion <span>▾</span></div>
+      <div class="section-body" id="GD"></div>
+    </div>
+
+    <div class="section" onclick="toggleSection('SEMINAR')">
+      <div class="section-header">Seminar <span>▾</span></div>
+      <div class="section-body" id="SEMINAR"></div>
+    </div>
+
+    <div class="section" onclick="toggleSection('PI')">
+      <div class="section-header">Personal Interview <span>▾</span></div>
+      <div class="section-body" id="PI"></div>
+    </div>
   </div>
 
-</div>
-
-<button id="logoutBtn" class="btn-logout" disabled onclick="logout()">
-  Logout
-</button>
-
+  <button id="logoutBtn" class="btn-logout" disabled onclick="logout()">
+    Logout
+  </button>
 </div>
 
 <footer>
@@ -236,134 +266,129 @@ footer div{font-size:12px;color:#90a4ae}
   <div>© 2026 · IIEST Shibpur</div>
 </footer>
 
+<script>
+  const BACKEND = "https://script.google.com/macros/s/AKfycbxEbh0x1ez4t0XLdW0Tk2NSw1UoAddnI_GFr1ybm6DVCvbZMxiQbX_f-mRQ9I9vk5EXFA/exec";
+  const token = new URLSearchParams(location.search).get("token");
+
+  loadAll();
+
+  function prettyDate(iso){
+    const d = new Date(iso);
+    const day = d.getDate();
+    const month = d.toLocaleString("en-US",{month:"short"});
+    const year = d.getFullYear();
+    const suffix =
+      day % 10 === 1 && day !== 11 ? "st" :
+      day % 10 === 2 && day !== 12 ? "nd" :
+      day % 10 === 3 && day !== 13 ? "rd" : "th";
+    return `${day}${suffix} ${month} ${year}`;
+  }
+
+  function loadAll(){
+    Promise.all([
+      fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"dashboard",token})}).then(r=>r.json()),
+      fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getMyLatestAllocation",token})}).then(r=>r.json()),
+      fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getMyLastEvaluatedActivity",token})}).then(r=>r.json())
+    ]).then(([dash,alloc,past])=>{
+      loadingBox.style.display="none";
+      welcome.innerText = `Welcome ${dash.name} (${dash.roll})`;
+
+      let upcomingHTML = "";
+      let pastHTML = "";
+
+      if(alloc.status==="ALLOCATED" && !isPastOrToday(alloc.date)){
+        upcomingHTML = `
+          <div class="upcomingBox">
+            Upcoming: You have <b>${alloc.category}</b><br>
+            on <b>${prettyDate(alloc.date)}</b>
+            ${alloc.topic ? `<br>Topic: ${alloc.topic}` : ""}
+          </div>`;
+      }else{
+        upcomingHTML = `<div class="infoBox notice">No upcoming allocations at the moment.</div>`;
+      }
+
+      if(past.status==="FOUND" || (alloc.status==="ALLOCATED" && isPastOrToday(alloc.date))){
+        pastHTML = `
+          <div class="pastBox">
+            Completed: You had <b>${past.status==="FOUND"?past.category:alloc.category}</b><br>
+            on <b>${prettyDate(past.status==="FOUND"?past.date:alloc.date)}</b>
+            ${past.status!=="FOUND"?"<br><i>(Evaluation pending)</i>":""}
+          </div>`;
+      }
+
+      upcomingBox.style.display="block";
+      upcomingBox.innerHTML = upcomingHTML;
+
+      if(pastHTML){
+        pastBox.style.display="block";
+        pastBox.innerHTML = pastHTML;
+      }
+
+      perfBtn.disabled = false;
+      logoutBtn.disabled = false;
+    });
+  }
+
+  function togglePanel(){
+    perfPanel.style.display = perfPanel.style.display==="none" ? "block" : "none";
+  }
+
+  function toggleSection(type){
+    const sec = document.getElementById(type).parentElement;
+    sec.classList.toggle("open");
+
+    const box = document.getElementById(type);
+    if(box.innerHTML) return;
+
+    box.innerHTML = "<div class='loading'>Loading…</div>";
+
+    fetch(BACKEND,{
+      method:"POST",
+      body:new URLSearchParams({action:"getMyPerformance",token,type})
+    })
+    .then(r=>r.json())
+    .then(res=>{
+      if(res.status!=="FOUND"){
+        box.innerHTML = "<b>Not yet evaluated.</b>";
+        return;
+      }
+
+      const m = Number(res.marks || 0);
+      let color = "marks-red";
+      let msg = "Needs improvement. Don’t give up.";
+
+      if(m>=80){color="marks-green";msg="Very good. Keep going.";}
+      else if(m>=70){color="marks-yellow";msg="Good work. Aim a little higher.";}
+      else if(m>=60){color="marks-orange";msg="Fair effort. You can do better.";}
+
+      box.innerHTML = `
+        <div><b>Date:</b> ${res.evaluationDate}</div>
+        <div class="marksWrapper">
+          <div class="marksBox ${color}">${m}/100</div>
+          <div class="marksMsg">${msg}</div>
+        </div>
+        <div class="greenBox"><b>Positives</b><ol>${makeList(res.positives)}</ol></div>
+        <div class="yellowBox"><b>Improvements</b><ol>${makeList(res.improvements)}</ol></div>
+      `;
+    });
+  }
+
+  function makeList(t){
+    return t.split("\n").filter(Boolean).map(x=>`<li>${x}</li>`).join("");
+  }
+
+  function logout(){
+    if(!confirm("Are you sure you want to logout?")) return;
+    logoutOverlay.style.display="flex";
+    fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"logout",token})})
+      .finally(()=>setTimeout(()=>location.href="login.html",600));
+  }
+</script>
+
 <div id="logoutOverlay">
   <div class="logoutSpinner"></div>
   <div class="logoutText">Logging out…</div>
 </div>
-
-<script>
-const BACKEND="https://script.google.com/macros/s/AKfycbyUUQ1mSJ3b1SjBa5cJbrq1TwyuE7yQsw7XhoLAKjNET6uiettZJz4BiGw8eYSmX9xsFg/exec";
-const token=new URLSearchParams(location.search).get("token");
-
-/* ===== Inactivity logout ===== */
-let idleTimer;
-function resetIdle(){
-  clearTimeout(idleTimer);
-  idleTimer=setTimeout(forceLogout,60000);
-}
-["mousemove","keydown","click","scroll","touchstart"].forEach(e=>{
-  document.addEventListener(e,resetIdle,true);
-});
-resetIdle();
-
-function forceLogout(){
-  fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({action:"logout",token})
-  }).finally(()=>{
-    alert("Session expired due to inactivity.");
-    location.href="login.html";
-  });
-}
-
-/* ===== Helpers ===== */
-function prettyDate(iso){
-  const d=new Date(iso);
-  const day=d.getDate();
-  const m=d.toLocaleString("en-US",{month:"short"});
-  const y=d.getFullYear();
-  const s=day%10===1&&day!==11?"st":day%10===2&&day!==12?"nd":day%10===3&&day!==13?"rd":"th";
-  return `${day}${s} ${m} ${y}`;
-}
-function isPastOrToday(iso){
-  const t=new Date();t.setHours(0,0,0,0);
-  const d=new Date(iso);d.setHours(0,0,0,0);
-  return d<=t;
-}
-
-/* ===== Load dashboard ===== */
-Promise.all([
-  fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"dashboard",token})}).then(r=>r.json()),
-  fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getMyLatestAllocation",token})}).then(r=>r.json()),
-  fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getMyLastEvaluatedActivity",token})}).then(r=>r.json())
-]).then(([dash,alloc,past])=>{
-  loadingBox.style.display="none";
-  welcome.innerText=`Welcome ${dash.name} (${dash.roll})`;
-
-  if(alloc.status==="ALLOCATED"){
-    if(!isPastOrToday(alloc.date)){
-      upcomingBox.style.display="block";
-      upcomingBox.innerHTML=`Upcoming: <b>${alloc.category}</b><br>on <b>${prettyDate(alloc.date)}</b>`;
-    }else{
-      pastBox.style.display="block";
-      pastBox.innerHTML=`Completed: <b>${alloc.category}</b><br>on <b>${prettyDate(alloc.date)}</b>`;
-    }
-  }
-
-  if(past.status==="FOUND"){
-    pastBox.style.display="block";
-    pastBox.innerHTML=`Completed: <b>${past.category}</b><br>on <b>${prettyDate(past.date)}</b>`;
-  }
-
-  perfBtn.disabled=false;
-  logoutBtn.disabled=false;
-});
-
-/* ===== Performance ===== */
-function togglePanel(){
-  perfPanel.style.display=perfPanel.style.display==="none"?"block":"none";
-}
-
-function toggleSection(type){
-  const sec=document.getElementById(type).parentElement;
-  sec.classList.toggle("open");
-
-  const box=document.getElementById(type);
-  if(box.innerHTML) return;
-
-  box.innerHTML="<div class='loading'>Loading…</div>";
-
-  fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({action:"getMyPerformance",token,type})
-  }).then(r=>r.json()).then(res=>{
-    if(res.status!=="FOUND"){
-      box.innerHTML="<b>Not yet evaluated.</b>";
-      return;
-    }
-
-    const m=Number(res.marks);
-    let c="marks-red",msg="Needs improvement. Don’t give up.";
-    if(m>=80){c="marks-green";msg="Very good. Keep going."}
-    else if(m>=70){c="marks-yellow";msg="Good work. Aim higher."}
-    else if(m>=60){c="marks-orange";msg="Fair effort. You can do better."}
-
-    box.innerHTML=`
-      <div><b>Date:</b> ${res.evaluationDate}</div>
-      <div class="marksWrapper">
-        <div class="marksBox ${c}">${m}/100</div>
-        <div class="marksMsg">${msg}</div>
-      </div>
-      <div class="greenBox"><b>Positives</b><ol>${makeList(res.positives)}</ol></div>
-      <div class="yellowBox"><b>Improvements</b><ol>${makeList(res.improvements)}</ol></div>
-    `;
-  });
-}
-
-function makeList(t){
-  return t.split("\n").filter(Boolean).map(x=>`<li>${x}</li>`).join("");
-}
-
-/* ===== Logout ===== */
-function logout(){
-  if(!confirm("Are you sure you want to logout?")) return;
-  document.getElementById("logoutOverlay").style.display="flex";
-  fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({action:"logout",token})
-  }).finally(()=>setTimeout(()=>location.href="login.html",600));
-}
-</script>
 
 </body>
 </html>
