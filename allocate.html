@@ -230,7 +230,10 @@ footer div{font-size:12px;color:#90a4ae}
 const BACKEND="https://script.google.com/macros/s/AKfycbybOygn6ZTQcoeLEMbwKx0pX9GkPI4pPjiKDk8jA-arTAinR8j8Y7q4DIMwhAmELUILFg/exec";
 const token = sessionStorage.getItem("authToken");
 const roll  = sessionStorage.getItem("studentRoll");
-
+const perfBtn   = document.getElementById("perfBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+const welcome   = document.getElementById("welcome");
+const loadingBox = document.getElementById("loadingBox");
 if(!token || !roll){
   sessionStorage.clear();
   alert("Session expired. Please login again.");
