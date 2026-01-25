@@ -80,6 +80,8 @@ button:disabled{background:#999;cursor:not-allowed;}
 </div>
 
 <script>
+const BACKEND_URL = "YOUR_BACKEND_URL_HERE";
+
 function loginFaculty(){
 
   const fid = document.getElementById("fid").value.trim();
@@ -94,41 +96,34 @@ function loginFaculty(){
   }
 
   btn.disabled = true;
+  msg.style.color="#555";
   msg.innerText = "Authenticating…";
 
   fetch(BACKEND_URL,{
-  method:"POST",
-  body:new URLSearchParams({
-    action: "facultyLogin",
-    fid: fid,
-    pwd: pwd
+    method:"POST",
+    body:new URLSearchParams({
+      action: "facultyLogin",
+      fid: fid,
+      pwd: pwd
+    })
   })
-})
-.then(r => r.json())
-.then(res => {
+  .then(r => r.json())
+  .then(res => {
 
-  if(res.status === "OK" && res.token){
-    // ✅ secure redirect with token
-    window.location.href = "faculty.html?token=" + res.token;
-    return;
-  }
+    if(res.status === "OK" && res.token){
+      window.location.href = "faculty.html?token=" + res.token;
+      return;
+    }
 
-  if(res.status === "ALREADY_LOGGED_IN"){
-    msg.style.color = "red";
-    msg.innerText = "Faculty already logged in from another device.";
-  }
-  else{
     msg.style.color = "red";
     msg.innerText = "Invalid credentials.";
-  }
-
-  btn.disabled = false;
-})
-.catch(()=>{
-  msg.style.color="red";
-  msg.innerText="Server error. Try again.";
-  btn.disabled=false;
-});
+    btn.disabled = false;
+  })
+  .catch(()=>{
+    msg.style.color="red";
+    msg.innerText="Server error. Try again.";
+    btn.disabled=false;
+  });
 }
 </script>
 
