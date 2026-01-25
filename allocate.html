@@ -227,7 +227,7 @@ footer div{font-size:12px;color:#90a4ae}
 </div>
 
 <script>
-const BACKEND="https://script.google.com/macros/s/AKfycbzs-V1FU-cXAWdCCgMrItFpdywUl0rsfj_Db1XhJBBP3mC7k8GUvDFclx2Ai0n4p-EbnQ/exec";
+const BACKEND="https://script.google.com/macros/s/AKfycbxiH9MHnFdsh2CLSAKYvNXqTXrLuTmz9Dx8v4Rv4DaBT8HA7p-xyynKytRDCGdX_ABEGg/exec";
 const token=new URLSearchParams(location.search).get("token");
 
 function prettyDate(iso){
@@ -250,7 +250,7 @@ function loadAll(){
 
   Promise.all([
     fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"dashboard",token})}).then(r=>r.json()),
-    fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getMyLatestAllocation",token})}).then(r=>r.json()),
+    fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getMyUpcomingAllocation",token})}).then(r=>r.json()),
     fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getMyLastEvaluatedActivity",token})}).then(r=>r.json())
   ]).then(([dash,alloc,past])=>{
     loadingBox.style.display="none";
