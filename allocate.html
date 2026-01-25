@@ -422,7 +422,7 @@ function toggleSection(type){
     }
     box.innerHTML=`
       <div><b>Date:</b> ${res.evaluationDate}</div>
-      <div class="marksBox">Marks: ${res.marks}/100</div>
+      <div class="marksBox">Marks: ${res.marks ?? 0}/100</div>
       <div class="greenBox"><b>Positives</b><ol>${makeList(res.positives)}</ol></div>
       <div class="yellowBox"><b>Improvements</b><ol>${makeList(res.improvements)}</ol></div>
     `;
