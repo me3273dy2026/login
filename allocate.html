@@ -43,9 +43,23 @@
       to{opacity:1;transform:translateY(0)}
     }
 
-    .header{text-align:center;margin-bottom:18px;}
-    .header h1{margin:0;color:var(--primary);font-size:22px;}
-    .header h2{margin:4px 0 0;font-size:14px;color:#666;font-weight:600;}
+    .header{
+      text-align:center;
+      margin-bottom:18px;
+    }
+
+    .header h1{
+      margin:0;
+      color:var(--primary);
+      font-size:22px;
+    }
+
+    .header h2{
+      margin:4px 0 0;
+      font-size:14px;
+      color:#666;
+      font-weight:600;
+    }
 
     .infoBox{
       background:#f5f7fa;
@@ -54,7 +68,11 @@
       margin-top:14px;
     }
 
-    .loading{text-align:center;font-weight:600;color:#555;}
+    .loading{
+      text-align:center;
+      font-weight:600;
+      color:#555;
+    }
 
     .notice{
       background:linear-gradient(135deg,#e8f5e9,#f1f8e9);
@@ -87,11 +105,18 @@
       transition:.15s ease;
     }
 
-    button:disabled{opacity:.6;cursor:not-allowed;}
+    button:disabled{
+      opacity:.6;
+      cursor:not-allowed;
+    }
 
     .btn-primary{
       background:linear-gradient(135deg,#2c5364,#203a43);
       color:#fff;
+    }
+
+    .btn-primary:hover{
+      transform:translateY(-1px);
     }
 
     .btn-logout{
@@ -145,10 +170,14 @@
       align-items:center;
     }
 
-    .section-body{padding:14px;display:none;}
-    .section.open .section-body{display:block;}
+    .section-body{
+      padding:14px;
+      display:none;
+    }
 
-    .marksWrapper{text-align:center;}
+    .section.open .section-body{
+      display:block;
+    }
 
     .marksBox{
       display:inline-block;
@@ -160,15 +189,32 @@
       text-align:center;
     }
 
-    .marks-green{background:#2e7d32;color:#fff;}
-    .marks-yellow{background:#f9a825;color:#000;}
-    .marks-orange{background:#ef6c00;color:#fff;}
-    .marks-red{background:#c62828;color:#fff;}
+    .marks-green{ background:#2e7d32; color:#fff; }
+    .marks-yellow{ background:#f9a825; color:#000; }
+    .marks-orange{ background:#ef6c00; color:#fff; }
+    .marks-red{ background:#c62828; color:#fff; }
 
-    .marksMsg{margin-top:6px;font-weight:600;font-size:14px;}
+    .marksWrapper{ text-align:center; }
 
-    .greenBox{background:#e8f5e9;padding:12px;border-radius:10px;margin-top:8px;}
-    .yellowBox{background:#fffde7;padding:12px;border-radius:10px;margin-top:8px;}
+    .marksMsg{
+      margin-top:6px;
+      font-weight:600;
+      font-size:14px;
+    }
+
+    .greenBox{
+      background:#e8f5e9;
+      padding:12px;
+      border-radius:10px;
+      margin-top:8px;
+    }
+
+    .yellowBox{
+      background:#fffde7;
+      padding:12px;
+      border-radius:10px;
+      margin-top:8px;
+    }
 
     #logoutOverlay{
       position:fixed;
@@ -215,7 +261,10 @@
       font-weight:600;
     }
 
-    footer div{font-size:12px;color:#90a4ae;}
+    footer div{
+      font-size:12px;
+      color:#90a4ae;
+    }
   </style>
 </head>
 
@@ -267,7 +316,9 @@
 </footer>
 
 <script>
-  const BACKEND = "https://script.google.com/macros/s/AKfycbxEbh0x1ez4t0XLdW0Tk2NSw1UoAddnI_GFr1ybm6DVCvbZMxiQbX_f-mRQ9I9vk5EXFA/exec";
+  const BACKEND =
+    "https://script.google.com/macros/s/AKfycby-g1UAWrOq9Opn2RP5RHTeUM2TzvVb-OUnBcQqll6kKuAJ4NJiIQGEDpyzjKFrVtJMgw/exec";
+
   const token = new URLSearchParams(location.search).get("token");
 
   loadAll();
@@ -278,10 +329,16 @@
     const month = d.toLocaleString("en-US",{month:"short"});
     const year = d.getFullYear();
     const suffix =
-      day % 10 === 1 && day !== 11 ? "st" :
-      day % 10 === 2 && day !== 12 ? "nd" :
-      day % 10 === 3 && day !== 13 ? "rd" : "th";
+      day%10===1 && day!==11 ? "st" :
+      day%10===2 && day!==12 ? "nd" :
+      day%10===3 && day!==13 ? "rd" : "th";
     return `${day}${suffix} ${month} ${year}`;
+  }
+
+  function isPastOrToday(isoDate){
+    const today = new Date(); today.setHours(0,0,0,0);
+    const d = new Date(isoDate); d.setHours(0,0,0,0);
+    return d <= today;
   }
 
   function loadAll(){
@@ -304,15 +361,18 @@
             ${alloc.topic ? `<br>Topic: ${alloc.topic}` : ""}
           </div>`;
       }else{
-        upcomingHTML = `<div class="infoBox notice">No upcoming allocations at the moment.</div>`;
+        upcomingHTML =
+          `<div class="infoBox notice">
+            No upcoming allocations at the moment.
+          </div>`;
       }
 
       if(past.status==="FOUND" || (alloc.status==="ALLOCATED" && isPastOrToday(alloc.date))){
         pastHTML = `
           <div class="pastBox">
-            Completed: You had <b>${past.status==="FOUND"?past.category:alloc.category}</b><br>
-            on <b>${prettyDate(past.status==="FOUND"?past.date:alloc.date)}</b>
-            ${past.status!=="FOUND"?"<br><i>(Evaluation pending)</i>":""}
+            Completed: You had <b>${past.status==="FOUND" ? past.category : alloc.category}</b><br>
+            on <b>${prettyDate(past.status==="FOUND" ? past.date : alloc.date)}</b>
+            ${past.status!=="FOUND" ? "<br><i>(Evaluation pending)</i>" : ""}
           </div>`;
       }
 
@@ -330,7 +390,8 @@
   }
 
   function togglePanel(){
-    perfPanel.style.display = perfPanel.style.display==="none" ? "block" : "none";
+    perfPanel.style.display =
+      perfPanel.style.display === "none" ? "block" : "none";
   }
 
   function toggleSection(type){
@@ -357,9 +418,9 @@
       let color = "marks-red";
       let msg = "Needs improvement. Don’t give up.";
 
-      if(m>=80){color="marks-green";msg="Very good. Keep going.";}
-      else if(m>=70){color="marks-yellow";msg="Good work. Aim a little higher.";}
-      else if(m>=60){color="marks-orange";msg="Fair effort. You can do better.";}
+      if(m>=80){ color="marks-green"; msg="Very good. Keep going."; }
+      else if(m>=70){ color="marks-yellow"; msg="Good work. Aim a little higher."; }
+      else if(m>=60){ color="marks-orange"; msg="Fair effort. You can do better."; }
 
       box.innerHTML = `
         <div><b>Date:</b> ${res.evaluationDate}</div>
@@ -374,12 +435,15 @@
   }
 
   function makeList(t){
-    return t.split("\n").filter(Boolean).map(x=>`<li>${x}</li>`).join("");
+    return t.split("\n")
+            .filter(Boolean)
+            .map(x=>`<li>${x}</li>`)
+            .join("");
   }
 
   function logout(){
     if(!confirm("Are you sure you want to logout?")) return;
-    logoutOverlay.style.display="flex";
+    document.getElementById("logoutOverlay").style.display="flex";
     fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"logout",token})})
       .finally(()=>setTimeout(()=>location.href="login.html",600));
   }
