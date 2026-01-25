@@ -96,15 +96,39 @@ function loginFaculty(){
   btn.disabled = true;
   msg.innerText = "Authenticating…";
 
-  /* SIMPLE LOCAL AUTH (AS DESIGNED) */
-  if(fid === "admin" && pwd === "me3273"){
-    sessionStorage.setItem("facultyLoggedIn","YES");
-    window.location.href = "faculty.html";
-  }else{
-    msg.style.color="red";
-    msg.innerText="Invalid credentials";
-    btn.disabled = false;
+  fetch(BACKEND_URL,{
+  method:"POST",
+  body:new URLSearchParams({
+    action: "facultyLogin",
+    fid: fid,
+    pwd: pwd
+  })
+})
+.then(r => r.json())
+.then(res => {
+
+  if(res.status === "OK" && res.token){
+    // ✅ secure redirect with token
+    window.location.href = "faculty.html?token=" + res.token;
+    return;
   }
+
+  if(res.status === "ALREADY_LOGGED_IN"){
+    msg.style.color = "red";
+    msg.innerText = "Faculty already logged in from another device.";
+  }
+  else{
+    msg.style.color = "red";
+    msg.innerText = "Invalid credentials.";
+  }
+
+  btn.disabled = false;
+})
+.catch(()=>{
+  msg.style.color="red";
+  msg.innerText="Server error. Try again.";
+  btn.disabled=false;
+});
 }
 </script>
 
