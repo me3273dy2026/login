@@ -362,6 +362,15 @@ function prettyDate(iso){
 
   return `${day}${suffix} ${month} ${year}`;
 }
+  function isPastOrToday(isoDate){
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  const d = new Date(isoDate);
+  d.setHours(0,0,0,0);
+
+  return d <= today;
+}
 function loadAll(){
   const upcomingBox = document.getElementById("upcomingBox");
   const pastBox = document.getElementById("pastBox");
@@ -387,27 +396,33 @@ function loadAll(){
     let pastHTML = "";
 
     /* Upcoming */
-    if(alloc.status==="ALLOCATED"){
-      upcomingHTML = `
-        <div class="upcomingBox">
-          Upcoming: You have <b>${alloc.category}</b><br>
-          on <b>${prettyDate(alloc.date)}</b>
-          ${alloc.topic ? `<br>Topic: ${alloc.topic}` : ""}
-        </div>`;
-    }else{
-      upcomingHTML = `
-        <div class="infoBox notice">
-          Your upcoming allocation will be announced soon.
-        </div>`;
-    }
+    if(
+  alloc.status==="ALLOCATED" &&
+  !isPastOrToday(alloc.date)
+){
+  // TRUE future → Upcoming
+  upcomingHTML = `
+    <div class="upcomingBox">
+      Upcoming: You have <b>${alloc.category}</b><br>
+      on <b>${prettyDate(alloc.date)}</b>
+      ${alloc.topic ? `<br>Topic: ${alloc.topic}` : ""}
+    </div>`;
+}else{
+  upcomingHTML = `
+    <div class="infoBox notice">
+      No upcoming allocations at the moment.
+    </div>`;
+}
 
     /* Past (Completed) */
-    if(past.status==="FOUND"){
+    if(past.status==="FOUND" || 
+   (alloc.status==="ALLOCATED" && isPastOrToday(alloc.date))){
       pastHTML = `
-        <div class="pastBox">
-          Completed: You had <b>${past.category}</b><br>
-          on <b>${prettyDate(past.date)}</b>
-        </div>`;
+  <div class="pastBox">
+    Completed: You had <b>${past.status==="FOUND" ? past.category : alloc.category}</b><br>
+    on <b>${prettyDate(past.status==="FOUND" ? past.date : alloc.date)}</b>
+    ${past.status!=="FOUND" ? "<br><i>Evaluation pending</i>" : ""}
+  </div>`;
     }
 
     /* Inject into page */
