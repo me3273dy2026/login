@@ -362,6 +362,44 @@ function prettyDate(iso){
 
   return `${day}${suffix} ${month} ${year}`;
 }
+  let idleTimer;
+
+/* Reset inactivity timer */
+function resetIdleTimer(){
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(()=>{
+    forceLogout();
+  }, 60 * 1000); // 1 minute
+}
+
+/* Track user activity */
+["mousemove","keydown","click","scroll","touchstart"].forEach(evt=>{
+  document.addEventListener(evt, resetIdleTimer, true);
+});
+
+/* Start timer immediately */
+resetIdleTimer();
+  function forceLogout(){
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"logout",
+      token: token
+    })
+  })
+  .finally(()=>{
+    alert("Session expired due to inactivity.");
+    location.href="login.html";
+  });
+}
+  function handleSession(res){
+  if(res.status==="SESSION_EXPIRED"){
+    alert("Your session has expired. Please login again.");
+    location.href="login.html";
+    return true;
+  }
+  return false;
+}
   function isPastOrToday(isoDate){
   const today = new Date();
   today.setHours(0,0,0,0);
