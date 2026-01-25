@@ -189,10 +189,22 @@ function onDate(){
 }
 
 function resetAllocationUI(){
-  gdExisting.innerHTML=semExisting.innerHTML=piExisting.innerHTML="";
-  gdBox.style.display=semBox.style.display=piBox.style.display="none";
-  saveGDBtn.style.display=saveSemBtn.style.display=savePIBtn.style.display="none";
-  gdOpenBtn.disabled=semOpenBtn.disabled=piOpenBtn.disabled=true;
+  gdExisting.innerHTML = "";
+  semExisting.innerHTML = "";
+  piExisting.innerHTML = "";
+
+  gdBox.style.display = "none";
+  semBox.style.display = "none";
+  piBox.style.display = "none";
+
+  saveGDBtn.style.display = "none";
+  saveSemBtn.style.display = "none";
+  savePIBtn.style.display = "none";
+
+  gdOpenBtn.style.display = "block";   // 🔑 IMPORTANT
+  gdOpenBtn.disabled = true;
+  semOpenBtn.disabled = true;
+  piOpenBtn.disabled = true;
 }
 
 function updateButtons(){
