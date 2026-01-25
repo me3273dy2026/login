@@ -254,7 +254,12 @@ textarea{min-height:90px;}
 
 <script>
 const BACKEND="https://script.google.com/macros/s/AKfycbybOygn6ZTQcoeLEMbwKx0pX9GkPI4pPjiKDk8jA-arTAinR8j8Y7q4DIMwhAmELUILFg/exec";
-
+let allocationState = {
+  date: "",
+  gdDone: false,
+  semDone: false,
+  piDone: false
+};
 /* Navigation */
 function openAllocate(){
   home.style.display="none";
@@ -276,14 +281,240 @@ function logout(){
   showLoader("Logging out…");
   setTimeout(()=>location.href="login.html",600);
 }
+function onDate(){
+  const selectedDate = document.getElementById("date").value;
+  if(!selectedDate) return;
 
+  // Reset state for new date
+  allocationState = {
+    date: selectedDate,
+    gdDone: false,
+    semDone: false,
+    piDone: false
+  };
+
+  resetAllocationUI();
+
+  showLoader("Loading allocations for " + selectedDate + "…");
+
+  loadAllocationsByDate(selectedDate);
+}
+  function resetAllocationUI(){
+  gdExisting.innerHTML = "";
+  semExisting.innerHTML = "";
+  piExisting.innerHTML = "";
+
+  gdBox.style.display = "none";
+  semBox.style.display = "none";
+  piBox.style.display = "none";
+
+  saveGDBtn.style.display = "none";
+  saveSemBtn.style.display = "none";
+  savePIBtn.style.display = "none";
+
+  gdOpenBtn.disabled = true;
+  semOpenBtn.disabled = true;
+  piOpenBtn.disabled = true;
+}
+
+function updateButtons(){
+  gdOpenBtn.disabled  = allocationState.gdDone;
+  semOpenBtn.disabled = !allocationState.gdDone || allocationState.semDone;
+  piOpenBtn.disabled  = !allocationState.semDone || allocationState.piDone;
+}
+  function loadAllocationsByDate(date){
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getAllocationsByDate",
+      date:date
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    if(res.status!=="OK") return;
+
+    allocationState.gdDone  = res.allocations.some(a=>a.category==="GD");
+    allocationState.semDone = res.allocations.some(a=>a.category==="SEMINAR");
+    allocationState.piDone  = res.allocations.some(a=>a.category==="PI");
+
+    gdExisting.innerHTML = res.allocations
+      .filter(a=>a.category==="GD")
+      .map(a=>`${a.roll} – ${a.name} (${a.topic})`)
+      .join("<br>") || "<i>No GD allocation</i>";
+
+    semExisting.innerHTML = res.allocations
+      .filter(a=>a.category==="SEMINAR")
+      .map(a=>`${a.roll} – ${a.name}`)
+      .join("<br>") || "<i>No Seminar allocation</i>";
+
+    piExisting.innerHTML = res.allocations
+      .filter(a=>a.category==="PI")
+      .map(a=>`${a.roll} – ${a.name}`)
+      .join("<br>") || "<i>No PI allocation</i>";
+
+    updateButtons();
+  })
+  .finally(hideLoader);
+}
 /* Loader */
 function showLoader(t="Loading… Please wait"){
   loaderOverlay.style.display="flex";
   document.querySelector(".loader-text").innerText=t;
 }
 function hideLoader(){loaderOverlay.style.display="none";}
+function loadGD(){
+  if(!allocationState.date){
+  alert("Please select a date first");
+  return;
+}
+  showLoader("Loading GD topics…");
 
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getGDTopicStatus",
+      date: allocationState.date
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    gdBox.style.display="block";
+    saveGDBtn.style.display="block";
+
+    gdBox.innerHTML = res.topics.map(t=>`
+      <label>
+        <input type="checkbox" value="${t.topic}" ${t.checked?"checked":""}>
+        ${t.topic}
+      </label>
+    `).join("");
+  })
+  .finally(hideLoader);
+}
+  function saveGD(){
+  const topics = [...gdBox.querySelectorAll("input:checked")]
+    .map(i=>i.value);
+
+  if(!topics.length){
+    alert("Select at least one GD topic");
+    return;
+  }
+
+  showLoader("Saving GD allocation…");
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"saveGDAllocation",
+      date: allocationState.date,
+      topics: topics.join(",")
+    })
+  })
+  .then(()=> {
+    allocationState.gdDone = true;
+    loadAllocationsByDate(allocationState.date);
+  })
+  .finally(hideLoader);
+}
+  function loadSeminar(){
+    if(!allocationState.date){
+  alert("Please select a date first");
+  return;
+}
+  showLoader("Loading seminar students…");
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getSeminarStudentStatus",
+      date: allocationState.date
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    semBox.style.display="block";
+    saveSemBtn.style.display="block";
+
+    semBox.innerHTML = res.students.map(s=>`
+      <label>
+        <input type="checkbox" value="${s.roll}" ${s.checked?"checked":""}>
+        ${s.roll} – ${s.name}
+      </label>
+    `).join("");
+  })
+  .finally(hideLoader);
+}
+  function saveSeminar(){
+  const rolls = [...semBox.querySelectorAll("input:checked")]
+    .map(i=>i.value);
+
+  showLoader("Saving seminar allocation…");
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"saveIndividualAllocation",
+      category:"SEMINAR",
+      date: allocationState.date,
+      rolls: rolls.join(",")
+    })
+  })
+  .then(()=>{
+    allocationState.semDone = true;
+    loadAllocationsByDate(allocationState.date);
+  })
+  .finally(hideLoader);
+}
+  function loadPI(){
+    if(!allocationState.date){
+  alert("Please select a date first");
+  return;
+}
+  showLoader("Loading PI students…");
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getPIStudentStatus",
+      date: allocationState.date
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    piBox.style.display="block";
+    savePIBtn.style.display="block";
+
+    piBox.innerHTML = res.students.map(s=>`
+      <label>
+        <input type="checkbox" value="${s.roll}" ${s.checked?"checked":""}>
+        ${s.roll} – ${s.name}
+      </label>
+    `).join("");
+  })
+  .finally(hideLoader);
+}
+  function savePI(){
+  const rolls = [...piBox.querySelectorAll("input:checked")]
+    .map(i=>i.value);
+
+  showLoader("Saving PI allocation…");
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"saveIndividualAllocation",
+      category:"PI",
+      date: allocationState.date,
+      rolls: rolls.join(",")
+    })
+  })
+  .then(()=>{
+    allocationState.piDone = true;
+    loadAllocationsByDate(allocationState.date);
+  })
+  .finally(hideLoader);
+}
+  window.onload = resetAllocationUI;
 /* Evaluation */
 function loadStudents(){
   fetch(BACKEND+"?action=getAllStudents")
