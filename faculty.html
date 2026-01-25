@@ -215,9 +215,63 @@ function loadAllocationsByDate(d){
 }
 
 /* Allocation actions */
-function loadGD(){showLoader("Loading GD…");fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getGDTopicStatus",date:allocationState.date})}).then(r=>r.json()).then(res=>{gdBox.style.display="block";saveGDBtn.style.display="block";gdBox.innerHTML=res.topics.map(t=>`<label><input type="checkbox" value="${t.topic}" ${t.checked?"checked":""}> ${t.topic}</label>`).join("");}).finally(hideLoader);}
-function saveGD(){showLoader("Saving GD…");fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"saveGDAllocation",date:allocationState.date,topics:[...gdBox.querySelectorAll("input:checked")].map(i=>i.value).join(",")})}).then(()=>{sessionStage="SEMINAR";loadAllocationsByDate(allocationState.date);}).finally(hideLoader);}
+function loadGD(){
+  showLoader("Loading GD…");
 
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getGDTopicStatus",
+      date: allocationState.date
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    // 🔑 Hide Allocate/Update GD button
+    gdOpenBtn.style.display = "none";
+
+    // 🔑 Show GD topics + Save button
+    gdBox.style.display = "block";
+    saveGDBtn.style.display = "block";
+    saveGDBtn.disabled = false;
+
+    gdBox.innerHTML = res.topics.map(t=>`
+      <label>
+        <input type="checkbox" value="${t.topic}" ${t.checked?"checked":""}>
+        ${t.topic}
+      </label>
+    `).join("");
+  })
+  .finally(hideLoader);
+}
+  function saveGD(){
+  showLoader("Saving GD…");
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"saveGDAllocation",
+      date: allocationState.date,
+      topics: [...gdBox.querySelectorAll("input:checked")]
+                .map(i=>i.value).join(",")
+    })
+  })
+  .then(()=>{
+    // 🔑 Advance workflow
+    sessionStage = "SEMINAR";
+
+    // 🔑 HIDE GD UI completely
+    gdBox.style.display = "none";
+    saveGDBtn.style.display = "none";
+
+    // (GD allocate button must remain hidden in this cycle)
+    // gdOpenBtn stays hidden
+
+    // Reload allocations & enable Seminar
+    loadAllocationsByDate(allocationState.date);
+  })
+  .finally(hideLoader);
+}
 function loadSeminar(){showLoader("Loading Seminar…");fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getSeminarStudentStatus",date:allocationState.date})}).then(r=>r.json()).then(res=>{semBox.style.display="block";saveSemBtn.style.display="block";semBox.innerHTML=res.students.map(s=>`<label><input type="checkbox" value="${s.roll}" ${s.checked?"checked":""}> ${s.roll} - ${s.name}</label>`).join("");}).finally(hideLoader);}
 function saveSeminar(){showLoader("Saving Seminar…");fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"saveIndividualAllocation",category:"SEMINAR",date:allocationState.date,rolls:[...semBox.querySelectorAll("input:checked")].map(i=>i.value).join(",")})}).then(()=>{sessionStage="PI";loadAllocationsByDate(allocationState.date);}).finally(hideLoader);}
 
