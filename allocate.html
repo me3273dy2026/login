@@ -189,7 +189,33 @@ button:disabled{
   font-weight:700;
   margin:12px 0;
 }
+.marksBox{
+  display:inline-block;
+  padding:12px 22px;
+  border-radius:10px;
+  font-size:20px;
+  font-weight:700;
+  margin:14px auto 6px;
+  text-align:center;
+}
 
+/* Color variants */
+.marks-green{ background:#2e7d32; color:#fff; }
+.marks-yellow{ background:#f9a825; color:#000; }
+.marks-orange{ background:#ef6c00; color:#fff; }
+.marks-red{ background:#c62828; color:#fff; }
+
+/* Wrapper to center everything */
+.marksWrapper{
+  text-align:center;
+}
+
+/* Motivation text */
+.marksMsg{
+  margin-top:6px;
+  font-weight:600;
+  font-size:14px;
+}
 .greenBox{
   background:#e8f5e9;
   padding:12px;
@@ -420,12 +446,44 @@ function toggleSection(type){
       box.innerHTML="<b>Not yet evaluated.</b>";
       return;
     }
-    box.innerHTML=`
-      <div><b>Date:</b> ${res.evaluationDate}</div>
-      <div class="marksBox">Marks: ${res.marks ?? 0}/100</div>
-      <div class="greenBox"><b>Positives</b><ol>${makeList(res.positives)}</ol></div>
-      <div class="yellowBox"><b>Improvements</b><ol>${makeList(res.improvements)}</ol></div>
-    `;
+    const m = Number(res.marks ?? 0);
+
+let colorClass = "marks-red";
+let msg = "Needs improvement. Don’t give up.";
+
+if(m >= 80){
+  colorClass = "marks-green";
+  msg = "Very good. Keep going.";
+}
+else if(m >= 70){
+  colorClass = "marks-yellow";
+  msg = "Good work. Aim a little higher.";
+}
+else if(m >= 60){
+  colorClass = "marks-orange";
+  msg = "Fair effort. You can do better.";
+}
+
+box.innerHTML=`
+  <div><b>Date:</b> ${res.evaluationDate}</div>
+
+  <div class="marksWrapper">
+    <div class="marksBox ${colorClass}">
+      ${m}/100
+    </div>
+    <div class="marksMsg">${msg}</div>
+  </div>
+
+  <div class="greenBox">
+    <b>Positives</b>
+    <ol>${makeList(res.positives)}</ol>
+  </div>
+
+  <div class="yellowBox">
+    <b>Improvements</b>
+    <ol>${makeList(res.improvements)}</ol>
+  </div>
+`;
   });
 }
 
