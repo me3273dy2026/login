@@ -21,7 +21,7 @@ body{
   background:linear-gradient(135deg,var(--bg1),var(--bg2),var(--bg3));
   display:flex;
   justify-content:center;
-  padding:28px 12px 100px;
+  padding:26px 12px 90px;
 }
 
 .card{
@@ -31,27 +31,22 @@ body{
   border-radius:20px;
   padding:26px;
   box-shadow:0 20px 50px rgba(0,0,0,.28);
-  animation:fadeIn .6s ease;
-}
-
-@keyframes fadeIn{
-  from{opacity:0;transform:translateY(20px)}
-  to{opacity:1;transform:translateY(0)}
 }
 
 .header{text-align:center}
 .header h1{margin:0;color:#203a43;font-size:22px}
-.header h2{margin:4px 0;color:#666;font-size:14px}
+.header h2{margin:4px 0 0;font-size:14px;color:#666}
 
 .infoBox{
   background:#f5f7fa;
-  border-radius:14px;
   padding:14px;
+  border-radius:14px;
   margin-top:14px;
 }
 
 .loading{text-align:center;font-weight:600;color:#555}
 
+/* Upcoming box */
 .upcomingBox{
   background:#fdecea;
   border:2px solid #e53935;
@@ -70,6 +65,7 @@ body{
   100%{opacity:1}
 }
 
+/* Past box */
 .pastBox{
   background:#e8f5e9;
   border:1px solid #c8e6c9;
@@ -81,6 +77,7 @@ body{
   margin-top:10px;
 }
 
+/* Buttons */
 button{
   width:100%;
   padding:13px;
@@ -92,32 +89,34 @@ button{
   cursor:pointer;
 }
 
-.btn-primary{background:#203a43;color:#fff}
-.btn-logout{background:#c0392b;color:#fff}
+.btn-primary{
+  background:linear-gradient(135deg,#2c5364,#203a43);
+  color:#fff;
+}
 
+.btn-logout{
+  background:linear-gradient(135deg,#e74c3c,#c0392b);
+  color:#fff;
+}
+
+/* Sections */
 .section{
   margin-top:10px;
   border-radius:14px;
-  border:1px solid #e0e0e0;
   overflow:hidden;
+  border:1px solid #e0e0e0;
 }
-
 .section-header{
   background:#fafafa;
   padding:12px 14px;
   font-weight:700;
   cursor:pointer;
 }
-
-.section-body{
-  padding:14px;
-  display:none;
-}
-
+.section-body{padding:14px;display:none}
 .section.open .section-body{display:block}
 
+/* Marks */
 .marksWrapper{text-align:center}
-
 .marksBox{
   display:inline-block;
   padding:12px 22px;
@@ -126,13 +125,11 @@ button{
   font-weight:700;
   margin:14px auto 6px;
 }
-
 .marks-green{background:#2e7d32;color:#fff}
 .marks-yellow{background:#f9a825;color:#000}
 .marks-orange{background:#ef6c00;color:#fff}
 .marks-red{background:#c62828;color:#fff}
-
-.marksMsg{font-weight:600;font-size:14px}
+.marksMsg{font-size:14px;font-weight:600}
 
 .greenBox{
   background:#e8f5e9;
@@ -140,13 +137,33 @@ button{
   border-radius:10px;
   margin-top:8px;
 }
-
 .yellowBox{
   background:#fffde7;
   padding:12px;
   border-radius:10px;
   margin-top:8px;
 }
+
+/* Logout overlay */
+#logoutOverlay{
+  position:fixed;
+  inset:0;
+  background:rgba(15,32,39,.75);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  z-index:9999;
+}
+.logoutSpinner{
+  width:48px;height:48px;
+  border:5px solid #cfd8dc;
+  border-top:5px solid #1abc9c;
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+.logoutText{margin-top:14px;color:#fff;font-weight:700}
+@keyframes spin{to{transform:rotate(360deg)}}
 
 footer{
   position:fixed;
@@ -156,33 +173,9 @@ footer{
   text-align:center;
   padding:10px;
   font-size:13px;
+  font-weight:600;
 }
-
 footer div{font-size:12px;color:#90a4ae}
-
-/* Logout overlay */
-#logoutOverlay{
-  position:fixed;
-  inset:0;
-  background:rgba(15,32,39,.75);
-  display:none;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  z-index:9999;
-}
-
-.logoutSpinner{
-  width:48px;height:48px;
-  border:5px solid #cfd8dc;
-  border-top:5px solid #1abc9c;
-  border-radius:50%;
-  animation:spin 1s linear infinite;
-}
-
-@keyframes spin{to{transform:rotate(360deg)}}
-
-.logoutText{margin-top:14px;color:#fff;font-weight:700}
 </style>
 </head>
 
@@ -191,16 +184,18 @@ footer div{font-size:12px;color:#90a4ae}
 <div class="card">
   <div class="header">
     <h1 id="welcome"></h1>
-    <h2>ME3273 · Student Dashboard</h2>
+    <h2>ME3273 · Seminar & Group Discussion</h2>
   </div>
 
-  <div id="loadingBox" class="infoBox loading">Fetching details…</div>
+  <div id="loadingBox" class="infoBox loading">
+    Fetching your details…
+  </div>
 
-  <div id="upcomingBox"></div>
-  <div id="pastBox"></div>
+  <div id="upcomingBox" style="display:none"></div>
+  <div id="pastBox" style="display:none"></div>
 
   <button id="perfBtn" class="btn-primary" disabled onclick="togglePanel()">
-    View Performance
+    View Performance Evaluation
   </button>
 
   <div id="perfPanel" style="display:none">
@@ -223,7 +218,7 @@ footer div{font-size:12px;color:#90a4ae}
 
 <footer>
   Developed by Dr. Rajesh Akula
-  <div>© 2026 · IIEST Shibpur</div>
+  <div>© 2026 · Department of Mechanical Engineering, IIEST Shibpur</div>
 </footer>
 
 <div id="logoutOverlay">
@@ -235,22 +230,19 @@ footer div{font-size:12px;color:#90a4ae}
 const BACKEND="https://script.google.com/macros/s/AKfycbzs-V1FU-cXAWdCCgMrItFpdywUl0rsfj_Db1XhJBBP3mC7k8GUvDFclx2Ai0n4p-EbnQ/exec";
 const token=new URLSearchParams(location.search).get("token");
 
-loadAll();
-
 function prettyDate(iso){
   const d=new Date(iso);
   const day=d.getDate();
-  const month=d.toLocaleString("en-US",{month:"short"});
-  const year=d.getFullYear();
-  const s=day%10===1&&day!==11?"st":day%10===2&&day!==12?"nd":day%10===3&&day!==13?"rd":"th";
-  return `${day}${s} ${month} ${year}`;
+  const suf=day%10===1&&day!==11?"st":day%10===2&&day!==12?"nd":day%10===3&&day!==13?"rd":"th";
+  return `${day}${suf} ${d.toLocaleString("en",{month:"short"})} ${d.getFullYear()}`;
 }
-
 function isPastOrToday(iso){
   const t=new Date();t.setHours(0,0,0,0);
   const d=new Date(iso);d.setHours(0,0,0,0);
   return d<=t;
 }
+
+loadAll();
 
 function loadAll(){
   const upcomingBox=document.getElementById("upcomingBox");
@@ -264,20 +256,28 @@ function loadAll(){
     loadingBox.style.display="none";
     welcome.innerText=`Welcome ${dash.name} (${dash.roll})`;
 
+    /* Upcoming */
     if(alloc.status==="ALLOCATED" && !isPastOrToday(alloc.date)){
-      upcomingBox.innerHTML=`<div class="upcomingBox">
-        Upcoming: <b>${alloc.category}</b><br>
-        ${prettyDate(alloc.date)}
-      </div>`;
-    }else{
-      upcomingBox.innerHTML=`<div class="infoBox">No upcoming allocations.</div>`;
+      upcomingBox.innerHTML=`
+        <div class="upcomingBox">
+          Upcoming: You have <b>${alloc.category}</b><br>
+          on <b>${prettyDate(alloc.date)}</b>
+          ${alloc.topic?`<br>Topic: ${alloc.topic}`:""}
+        </div>`;
+      upcomingBox.style.display="block";
     }
 
-    if(past.status==="FOUND"){
-      pastBox.innerHTML=`<div class="pastBox">
-        Completed: <b>${past.category}</b><br>
-        ${prettyDate(past.date)}
-      </div>`;
+    /* Completed */
+    if(past.status==="FOUND" || (alloc.status==="ALLOCATED" && isPastOrToday(alloc.date))){
+      const cat=past.status==="FOUND"?past.category:alloc.category;
+      const date=past.status==="FOUND"?past.date:alloc.date;
+      pastBox.innerHTML=`
+        <div class="pastBox">
+          Completed: You had <b>${cat}</b><br>
+          on <b>${prettyDate(date)}</b>
+          ${past.status!=="FOUND"?"<br><i>Evaluation pending</i>":""}
+        </div>`;
+      pastBox.style.display="block";
     }
 
     perfBtn.disabled=false;
@@ -294,21 +294,24 @@ function toggleSection(type){
   sec.classList.toggle("open");
   const box=document.getElementById(type);
   if(box.innerHTML) return;
+
   box.innerHTML="Loading…";
 
-  fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getMyPerformance",token,type})})
-  .then(r=>r.json()).then(res=>{
+  fetch(BACKEND,{method:"POST",
+    body:new URLSearchParams({action:"getMyPerformance",token,type})
+  }).then(r=>r.json()).then(res=>{
     if(res.status!=="FOUND"){box.innerHTML="Not yet evaluated.";return;}
+
     const m=Number(res.marks??0);
-    let cls="marks-red",msg="Needs improvement. Don’t give up.";
-    if(m>=80){cls="marks-green";msg="Very good. Keep going."}
-    else if(m>=70){cls="marks-yellow";msg="Good work. Aim higher."}
-    else if(m>=60){cls="marks-orange";msg="Fair effort. You can do better."}
+    let c="marks-red",msg="Needs improvement. Don’t give up.";
+    if(m>=80){c="marks-green";msg="Very good. Keep going."}
+    else if(m>=70){c="marks-yellow";msg="Good work. Aim higher."}
+    else if(m>=60){c="marks-orange";msg="Fair effort. You can do better."}
 
     box.innerHTML=`
       <div><b>Date:</b> ${res.evaluationDate}</div>
       <div class="marksWrapper">
-        <div class="marksBox ${cls}">${m}/100</div>
+        <div class="marksBox ${c}">${m}/100</div>
         <div class="marksMsg">${msg}</div>
       </div>
       <div class="greenBox"><b>Positives</b><ol>${makeList(res.positives)}</ol></div>
@@ -324,7 +327,7 @@ function logout(){
   if(!confirm("Are you sure you want to logout?")) return;
   logoutOverlay.style.display="flex";
   fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"logout",token})})
-  .finally(()=>setTimeout(()=>location.href="login.html",600));
+    .finally(()=>setTimeout(()=>location.href="login.html",600));
 }
 </script>
 
