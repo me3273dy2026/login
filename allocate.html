@@ -421,7 +421,7 @@ function loadAll(){
   <div class="pastBox">
     Completed: You had <b>${past.status==="FOUND" ? past.category : alloc.category}</b><br>
     on <b>${prettyDate(past.status==="FOUND" ? past.date : alloc.date)}</b>
-    ${past.status!=="FOUND" ? "<br><i>Evaluation pending</i>" : ""}
+    ${past.status!=="FOUND" ? "<br><i>(Evaluation pending)</i>" : ""}
   </div>`;
     }
 
