@@ -227,7 +227,7 @@ footer div{font-size:12px;color:#90a4ae}
 </div>
 
 <script>
-const BACKEND="https://script.google.com/macros/s/AKfycbzCeLQoT178ZzNawohfzxibIHqg51obcJAu6m3Q8hSQpCS5uJyQGM5em6sXonHrYSDw4A/exec";
+const BACKEND="https://script.google.com/macros/s/AKfycbybOygn6ZTQcoeLEMbwKx0pX9GkPI4pPjiKDk8jA-arTAinR8j8Y7q4DIMwhAmELUILFg/exec";
 const token=new URLSearchParams(location.search).get("token");
 
 function prettyDate(iso){
@@ -252,7 +252,8 @@ function loadAll(){
     fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"dashboard",token})}).then(r=>r.json()),
     fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getMyUpcomingAllocation",token})}).then(r=>r.json()),
     fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getMyLastEvaluatedActivity",token})}).then(r=>r.json())
-  ]).then(([dash,alloc,past])=>{
+    fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getMyLatestPastAllocation",token})}).then(r=>r.json())
+  ]).then(([dash,alloc,past,pastAlloc])=>{
     loadingBox.style.display="none";
     welcome.innerText=`Welcome ${dash.name} (${dash.roll})`;
 
@@ -277,8 +278,10 @@ if(
 }
 
     /* Completed */
-    let hasCompleted = false;
+/* ===== COMPLETED (PAST) ===== */
+let hasCompleted = false;
 
+/* Case 1: Past & evaluated (from Performance sheet) */
 if(past.status === "FOUND"){
   hasCompleted = true;
   pastBox.innerHTML = `
@@ -287,20 +290,19 @@ if(past.status === "FOUND"){
       on <b>${prettyDate(past.date)}</b>
     </div>`;
 }
-else if(
-  alloc.status === "FOUND" &&
-  alloc.date &&
-  isPastOrToday(alloc.date)
-){
+
+/* Case 2: Past but NOT evaluated (from EvaluationAllocation) */
+else if(pastAlloc.status === "FOUND"){
   hasCompleted = true;
   pastBox.innerHTML = `
     <div class="pastBox">
-      Completed: You had <b>${alloc.category}</b><br>
-      on <b>${prettyDate(alloc.date)}</b><br>
+      Completed: You had <b>${pastAlloc.category}</b><br>
+      on <b>${prettyDate(pastAlloc.date)}</b><br>
       <i>Evaluation pending</i>
     </div>`;
 }
 
+/* Show / hide */
 pastBox.style.display = hasCompleted ? "block" : "none";
 
     perfBtn.disabled=false;
