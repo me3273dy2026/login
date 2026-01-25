@@ -251,6 +251,7 @@ function isPastOrToday(iso){
 loadAll();
 
 function loadAll(){
+  const loadingBox  = document.getElementById("loadingBox");
   const upcomingBox = document.getElementById("upcomingBox");
   const pastBox     = document.getElementById("pastBox");
 
@@ -274,11 +275,19 @@ function loadAll(){
   .then(([dash, upcoming, evaluated, pastAlloc])=>{
 
     loadingBox.style.display="none";
+
+    if(dash.status !== "OK"){
+      alert("Session invalid. Please login again.");
+      sessionStorage.clear();
+      location.replace("index.html");
+      return;
+    }
+
     welcome.innerText = `Welcome ${dash.name} (${dash.roll})`;
 
     let messages = [];
 
-    /* ========= 1️⃣ UPCOMING (RED) ========= */
+    /* UPCOMING */
     if(
       upcoming.status==="FOUND" &&
       upcoming.date &&
@@ -293,7 +302,7 @@ function loadAll(){
       `);
     }
 
-    /* ========= 2️⃣ COMPLETED BUT NOT EVALUATED (YELLOW) ========= */
+    /* COMPLETED BUT NOT EVALUATED */
     if(pastAlloc.status==="FOUND"){
       let isEvaluatedSame =
         evaluated.status==="FOUND" &&
@@ -311,7 +320,7 @@ function loadAll(){
       }
     }
 
-    /* ========= 3️⃣ COMPLETED & EVALUATED (GREEN) ========= */
+    /* COMPLETED & EVALUATED */
     if(evaluated.status==="FOUND"){
       messages.push(`
         <div class="pastBox">
@@ -322,7 +331,6 @@ function loadAll(){
       `);
     }
 
-    /* ========= RENDER ========= */
     if(messages.length){
       pastBox.innerHTML = messages.join("");
       pastBox.style.display = "block";
@@ -332,6 +340,10 @@ function loadAll(){
 
     perfBtn.disabled = false;
     logoutBtn.disabled = false;
+  })
+  .catch(err=>{
+    console.error(err);
+    loadingBox.innerText = "Failed to load data. Please refresh.";
   });
 }
 
