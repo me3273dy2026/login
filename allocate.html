@@ -339,8 +339,13 @@ function loadAll(){
       pastBox.innerHTML = messages.join("");
       pastBox.style.display = "block";
     }else{
-      pastBox.style.display = "none";
-    }
+  pastBox.innerHTML = `
+    <div class="pastBox" style="background:#eef3f7;border:1px dashed #90a4ae;color:#455a64">
+      You don’t have any allocation for the coming week.
+    </div>
+  `;
+  pastBox.style.display = "block";
+}
 
     perfBtn.disabled = false;
     logoutBtn.disabled = false;
