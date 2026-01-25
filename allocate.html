@@ -249,61 +249,67 @@ function loadAll(){
   const pastBox=document.getElementById("pastBox");
 
   Promise.all([
-    fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"dashboard",token})}).then(r=>r.json()),
-    fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getMyUpcomingAllocation",token})}).then(r=>r.json()),
-    fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getMyLastEvaluatedActivity",token})}).then(r=>r.json())
-    fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getMyLatestPastAllocation",token})}).then(r=>r.json())
-  ]).then(([dash,alloc,past,pastAlloc])=>{
+    fetch(BACKEND,{method:"POST",
+      body:new URLSearchParams({action:"dashboard",token})
+    }).then(r=>r.json()),
+
+    fetch(BACKEND,{method:"POST",
+      body:new URLSearchParams({action:"getMyUpcomingAllocation",token})
+    }).then(r=>r.json()),
+
+    fetch(BACKEND,{method:"POST",
+      body:new URLSearchParams({action:"getMyLastEvaluatedActivity",token})
+    }).then(r=>r.json()),   // ✅ COMMA HERE
+
+    fetch(BACKEND,{method:"POST",
+      body:new URLSearchParams({action:"getMyLatestPastAllocation",token})
+    }).then(r=>r.json())
+  ])
+  .then(([dash,alloc,past,pastAlloc])=>{
     loadingBox.style.display="none";
     welcome.innerText=`Welcome ${dash.name} (${dash.roll})`;
 
-    /* Upcoming */
-    let hasUpcoming = false;
+    /* ===== UPCOMING ===== */
+    if(
+      alloc.status === "FOUND" &&
+      alloc.date &&
+      !isPastOrToday(alloc.date)
+    ){
+      upcomingBox.innerHTML = `
+        <div class="upcomingBox">
+          Upcoming: You have <b>${alloc.category}</b><br>
+          on <b>${prettyDate(alloc.date)}</b>
+          ${alloc.topic ? `<br>Topic: ${alloc.topic}` : ""}
+        </div>`;
+      upcomingBox.style.display = "block";
+    }else{
+      upcomingBox.style.display = "none";
+    }
 
-if(
-  alloc.status === "FOUND" &&
-  alloc.date &&
-  !isPastOrToday(alloc.date)
-){
-  hasUpcoming = true;
-  upcomingBox.innerHTML = `
-    <div class="upcomingBox">
-      Upcoming: You have <b>${alloc.category}</b><br>
-      on <b>${prettyDate(alloc.date)}</b>
-      ${alloc.topic ? `<br>Topic: ${alloc.topic}` : ""}
-    </div>`;
-  upcomingBox.style.display = "block";
-}else{
-  upcomingBox.style.display = "none";
-}
+    /* ===== COMPLETED ===== */
+    let hasCompleted = false;
 
-    /* Completed */
-/* ===== COMPLETED (PAST) ===== */
-let hasCompleted = false;
+    /* Case 1: Past & evaluated */
+    if(past.status === "FOUND"){
+      hasCompleted = true;
+      pastBox.innerHTML = `
+        <div class="pastBox">
+          Completed: You had <b>${past.category}</b><br>
+          on <b>${prettyDate(past.date)}</b>
+        </div>`;
+    }
+    /* Case 2: Past but NOT evaluated */
+    else if(pastAlloc.status === "FOUND"){
+      hasCompleted = true;
+      pastBox.innerHTML = `
+        <div class="pastBox">
+          Completed: You had <b>${pastAlloc.category}</b><br>
+          on <b>${prettyDate(pastAlloc.date)}</b><br>
+          <i>Evaluation pending</i>
+        </div>`;
+    }
 
-/* Case 1: Past & evaluated (from Performance sheet) */
-if(past.status === "FOUND"){
-  hasCompleted = true;
-  pastBox.innerHTML = `
-    <div class="pastBox">
-      Completed: You had <b>${past.category}</b><br>
-      on <b>${prettyDate(past.date)}</b>
-    </div>`;
-}
-
-/* Case 2: Past but NOT evaluated (from EvaluationAllocation) */
-else if(pastAlloc.status === "FOUND"){
-  hasCompleted = true;
-  pastBox.innerHTML = `
-    <div class="pastBox">
-      Completed: You had <b>${pastAlloc.category}</b><br>
-      on <b>${prettyDate(pastAlloc.date)}</b><br>
-      <i>Evaluation pending</i>
-    </div>`;
-}
-
-/* Show / hide */
-pastBox.style.display = hasCompleted ? "block" : "none";
+    pastBox.style.display = hasCompleted ? "block" : "none";
 
     perfBtn.disabled=false;
     logoutBtn.disabled=false;
