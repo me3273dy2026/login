@@ -318,9 +318,37 @@ function onDate(){
 }
 
 function updateButtons(){
-  gdOpenBtn.disabled  = allocationState.gdDone;
-  semOpenBtn.disabled = !allocationState.gdDone || allocationState.semDone;
-  piOpenBtn.disabled  = !allocationState.semDone || allocationState.piDone;
+
+  // Default: all disabled
+  gdOpenBtn.disabled  = true;
+  semOpenBtn.disabled = true;
+  piOpenBtn.disabled  = true;
+
+  // Case 1: Nothing done yet → start with GD
+  if(!allocationState.gdDone && !allocationState.semDone && !allocationState.piDone){
+    gdOpenBtn.disabled = false;
+    return;
+  }
+
+  // Case 2: GD done → allow GD update + Seminar
+  if(allocationState.gdDone && !allocationState.semDone){
+    gdOpenBtn.disabled  = false;
+    semOpenBtn.disabled = false;
+    return;
+  }
+
+  // Case 3: Seminar done → allow Seminar update + PI
+  if(allocationState.semDone && !allocationState.piDone){
+    semOpenBtn.disabled = false;
+    piOpenBtn.disabled  = false;
+    return;
+  }
+
+  // Case 4: PI done → allow PI update + restart cycle with GD
+  if(allocationState.piDone){
+    piOpenBtn.disabled = false;
+    gdOpenBtn.disabled = false;
+  }
 }
   function loadAllocationsByDate(date){
   fetch(BACKEND,{
