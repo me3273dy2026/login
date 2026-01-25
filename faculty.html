@@ -6,45 +6,28 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-:root{
-  --bg1:#0f2027;
-  --bg2:#203a43;
-  --bg3:#2c5364;
-  --primary:#203a43;
-  --accent:#1abc9c;
-  --danger:#c0392b;
-}
-
-*{box-sizing:border-box}
-
+*{box-sizing:border-box;}
 body{
-  margin:0;
   font-family:"Segoe UI",Arial,sans-serif;
+  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
   min-height:100vh;
-  background:linear-gradient(135deg,var(--bg1),var(--bg2),var(--bg3));
+  margin:0;
   display:flex;
   justify-content:center;
-  padding:28px 12px 100px;
 }
 
 .card{
   background:#fff;
   width:100%;
-  max-width:700px;
-  border-radius:20px;
+  max-width:1200px;
+  margin:24px 12px;
   padding:28px;
-  box-shadow:0 20px 50px rgba(0,0,0,.28);
-  animation:fadeIn .6s ease;
+  border-radius:14px;
+  box-shadow:0 15px 40px rgba(0,0,0,.25);
 }
 
-@keyframes fadeIn{
-  from{opacity:0;transform:translateY(20px)}
-  to{opacity:1;transform:translateY(0)}
-}
-
-.header{text-align:center;margin-bottom:18px}
-.header h1{margin:0;color:var(--primary);font-size:22px}
-.header h2{margin:4px 0 0;color:#666;font-size:14px}
+h1{text-align:center;color:#e67e22;margin-bottom:6px;}
+h2{text-align:center;color:#555;font-size:15px;margin-bottom:22px;}
 
 button{
   width:100%;
@@ -52,263 +35,338 @@ button{
   margin-top:14px;
   border:none;
   border-radius:30px;
+  font-size:16px;
+  font-weight:600;
+  cursor:pointer;
+}
+button:disabled{
+  background:#999;
+  cursor:not-allowed;
+  opacity:0.6;
+}
+
+.btn-main{background:linear-gradient(135deg,#f39c12,#e67e22);color:#fff;}
+.btn-red{background:#c0392b;color:#fff;}
+.btn-close{background:#7f8c8d;color:#fff;}
+
+.section{display:none;margin-top:24px;}
+
+label{font-weight:600;margin-top:12px;display:block;}
+select,input,textarea{
+  width:100%;
+  padding:10px 12px;
+  margin-top:6px;
+  border-radius:6px;
+  border:1px solid #ccc;
+  font-size:15px;
+}
+textarea{min-height:90px;}
+
+.row{display:flex;gap:16px;margin-top:18px;}
+
+.box{
+  flex:1;
+  background:#f8f9fa;
+  padding:16px;
+  border-radius:12px;
+}
+
+/* Smaller section titles */
+.box h3{
+  margin:18px 0 8px;
+  color:#203a43;
   font-size:15px;
   font-weight:600;
-  cursor:pointer;
+  border-bottom:1px solid #e1e1e1;
+  padding-bottom:6px;
 }
 
-.btn-primary{background:linear-gradient(135deg,#2c5364,#203a43);color:#fff}
-.btn-secondary{background:linear-gradient(135deg,#1abc9c,#16a085);color:#fff}
-.btn-logout{background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff}
-
-.section{
-  margin-top:18px;
-  border-radius:16px;
-  border:1px solid #e0e0e0;
-  overflow:hidden;
+/* Info spacing */
+.info-block{margin-bottom:16px;}
+.info-content{
+  padding:8px 4px 2px;
+  line-height:1.55;
+  color:#333;
 }
 
-.section-header{
-  background:#fafafa;
-  padding:14px;
-  font-weight:700;
-  cursor:pointer;
-}
+.sub{background:#fff;padding:10px;border-radius:8px;margin-top:8px;}
+.loading{text-align:center;font-weight:600;margin-top:14px;}
 
-.section-body{
-  padding:16px;
-  display:none;
-}
-
-.section.open .section-body{display:block}
-
-label{font-weight:600;display:block;margin-top:12px}
-input,select{
-  width:100%;
-  padding:10px;
-  margin-top:6px;
-  border-radius:8px;
-  border:1px solid #ccc;
-  font-size:14px;
-}
-
-.list{
-  margin-top:10px;
-  border:1px solid #ddd;
-  border-radius:10px;
-  padding:10px;
-  max-height:220px;
-  overflow:auto;
-}
-
-.list label{
-  display:flex;
-  justify-content:space-between;
-  font-weight:500;
-  padding:6px 0;
-}
-
-.notice{
-  margin-top:12px;
-  background:#f5f7fa;
-  padding:12px;
-  border-radius:12px;
+.footer{
+  margin-top:32px;
+  text-align:center;
+  font-size:13px;
+  color:#5f6f78;
   font-weight:600;
 }
+.footer div{font-size:12px;color:#7a8a93;}
 
-footer{
-  position:fixed;
-  bottom:0;left:0;right:0;
-  background:#0f2027;
-  color:#cfd8dc;
-  text-align:center;
-  padding:10px;
-  font-size:13px;
+@media(max-width:900px){
+  .row{flex-direction:column;}
 }
 
-footer div{font-size:12px;color:#90a4ae}
+/* Loader */
+#loaderOverlay{
+  position:fixed;
+  inset:0;
+  background:rgba(255,255,255,0.85);
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+}
+.spinner{
+  width:48px;
+  height:48px;
+  border:5px solid #ddd;
+  border-top:5px solid #e67e22;
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+.loader-text{
+  margin-top:12px;
+  font-weight:600;
+  color:#203a43;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
 </style>
 </head>
 
 <body>
-
 <div class="card">
 
-  <div class="header">
-    <h1>Faculty Dashboard</h1>
-    <h2>ME3273 · Seminar · GD · PI</h2>
+<h1>Faculty Dashboard</h1>
+<h2>ME3273 · GD · Seminar · PI</h2>
+
+<!-- ================= HOME ================= -->
+<div id="home">
+  <button class="btn-main" onclick="openAllocate()">Allocate Students</button>
+  <button class="btn-main" onclick="openEvaluate()">Evaluate Students</button>
+  <button class="btn-red" onclick="logout()">Logout</button>
+</div>
+
+<!-- ================= ALLOCATION ================= -->
+<div id="allocate" class="section">
+  <h2>Student Allocation</h2>
+
+  <label>Date</label>
+  <input type="date" id="date" onchange="onDate()">
+  <div id="dateStatus" class="loading"></div>
+
+  <div class="box">
+    <h3>Group Discussion</h3>
+    <div id="gdExisting" class="sub"></div>
+    <button id="gdOpenBtn" class="btn-main" disabled onclick="loadGD()">Allocate / Update GD</button>
+    <div id="gdBox" class="sub" style="display:none"></div>
+    <button id="saveGDBtn" class="btn-main" style="display:none" onclick="saveGD()">Save GD</button>
   </div>
 
-  <!-- ALLOCATION -->
-  <div class="section">
-    <div class="section-header" onclick="toggle(this)">
-      Student Allocation
-    </div>
-    <div class="section-body">
-
-      <label>Date</label>
-      <input type="date" id="allocDate">
-
-      <label>Category</label>
-      <select id="allocCategory" onchange="loadAllocationList()">
-        <option value="">-- Select --</option>
-        <option value="GD">Group Discussion</option>
-        <option value="SEMINAR">Seminar</option>
-        <option value="PI">Personal Interview</option>
-      </select>
-
-      <div id="allocList" class="list"></div>
-
-      <button class="btn-secondary" onclick="saveAllocation()">
-        Save Allocation
-      </button>
-
-      <div id="allocMsg" class="notice"></div>
-    </div>
+  <div class="box">
+    <h3>Seminar</h3>
+    <div id="semExisting" class="sub"></div>
+    <button id="semOpenBtn" class="btn-main" disabled onclick="loadSeminar()">Allocate / Update Seminar</button>
+    <div id="semBox" class="sub" style="display:none"></div>
+    <button id="saveSemBtn" class="btn-main" style="display:none" onclick="saveSeminar()">Save Seminar</button>
   </div>
 
-  <!-- EVALUATION -->
-  <div class="section">
-    <div class="section-header" onclick="toggle(this)">
-      Student Evaluation
+  <div class="box">
+    <h3>Personal Interview</h3>
+    <div id="piExisting" class="sub"></div>
+    <button id="piOpenBtn" class="btn-main" disabled onclick="loadPI()">Allocate / Update PI</button>
+    <div id="piBox" class="sub" style="display:none"></div>
+    <button id="savePIBtn" class="btn-main" style="display:none" onclick="savePI()">Save PI</button>
+  </div>
+
+  <button class="btn-close" onclick="closeSection()">Close</button>
+</div>
+
+<!-- ================= EVALUATION ================= -->
+<div id="evaluate" class="section">
+  <h2>Evaluate Students</h2>
+
+  <label>Select Student</label>
+  <select id="studentSelect" onchange="loadStudentDetails()">
+    <option value="">Select Student</option>
+  </select>
+
+  <div class="row">
+    <div class="box">
+      <div class="info-block">
+        <h3>Student Details</h3>
+        <div id="studentInfo" class="info-content"></div>
+      </div>
+
+      <div class="info-block">
+        <h3>GD Topic</h3>
+        <div id="gdTopicInfo" class="info-content"></div>
+      </div>
+
+      <div class="info-block">
+        <h3>GD Group Members</h3>
+        <div id="gdGroupInfo" class="info-content"></div>
+      </div>
+
+      <div class="info-block">
+        <h3>Seminar Topic</h3>
+        <div id="seminarInfo" class="info-content"></div>
+      </div>
     </div>
-    <div class="section-body">
 
-      <label>Roll Number</label>
-      <input id="evalRoll" placeholder="Enter roll number">
+    <div class="box">
+      <h3>Evaluation</h3>
 
-      <label>Evaluation Type</label>
-      <select id="evalType">
-        <option value="GD">Group Discussion</option>
+      <label>Type</label>
+      <select id="typeSelect" onchange="loadLatestPerformance()">
+        <option value="GD">GD</option>
         <option value="SEMINAR">Seminar</option>
-        <option value="PI">Personal Interview</option>
+        <option value="PI">PI</option>
       </select>
 
-      <label>Positives</label>
-      <textarea id="positives" rows="3" style="width:100%"></textarea>
-
-      <label>Improvements</label>
-      <textarea id="improvements" rows="3" style="width:100%"></textarea>
-
-      <label>Marks (0–100)</label>
+      <label>Marks</label>
       <input type="number" id="marks" min="0" max="100">
 
-      <button class="btn-primary" onclick="saveEvaluation()">
-        Save Evaluation
-      </button>
+      <label>Positives</label>
+      <textarea id="positives"></textarea>
 
-      <div id="evalMsg" class="notice"></div>
+      <label>Improvements</label>
+      <textarea id="improvements"></textarea>
+
+      <button class="btn-main" onclick="saveEvaluation()">Save Evaluation</button>
     </div>
   </div>
 
-  <button class="btn-logout" onclick="logout()">Logout</button>
+  <button class="btn-close" onclick="closeSection()">Close</button>
+</div>
+
+<!-- Loader -->
+<div id="loaderOverlay">
+  <div class="spinner"></div>
+  <div class="loader-text">Loading… Please wait</div>
+</div>
+
+<div class="footer">
+  Developed by Dr. Rajesh Akula
+  <div>© 2026 · IIEST Shibpur</div>
+</div>
 
 </div>
 
-<footer>
-  Developed by Dr. Rajesh Akula
-  <div>© 2026 · Department of Mechanical Engineering, IIEST Shibpur</div>
-</footer>
-
 <script>
-const BACKEND = "https://script.google.com/macros/s/AKfycbzs-V1FU-cXAWdCCgMrItFpdywUl0rsfj_Db1XhJBBP3mC7k8GUvDFclx2Ai0n4p-EbnQ/exec";
+const BACKEND="https://script.google.com/macros/s/AKfycbybOygn6ZTQcoeLEMbwKx0pX9GkPI4pPjiKDk8jA-arTAinR8j8Y7q4DIMwhAmELUILFg/exec";
 
-/* ---------- UI ---------- */
-function toggle(el){
-  el.parentElement.classList.toggle("open");
+/* Navigation */
+function openAllocate(){
+  home.style.display="none";
+  evaluate.style.display="none";
+  allocate.style.display="block";
+}
+function openEvaluate(){
+  home.style.display="none";
+  allocate.style.display="none";
+  evaluate.style.display="block";
+  loadStudents();
+}
+function closeSection(){
+  allocate.style.display="none";
+  evaluate.style.display="none";
+  home.style.display="block";
+}
+function logout(){
+  showLoader("Logging out…");
+  setTimeout(()=>location.href="login.html",600);
 }
 
-/* ---------- ALLOCATION ---------- */
-function loadAllocationList(){
-  const cat = allocCategory.value;
-  const date = allocDate.value;
-  allocList.innerHTML = "";
-  allocMsg.innerText = "";
+/* Loader */
+function showLoader(t="Loading… Please wait"){
+  loaderOverlay.style.display="flex";
+  document.querySelector(".loader-text").innerText=t;
+}
+function hideLoader(){loaderOverlay.style.display="none";}
 
-  if(!cat || !date) return;
+/* Evaluation */
+function loadStudents(){
+  fetch(BACKEND+"?action=getAllStudents")
+    .then(r=>r.json())
+    .then(res=>{
+      studentSelect.innerHTML='<option value="">Select Student</option>';
+      res.students.forEach(s=>{
+        studentSelect.innerHTML+=`<option value="${s.roll}">${s.roll} – ${s.name}</option>`;
+      });
+    });
+}
 
-  const action =
-    cat==="GD" ? "getGDTopicStatus" :
-    cat==="SEMINAR" ? "getSeminarStudentStatus" :
-    "getPIStudentStatus";
+function loadStudentDetails(){
+  const roll=studentSelect.value;
+  if(!roll) return;
+
+  showLoader("Fetching student details…");
 
   fetch(BACKEND,{
     method:"POST",
-    body:new URLSearchParams({action,date})
+    body:new URLSearchParams({action:"getStudentDetailsByRoll",roll})
+  })
+  .then(r=>r.json())
+  .then(d=>{
+    studentInfo.innerHTML=`<b>${d.name}</b><br>Roll: ${d.roll}`;
+    seminarInfo.innerText=d.seminarTopic||"-";
+  });
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({action:"getGDGroupByRoll",roll})
   })
   .then(r=>r.json())
   .then(res=>{
-    res.students?.forEach(s=>{
-      allocList.innerHTML += `
-        <label>
-          ${s.name} (${s.roll})
-          <input type="checkbox" value="${s.roll}" ${s.checked?"checked":""}>
-        </label>`;
-    });
-
-    res.topics?.forEach(t=>{
-      allocList.innerHTML += `
-        <label>
-          Topic ${t.topic}
-          <input type="checkbox" value="${t.topic}" ${t.checked?"checked":""}>
-        </label>`;
-    });
+    if(res.status!=="OK"){
+      gdTopicInfo.innerHTML="<i>Group not assigned</i>";
+      gdGroupInfo.innerHTML="<i>No group members</i>";
+      return;
+    }
+    gdTopicInfo.innerText=res.groupId;
+    gdGroupInfo.innerHTML=res.group.map(s=>`${s.name} (${s.roll})`).join("<br>");
+  })
+  .finally(()=>{
+    loadLatestPerformance();
+    hideLoader();
   });
 }
 
-function saveAllocation(){
-  const date = allocDate.value;
-  const cat  = allocCategory.value;
-  const vals = [...allocList.querySelectorAll("input:checked")]
-               .map(i=>i.value);
+function loadLatestPerformance(){
+  const roll=studentSelect.value;
+  if(!roll) return;
 
-  if(!date || !cat || !vals.length){
-    allocMsg.innerText = "Select date, category and at least one entry.";
-    return;
-  }
-
-  const action = cat==="GD" ? "saveGDAllocation" : "saveIndividualAllocation";
-
-  fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({
-      action,
-      date,
-      category:cat,
-      topics:vals.join(","),
-      rolls:vals.join(",")
-    })
-  })
-  .then(r=>r.json())
-  .then(()=>allocMsg.innerText="Allocation saved successfully.");
+  fetch(BACKEND+"?action=getLatestPerformance&roll="+roll+"&type="+typeSelect.value)
+    .then(r=>r.json())
+    .then(d=>{
+      if(d.status==="FOUND"){
+        marks.value=d.marks;
+        positives.value=d.positives;
+        improvements.value=d.improvements;
+      }else{
+        marks.value=positives.value=improvements.value="";
+      }
+    });
 }
 
-/* ---------- EVALUATION ---------- */
 function saveEvaluation(){
-  const roll = evalRoll.value.trim();
-  if(!roll) return;
+  if(!studentSelect.value){alert("Select a student");return;}
+  showLoader("Saving evaluation…");
 
   fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({
       action:"savePerformance",
-      roll,
-      type:evalType.value,
+      roll:studentSelect.value,
+      type:typeSelect.value,
+      marks:marks.value,
       positives:positives.value,
-      improvements:improvements.value,
-      marks:marks.value
+      improvements:improvements.value
     })
   })
-  .then(r=>r.json())
-  .then(()=>evalMsg.innerText="Evaluation saved successfully.");
-}
-
-/* ---------- LOGOUT ---------- */
-function logout(){
-  if(!confirm("Logout?")) return;
-  location.href="faculty_login.html";
+  .then(()=>alert("Evaluation saved"))
+  .finally(hideLoader);
 }
 </script>
-
 </body>
 </html>
