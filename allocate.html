@@ -12,7 +12,6 @@
   --bg3:#2c5364;
   --primary:#203a43;
   --accent:#1abc9c;
-  --danger:#c0392b;
 }
 
 *{box-sizing:border-box}
@@ -35,31 +34,11 @@ body{
   border-radius:20px;
   padding:26px 26px 30px;
   box-shadow:0 20px 50px rgba(0,0,0,.28);
-  animation:fadeIn .6s ease;
 }
 
-@keyframes fadeIn{
-  from{opacity:0;transform:translateY(20px)}
-  to{opacity:1;transform:translateY(0)}
-}
-
-.header{
-  text-align:center;
-  margin-bottom:18px;
-}
-
-.header h1{
-  margin:0;
-  color:var(--primary);
-  font-size:22px;
-}
-
-.header h2{
-  margin:4px 0 0;
-  font-size:14px;
-  color:#666;
-  font-weight:600;
-}
+.header{text-align:center;margin-bottom:18px}
+.header h1{margin:0;color:var(--primary);font-size:22px}
+.header h2{margin:4px 0 0;font-size:14px;color:#666;font-weight:600}
 
 .infoBox{
   background:#f5f7fa;
@@ -68,29 +47,13 @@ body{
   margin-top:14px;
 }
 
-.loading{
-  text-align:center;
-  font-weight:600;
-  color:#555;
-}
+.loading{text-align:center;font-weight:600;color:#555}
 
 .notice{
-  background:linear-gradient(135deg,#e8f5e9,#f1f8e9);
+  background:#e8f5e9;
   color:#1b5e20;
   font-weight:700;
   text-align:center;
-  font-size:15px;
-}
-
-.badge{
-  display:inline-block;
-  padding:6px 14px;
-  border-radius:20px;
-  background:var(--accent);
-  color:#fff;
-  font-size:13px;
-  font-weight:700;
-  margin-top:10px;
 }
 
 button{
@@ -102,12 +65,6 @@ button{
   font-size:15px;
   font-weight:600;
   cursor:pointer;
-  transition:.15s ease;
-}
-
-button:disabled{
-  opacity:.6;
-  cursor:not-allowed;
 }
 
 .btn-primary{
@@ -115,22 +72,12 @@ button:disabled{
   color:#fff;
 }
 
-.btn-primary:hover{
-  transform:translateY(-1px);
-}
-
 .btn-logout{
   background:linear-gradient(135deg,#e74c3c,#c0392b);
   color:#fff;
 }
 
-.section{
-  margin-top:10px;
-  border-radius:14px;
-  overflow:hidden;
-  border:1px solid #e0e0e0;
-}
-/* Upcoming (Attention) Box */
+/* Upcoming */
 .upcomingBox{
   background:#fdecea;
   border:2px solid #e53935;
@@ -142,14 +89,13 @@ button:disabled{
   margin-top:14px;
   animation:blink 1.5s infinite;
 }
-
 @keyframes blink{
   0%{opacity:1}
   50%{opacity:.45}
   100%{opacity:1}
 }
 
-/* Past (Completed) Box */
+/* Past */
 .pastBox{
   background:#e8f5e9;
   border:1px solid #c8e6c9;
@@ -160,6 +106,14 @@ button:disabled{
   border-radius:14px;
   margin-top:10px;
 }
+
+.section{
+  margin-top:10px;
+  border-radius:14px;
+  overflow:hidden;
+  border:1px solid #e0e0e0;
+}
+
 .section-header{
   background:#fafafa;
   padding:12px 14px;
@@ -175,74 +129,38 @@ button:disabled{
   display:none;
 }
 
-.section.open .section-body{
-  display:block;
-}
+.section.open .section-body{display:block}
 
+/* Marks */
+.marksWrapper{text-align:center}
 .marksBox{
-  display:inline-block;
-  background:var(--primary);
-  color:#fff;
-  padding:10px 18px;
-  border-radius:10px;
-  font-size:18px;
-  font-weight:700;
-  margin:12px 0;
-}
-.marksBox{
-  display:inline-block;
   padding:12px 22px;
   border-radius:10px;
   font-size:20px;
   font-weight:700;
   margin:14px auto 6px;
-  text-align:center;
+  display:inline-block;
 }
+.marks-green{background:#2e7d32;color:#fff}
+.marks-yellow{background:#f9a825;color:#000}
+.marks-orange{background:#ef6c00;color:#fff}
+.marks-red{background:#c62828;color:#fff}
+.marksMsg{font-weight:600;font-size:14px;margin-top:6px}
 
-/* Color variants */
-.marks-green{ background:#2e7d32; color:#fff; }
-.marks-yellow{ background:#f9a825; color:#000; }
-.marks-orange{ background:#ef6c00; color:#fff; }
-.marks-red{ background:#c62828; color:#fff; }
+.greenBox{background:#e8f5e9;padding:12px;border-radius:10px;margin-top:8px}
+.yellowBox{background:#fffde7;padding:12px;border-radius:10px;margin-top:8px}
 
-/* Wrapper to center everything */
-.marksWrapper{
-  text-align:center;
-}
-
-/* Motivation text */
-.marksMsg{
-  margin-top:6px;
-  font-weight:600;
-  font-size:14px;
-}
-.greenBox{
-  background:#e8f5e9;
-  padding:12px;
-  border-radius:10px;
-  margin-top:8px;
-}
-
-.yellowBox{
-  background:#fffde7;
-  padding:12px;
-  border-radius:10px;
-  margin-top:8px;
-}
-
-  /* Logout overlay */
+/* Logout overlay */
 #logoutOverlay{
   position:fixed;
   inset:0;
   background:rgba(15,32,39,.75);
-  display:flex;
+  display:none;
   flex-direction:column;
   align-items:center;
   justify-content:center;
   z-index:9999;
 }
-
-/* Spinner */
 .logoutSpinner{
   width:48px;
   height:48px;
@@ -251,24 +169,12 @@ button:disabled{
   border-radius:50%;
   animation:spin 1s linear infinite;
 }
-
-.logoutText{
-  margin-top:14px;
-  color:#fff;
-  font-weight:700;
-  font-size:15px;
-}
-
-@keyframes spin{
-  from{transform:rotate(0deg)}
-  to{transform:rotate(360deg)}
-}
+@keyframes spin{to{transform:rotate(360deg)}}
+.logoutText{margin-top:14px;color:#fff;font-weight:700}
 
 footer{
   position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
+  bottom:0;left:0;right:0;
   background:#0f2027;
   color:#cfd8dc;
   text-align:center;
@@ -276,11 +182,7 @@ footer{
   font-size:13px;
   font-weight:600;
 }
-
-footer div{
-  font-size:12px;
-  color:#90a4ae;
-}
+footer div{font-size:12px;color:#90a4ae}
 </style>
 </head>
 
@@ -288,54 +190,44 @@ footer div{
 
 <div class="card">
 
-  <div class="header">
-    <h1 id="welcome"></h1>
-    <h2>ME3273 · Seminar & Group Discussion</h2>
-    <div class="badge">Student Dashboard</div>
+<div class="header">
+  <h1 id="welcome"></h1>
+  <h2>ME3273 · Seminar & GD · PI</h2>
+</div>
+
+<div id="loadingBox" class="infoBox loading">
+  Fetching your details…
+</div>
+
+<div id="upcomingBox" style="display:none"></div>
+<div id="pastBox" style="display:none"></div>
+
+<button id="perfBtn" class="btn-primary" disabled onclick="togglePanel()">
+  View Performance
+</button>
+
+<div id="perfPanel" style="display:none">
+
+  <div class="section" onclick="toggleSection('GD')">
+    <div class="section-header">Group Discussion <span>▾</span></div>
+    <div class="section-body" id="GD"></div>
   </div>
 
-  <div id="loadingBox" class="infoBox loading">
-    Fetching your details…
+  <div class="section" onclick="toggleSection('SEMINAR')">
+    <div class="section-header">Seminar <span>▾</span></div>
+    <div class="section-body" id="SEMINAR"></div>
   </div>
 
-  <div id="upcomingBox" style="display:none"></div>
-  <div id="pastBox" style="display:none"></div>
-
-  <button id="perfBtn" class="btn-primary" disabled onclick="togglePanel()">
-    View Performance Evaluation
-  </button>
-
-  <div id="perfPanel" style="display:none">
-
-    <div class="section" onclick="toggleSection('GD')">
-      <div class="section-header">
-        Group Discussion
-        <span>▾</span>
-      </div>
-      <div class="section-body" id="GD"></div>
-    </div>
-
-    <div class="section" onclick="toggleSection('SEMINAR')">
-      <div class="section-header">
-        Seminar
-        <span>▾</span>
-      </div>
-      <div class="section-body" id="SEMINAR"></div>
-    </div>
-
-    <div class="section" onclick="toggleSection('PI')">
-      <div class="section-header">
-        Personal Interview
-        <span>▾</span>
-      </div>
-      <div class="section-body" id="PI"></div>
-    </div>
-
+  <div class="section" onclick="toggleSection('PI')">
+    <div class="section-header">Personal Interview <span>▾</span></div>
+    <div class="section-body" id="PI"></div>
   </div>
 
-  <button id="logoutBtn" class="btn-logout" disabled onclick="logout()">
-    Logout
-  </button>
+</div>
+
+<button id="logoutBtn" class="btn-logout" disabled onclick="logout()">
+  Logout
+</button>
 
 </div>
 
@@ -344,142 +236,82 @@ footer div{
   <div>© 2026 · IIEST Shibpur</div>
 </footer>
 
+<div id="logoutOverlay">
+  <div class="logoutSpinner"></div>
+  <div class="logoutText">Logging out…</div>
+</div>
+
 <script>
-const BACKEND="https://script.google.com/macros/s/AKfycbw1h6eHA_nmbYLrXao0rT6Lj3sb0HUj7Pl45uAdYyU8i3_QnuOIrqYjl7ztX5PlQCJPXQ/exec";
+const BACKEND="https://script.google.com/macros/s/AKfycbzH-gOw8qHiM6PdJcjQAH7aDwvW0UwE7aBSpc5JCJvrxtlNowyawipUkRKiqtQ4M1gg5Q/exec";
 const token=new URLSearchParams(location.search).get("token");
 
-loadAll();
-function prettyDate(iso){
-  const d = new Date(iso);
-  const day = d.getDate();
-  const month = d.toLocaleString("en-US",{month:"short"});
-  const year = d.getFullYear();
-
-  const suffix =
-    day%10===1 && day!==11 ? "st" :
-    day%10===2 && day!==12 ? "nd" :
-    day%10===3 && day!==13 ? "rd" : "th";
-
-  return `${day}${suffix} ${month} ${year}`;
-}
-  let idleTimer;
-
-/* Reset inactivity timer */
-function resetIdleTimer(){
+/* ===== Inactivity logout ===== */
+let idleTimer;
+function resetIdle(){
   clearTimeout(idleTimer);
-  idleTimer = setTimeout(()=>{
-    forceLogout();
-  }, 60 * 1000); // 1 minute
+  idleTimer=setTimeout(forceLogout,60000);
 }
-
-/* Track user activity */
-["mousemove","keydown","click","scroll","touchstart"].forEach(evt=>{
-  document.addEventListener(evt, resetIdleTimer, true);
+["mousemove","keydown","click","scroll","touchstart"].forEach(e=>{
+  document.addEventListener(e,resetIdle,true);
 });
+resetIdle();
 
-/* Start timer immediately */
-resetIdleTimer();
-  function forceLogout(){
+function forceLogout(){
   fetch(BACKEND,{
     method:"POST",
-    body:new URLSearchParams({
-      action:"logout",
-      token: token
-    })
-  })
-  .finally(()=>{
+    body:new URLSearchParams({action:"logout",token})
+  }).finally(()=>{
     alert("Session expired due to inactivity.");
     location.href="login.html";
   });
 }
-  function handleSession(res){
-  if(res.status==="SESSION_EXPIRED"){
-    alert("Your session has expired. Please login again.");
-    location.href="login.html";
-    return true;
-  }
-  return false;
+
+/* ===== Helpers ===== */
+function prettyDate(iso){
+  const d=new Date(iso);
+  const day=d.getDate();
+  const m=d.toLocaleString("en-US",{month:"short"});
+  const y=d.getFullYear();
+  const s=day%10===1&&day!==11?"st":day%10===2&&day!==12?"nd":day%10===3&&day!==13?"rd":"th";
+  return `${day}${s} ${m} ${y}`;
 }
-  function isPastOrToday(isoDate){
-  const today = new Date();
-  today.setHours(0,0,0,0);
-
-  const d = new Date(isoDate);
-  d.setHours(0,0,0,0);
-
-  return d <= today;
-}
-function loadAll(){
-  const upcomingBox = document.getElementById("upcomingBox");
-  const pastBox = document.getElementById("pastBox");
-
-  Promise.all([
-    fetch(BACKEND,{method:"POST",
-      body:new URLSearchParams({action:"dashboard",token})
-    }).then(r=>r.json()),
-
-    fetch(BACKEND,{method:"POST",
-      body:new URLSearchParams({action:"getMyLatestAllocation",token})
-    }).then(r=>r.json()),
-
-    fetch(BACKEND,{method:"POST",
-      body:new URLSearchParams({action:"getMyLastEvaluatedActivity",token})
-    }).then(r=>r.json())
-
-  ]).then(([dash,alloc,past])=>{
-    loadingBox.style.display="none";
-    welcome.innerText=`Welcome ${dash.name} (${dash.roll})`;
-
-    let upcomingHTML = "";
-    let pastHTML = "";
-
-    /* Upcoming */
-    if(
-  alloc.status==="ALLOCATED" &&
-  !isPastOrToday(alloc.date)
-){
-  // TRUE future → Upcoming
-  upcomingHTML = `
-    <div class="upcomingBox">
-      Upcoming: You have <b>${alloc.category}</b><br>
-      on <b>${prettyDate(alloc.date)}</b>
-      ${alloc.topic ? `<br>Topic: ${alloc.topic}` : ""}
-    </div>`;
-}else{
-  upcomingHTML = `
-    <div class="infoBox notice">
-      No upcoming allocations at the moment.
-    </div>`;
+function isPastOrToday(iso){
+  const t=new Date();t.setHours(0,0,0,0);
+  const d=new Date(iso);d.setHours(0,0,0,0);
+  return d<=t;
 }
 
-    /* Past (Completed) */
-    if(past.status==="FOUND" || 
-   (alloc.status==="ALLOCATED" && isPastOrToday(alloc.date))){
-      pastHTML = `
-  <div class="pastBox">
-    Completed: You had <b>${past.status==="FOUND" ? past.category : alloc.category}</b><br>
-    on <b>${prettyDate(past.status==="FOUND" ? past.date : alloc.date)}</b>
-    ${past.status!=="FOUND" ? "<br><i>(Evaluation pending)</i>" : ""}
-  </div>`;
-    }
+/* ===== Load dashboard ===== */
+Promise.all([
+  fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"dashboard",token})}).then(r=>r.json()),
+  fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getMyLatestAllocation",token})}).then(r=>r.json()),
+  fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getMyLastEvaluatedActivity",token})}).then(r=>r.json())
+]).then(([dash,alloc,past])=>{
+  loadingBox.style.display="none";
+  welcome.innerText=`Welcome ${dash.name} (${dash.roll})`;
 
-    /* Inject into page */
-    upcomingBox.style.display="block";
-    upcomingBox.innerHTML = upcomingHTML;
-
-    if(pastHTML){
+  if(alloc.status==="ALLOCATED"){
+    if(!isPastOrToday(alloc.date)){
+      upcomingBox.style.display="block";
+      upcomingBox.innerHTML=`Upcoming: <b>${alloc.category}</b><br>on <b>${prettyDate(alloc.date)}</b>`;
+    }else{
       pastBox.style.display="block";
-      pastBox.innerHTML = pastHTML;
+      pastBox.innerHTML=`Completed: <b>${alloc.category}</b><br>on <b>${prettyDate(alloc.date)}</b>`;
     }
+  }
 
-    perfBtn.disabled=false;
-    logoutBtn.disabled=false;
-  });
-}
+  if(past.status==="FOUND"){
+    pastBox.style.display="block";
+    pastBox.innerHTML=`Completed: <b>${past.category}</b><br>on <b>${prettyDate(past.date)}</b>`;
+  }
 
+  perfBtn.disabled=false;
+  logoutBtn.disabled=false;
+});
+
+/* ===== Performance ===== */
 function togglePanel(){
-  perfPanel.style.display=
-    perfPanel.style.display==="none"?"block":"none";
+  perfPanel.style.display=perfPanel.style.display==="none"?"block":"none";
 }
 
 function toggleSection(type){
@@ -499,44 +331,22 @@ function toggleSection(type){
       box.innerHTML="<b>Not yet evaluated.</b>";
       return;
     }
-    const m = Number(res.marks ?? 0);
 
-let colorClass = "marks-red";
-let msg = "Needs improvement. Don’t give up.";
+    const m=Number(res.marks);
+    let c="marks-red",msg="Needs improvement. Don’t give up.";
+    if(m>=80){c="marks-green";msg="Very good. Keep going."}
+    else if(m>=70){c="marks-yellow";msg="Good work. Aim higher."}
+    else if(m>=60){c="marks-orange";msg="Fair effort. You can do better."}
 
-if(m >= 80){
-  colorClass = "marks-green";
-  msg = "Very good. Keep going.";
-}
-else if(m >= 70){
-  colorClass = "marks-yellow";
-  msg = "Good work. Aim a little higher.";
-}
-else if(m >= 60){
-  colorClass = "marks-orange";
-  msg = "Fair effort. You can do better.";
-}
-
-box.innerHTML=`
-  <div><b>Date:</b> ${res.evaluationDate}</div>
-
-  <div class="marksWrapper">
-    <div class="marksBox ${colorClass}">
-      ${m}/100
-    </div>
-    <div class="marksMsg">${msg}</div>
-  </div>
-
-  <div class="greenBox">
-    <b>Positives</b>
-    <ol>${makeList(res.positives)}</ol>
-  </div>
-
-  <div class="yellowBox">
-    <b>Improvements</b>
-    <ol>${makeList(res.improvements)}</ol>
-  </div>
-`;
+    box.innerHTML=`
+      <div><b>Date:</b> ${res.evaluationDate}</div>
+      <div class="marksWrapper">
+        <div class="marksBox ${c}">${m}/100</div>
+        <div class="marksMsg">${msg}</div>
+      </div>
+      <div class="greenBox"><b>Positives</b><ol>${makeList(res.positives)}</ol></div>
+      <div class="yellowBox"><b>Improvements</b><ol>${makeList(res.improvements)}</ol></div>
+    `;
   });
 }
 
@@ -544,25 +354,16 @@ function makeList(t){
   return t.split("\n").filter(Boolean).map(x=>`<li>${x}</li>`).join("");
 }
 
+/* ===== Logout ===== */
 function logout(){
   if(!confirm("Are you sure you want to logout?")) return;
-
   document.getElementById("logoutOverlay").style.display="flex";
-
   fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({action:"logout",token})
-  })
-  .finally(()=>{
-    setTimeout(()=>{
-      location.href="login.html";
-    }, 600); // small delay for smooth UX
-  });
+  }).finally(()=>setTimeout(()=>location.href="login.html",600));
 }
 </script>
-<div id="logoutOverlay" style="display:none">
-  <div class="logoutSpinner"></div>
-  <div class="logoutText">Logging out…</div>
-</div>
+
 </body>
 </html>
