@@ -245,8 +245,8 @@ function isPastOrToday(iso){
 loadAll();
 
 function loadAll(){
-  const upcomingBox=document.getElementById("upcomingBox");
-  const pastBox=document.getElementById("pastBox");
+  const upcomingBox = document.getElementById("upcomingBox");
+  const pastBox     = document.getElementById("pastBox");
 
   Promise.all([
     fetch(BACKEND,{method:"POST",
@@ -259,60 +259,73 @@ function loadAll(){
 
     fetch(BACKEND,{method:"POST",
       body:new URLSearchParams({action:"getMyLastEvaluatedActivity",token})
-    }).then(r=>r.json()),   // ✅ COMMA HERE
+    }).then(r=>r.json()),
 
     fetch(BACKEND,{method:"POST",
       body:new URLSearchParams({action:"getMyLatestPastAllocation",token})
     }).then(r=>r.json())
   ])
-  .then(([dash,alloc,past,pastAlloc])=>{
+  .then(([dash, upcoming, evaluated, pastAlloc])=>{
+
     loadingBox.style.display="none";
-    welcome.innerText=`Welcome ${dash.name} (${dash.roll})`;
+    welcome.innerText = `Welcome ${dash.name} (${dash.roll})`;
 
-    /* ===== UPCOMING ===== */
+    let messages = [];
+
+    /* ========= 1️⃣ UPCOMING (RED) ========= */
     if(
-      alloc.status === "FOUND" &&
-      alloc.date &&
-      !isPastOrToday(alloc.date)
+      upcoming.status==="FOUND" &&
+      upcoming.date &&
+      !isPastOrToday(upcoming.date)
     ){
-      upcomingBox.innerHTML = `
+      messages.push(`
         <div class="upcomingBox">
-          Upcoming: You have <b>${alloc.category}</b><br>
-          on <b>${prettyDate(alloc.date)}</b>
-          ${alloc.topic ? `<br>Topic: ${alloc.topic}` : ""}
-        </div>`;
-      upcomingBox.style.display = "block";
+          Upcoming: You have <b>${upcoming.category}</b><br>
+          on <b>${prettyDate(upcoming.date)}</b>
+          ${upcoming.topic ? `<br>Topic: ${upcoming.topic}` : ""}
+        </div>
+      `);
+    }
+
+    /* ========= 2️⃣ COMPLETED BUT NOT EVALUATED (YELLOW) ========= */
+    if(pastAlloc.status==="FOUND"){
+      let isEvaluatedSame =
+        evaluated.status==="FOUND" &&
+        evaluated.category === pastAlloc.category &&
+        evaluated.date === pastAlloc.date;
+
+      if(!isEvaluatedSame){
+        messages.push(`
+          <div class="pastBox" style="background:#fffde7;border:1px solid #fbc02d;color:#795548">
+            Completed: You had <b>${pastAlloc.category}</b><br>
+            on <b>${prettyDate(pastAlloc.date)}</b><br>
+            <i>Evaluation under process</i>
+          </div>
+        `);
+      }
+    }
+
+    /* ========= 3️⃣ COMPLETED & EVALUATED (GREEN) ========= */
+    if(evaluated.status==="FOUND"){
+      messages.push(`
+        <div class="pastBox">
+          Completed: You had <b>${evaluated.category}</b><br>
+          on <b>${prettyDate(evaluated.date)}</b><br>
+          <i>Evaluation completed</i>
+        </div>
+      `);
+    }
+
+    /* ========= RENDER ========= */
+    if(messages.length){
+      pastBox.innerHTML = messages.join("");
+      pastBox.style.display = "block";
     }else{
-      upcomingBox.style.display = "none";
+      pastBox.style.display = "none";
     }
 
-    /* ===== COMPLETED ===== */
-    let hasCompleted = false;
-
-    /* Case 1: Past & evaluated */
-    if(past.status === "FOUND"){
-      hasCompleted = true;
-      pastBox.innerHTML = `
-        <div class="pastBox">
-          Completed: You had <b>${past.category}</b><br>
-          on <b>${prettyDate(past.date)}</b>
-        </div>`;
-    }
-    /* Case 2: Past but NOT evaluated */
-    else if(pastAlloc.status === "FOUND"){
-      hasCompleted = true;
-      pastBox.innerHTML = `
-        <div class="pastBox">
-          Completed: You had <b>${pastAlloc.category}</b><br>
-          on <b>${prettyDate(pastAlloc.date)}</b><br>
-          <i>Evaluation pending</i>
-        </div>`;
-    }
-
-    pastBox.style.display = hasCompleted ? "block" : "none";
-
-    perfBtn.disabled=false;
-    logoutBtn.disabled=false;
+    perfBtn.disabled = false;
+    logoutBtn.disabled = false;
   });
 }
 
