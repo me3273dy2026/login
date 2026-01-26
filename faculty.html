@@ -205,10 +205,14 @@ function resetAllocationUI(){
   saveSemBtn.style.display = "none";
   savePIBtn.style.display = "none";
 
-  gdOpenBtn.style.display = "block";   // 🔑 IMPORTANT
-  gdOpenBtn.disabled = true;
+  // 🔑 CRITICAL FIX: restore Allocate buttons visibility
+  gdOpenBtn.style.display  = "block";
+  semOpenBtn.style.display = "block";
+  piOpenBtn.style.display  = "block";
+
+  gdOpenBtn.disabled  = true;
   semOpenBtn.disabled = true;
-  piOpenBtn.disabled = true;
+  piOpenBtn.disabled  = true;
 }
 
 function updateButtons(){
