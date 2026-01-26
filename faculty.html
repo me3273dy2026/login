@@ -44,6 +44,10 @@ button:disabled{
 .btn-main{background:linear-gradient(135deg,#f39c12,#e67e22);color:#fff;}
 .btn-red{background:#c0392b;color:#fff;}
 .btn-close{background:#7f8c8d;color:#fff;}
+.btn-eval{
+  background:linear-gradient(135deg,#3498db,#1abc9c);
+  color:#fff;
+}
 .section{display:none;margin-top:24px;}
 label{font-weight:600;margin-top:12px;display:block;}
 select,input,textarea{
@@ -109,8 +113,8 @@ textarea{min-height:90px;}
 <h2>ME3273 · GD · Seminar · PI</h2>
 
 <div id="home">
+  <button class="btn-eval" onclick="openEvaluate()">Evaluate Students</button>
   <button class="btn-main" onclick="openAllocate()">Allocate Students</button>
-  <button class="btn-main" onclick="openEvaluate()">Evaluate Students</button>
   <button class="btn-red" onclick="logout()">Logout</button>
 </div>
 
