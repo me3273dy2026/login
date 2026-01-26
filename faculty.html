@@ -288,12 +288,113 @@ function loadGD(){
   })
   .finally(hideLoader);
 }
-function loadSeminar(){showLoader("Loading Seminar…");fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getSeminarStudentStatus",date:allocationState.date})}).then(r=>r.json()).then(res=>{semBox.style.display="block";saveSemBtn.style.display="block";semBox.innerHTML=res.students.map(s=>`<label><input type="checkbox" value="${s.roll}" ${s.checked?"checked":""}> ${s.roll} - ${s.name}</label>`).join("");}).finally(hideLoader);}
-function saveSeminar(){showLoader("Saving Seminar…");fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"saveIndividualAllocation",category:"SEMINAR",date:allocationState.date,rolls:[...semBox.querySelectorAll("input:checked")].map(i=>i.value).join(",")})}).then(()=>{sessionStage="PI";loadAllocationsByDate(allocationState.date);}).finally(hideLoader);}
+function loadSeminar(){
+  showLoader("Loading Seminar…");
 
-function loadPI(){showLoader("Loading PI…");fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getPIStudentStatus",date:allocationState.date})}).then(r=>r.json()).then(res=>{piBox.style.display="block";savePIBtn.style.display="block";piBox.innerHTML=res.students.map(s=>`<label><input type="checkbox" value="${s.roll}" ${s.checked?"checked":""}> ${s.roll} - ${s.name}</label>`).join("");}).finally(hideLoader);}
-function savePI(){showLoader("Saving PI…");fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"saveIndividualAllocation",category:"PI",date:allocationState.date,rolls:[...piBox.querySelectorAll("input:checked")].map(i=>i.value).join(",")})}).then(()=>{sessionStage="GD";loadAllocationsByDate(allocationState.date);}).finally(hideLoader);}
+  // 🔑 Hide Allocate/Update Seminar button
+  semOpenBtn.style.display = "none";
 
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getSeminarStudentStatus",
+      date: allocationState.date
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    semBox.style.display = "block";
+    saveSemBtn.style.display = "block";
+    saveSemBtn.disabled = false;
+
+    semBox.innerHTML = res.students.map(s=>`
+      <label>
+        <input type="checkbox" value="${s.roll}" ${s.checked?"checked":""}>
+        ${s.roll} - ${s.name}
+      </label>
+    `).join("");
+  })
+  .finally(hideLoader);
+}
+function saveSeminar(){
+  showLoader("Saving Seminar…");
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"saveIndividualAllocation",
+      category:"SEMINAR",
+      date: allocationState.date,
+      rolls: [...semBox.querySelectorAll("input:checked")]
+              .map(i=>i.value).join(",")
+    })
+  })
+  .then(()=>{
+    // 🔑 Advance workflow
+    sessionStage = "PI";
+
+    // 🔑 Hide Seminar UI
+    semBox.style.display = "none";
+    saveSemBtn.style.display = "none";
+
+    // Reload allocations & enable PI
+    loadAllocationsByDate(allocationState.date);
+  })
+  .finally(hideLoader);
+}
+function loadPI(){
+  showLoader("Loading PI…");
+
+  // 🔑 Hide Allocate/Update PI button
+  piOpenBtn.style.display = "none";
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getPIStudentStatus",
+      date: allocationState.date
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    piBox.style.display = "block";
+    savePIBtn.style.display = "block";
+    savePIBtn.disabled = false;
+
+    piBox.innerHTML = res.students.map(s=>`
+      <label>
+        <input type="checkbox" value="${s.roll}" ${s.checked?"checked":""}>
+        ${s.roll} - ${s.name}
+      </label>
+    `).join("");
+  })
+  .finally(hideLoader);
+}
+  function savePI(){
+  showLoader("Saving PI…");
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"saveIndividualAllocation",
+      category:"PI",
+      date: allocationState.date,
+      rolls: [...piBox.querySelectorAll("input:checked")]
+              .map(i=>i.value).join(",")
+    })
+  })
+  .then(()=>{
+    // 🔑 Reset workflow (cycle complete)
+    sessionStage = "GD";
+
+    // 🔑 Hide PI UI
+    piBox.style.display = "none";
+    savePIBtn.style.display = "none";
+
+    loadAllocationsByDate(allocationState.date);
+  })
+  .finally(hideLoader);
+}
 window.onload=resetAllocationUI;
 </script>
 </body>
