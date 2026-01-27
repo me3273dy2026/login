@@ -494,17 +494,20 @@ window.onload=resetAllocationUI;
   })
   .finally(hideLoader);
 }
-  function onStudentChange(){
+ function onStudentChange(){
   const roll = studentSelect.value;
+
   if(!roll){
     clearStudentUI();
     saveEvalBtn.disabled = true;
     return;
   }
-saveEvalBtn.disabled = false;
+
+  saveEvalBtn.disabled = false;
   showLoader("Loading student details…");
 
   Promise.all([
+    // Student basic details
     fetch(BACKEND,{
       method:"POST",
       body:new URLSearchParams({
@@ -513,25 +516,30 @@ saveEvalBtn.disabled = false;
       })
     }).then(r=>r.json()),
 
+    // GD group
     fetch(BACKEND,{
       method:"POST",
       body:new URLSearchParams({
         action:"getGDGroupByRoll",
         roll
       })
-    }).then(r=>r.json())
+    }).then(r=>r.json()),
+
+    // GD topic
+    loadGDTopicForStudent(roll),
+
+    // Latest evaluation
+    loadLatestPerformance()
   ])
   .then(([student, gd])=>{
-    /* --- Student info --- */
+    // Student info
     studentInfo.innerHTML = `
       <b>${student.roll}</b><br>
       ${student.name}
     `;
 
-    seminarInfo.innerHTML =
-      student.seminarTopic || "-";
+    seminarInfo.innerHTML = student.seminarTopic || "-";
 
-    /* --- GD group --- */
     if(gd.status==="OK"){
       gdGroupInfo.innerHTML = gd.group
         .map(m=>`${m.roll} - ${m.name}`)
@@ -539,17 +547,11 @@ saveEvalBtn.disabled = false;
     }else{
       gdGroupInfo.innerHTML = "-";
     }
-
-    /* --- GD topic (from allocations) --- */
-    loadGDTopicForStudent(roll);
-
-    /* --- Load latest evaluation for selected type --- */
-    loadLatestPerformance();
   })
   .finally(hideLoader);
 }
   function loadGDTopicForStudent(roll){
-  fetch(BACKEND,{
+  return fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({
       action:"getMyLatestPastAllocation",
@@ -569,11 +571,11 @@ saveEvalBtn.disabled = false;
   const roll = studentSelect.value;
   const type = typeSelect.value;
 
-  if(!roll) return;
+  if(!roll){
+    return Promise.resolve();
+  }
 
-  showLoader("Loading past evaluation…");
-
-  fetch(BACKEND,{
+  return fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({
       action:"getLatestPerformance",
@@ -592,8 +594,7 @@ saveEvalBtn.disabled = false;
       positives.value = "";
       improvements.value = "";
     }
-  })
-  .finally(hideLoader);
+  });
 }
   function saveEvaluation(){
   const roll = studentSelect.value;
