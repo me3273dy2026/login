@@ -179,7 +179,7 @@ textarea{min-height:90px;}
       <h3>Evaluation</h3>
 
       <label>Type</label>
-      <select id="typeSelect" onchange="loadLatestPerformance()">
+      <select id="typeSelect" onchange="onEvaluationTypeChange()">
         <option value="GD">GD</option>
         <option value="SEMINAR">Seminar</option>
         <option value="PI">PI</option>
@@ -640,6 +640,15 @@ window.onload=resetAllocationUI;
     alert("Evaluation saved successfully");
   })
   .finally(hideLoader);
+}
+  function onEvaluationTypeChange(){
+  const roll = studentSelect.value;
+  if(!roll) return;
+
+  showLoader("Loading evaluation…");
+
+  loadLatestPerformance()
+    .finally(hideLoader);
 }
   function clearStudentUI(){
   studentInfo.innerHTML = "";
