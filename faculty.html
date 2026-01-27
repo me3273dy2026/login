@@ -154,7 +154,7 @@ textarea{min-height:90px;}
   <h2>Evaluate Students</h2>
 
   <label>Select Student</label>
-  <select id="studentSelect" onchange="loadStudentDetails()">
+  <select id="studentSelect" onchange="onStudentChange()">
     <option value="">Loading…</option>
   </select>
 
@@ -194,7 +194,7 @@ textarea{min-height:90px;}
       <label>Improvements</label>
       <textarea id="improvements"></textarea>
 
-      <button class="btn-main" onclick="saveEvaluation()">Save Evaluation</button>
+      <button id="saveEvalBtn" class="btn-main" onclick="saveEvaluation()">Save Evaluation</button>
     </div>
   </div>
 
@@ -215,7 +215,8 @@ textarea{min-height:90px;}
 
 <script>
 const BACKEND="https://script.google.com/macros/s/AKfycbz5CjCcoNkS9_yeSVZEzUV42rIeqdX2AVwf8yaxu0AxCgzx_6Vkjcr5aqmXAJuaH3HJ/exec";
-  
+const saveEvalBtn = document.getElementById("saveEvalBtn");
+saveEvalBtn.disabled = true;   // disabled by default  
 let allocationState={date:"",gdDone:false,semDone:false,piDone:false};
 let sessionStage="GD";
 
@@ -492,6 +493,146 @@ window.onload=resetAllocationUI;
       ).join("");
   })
   .finally(hideLoader);
+}
+  function onStudentChange(){
+  const roll = studentSelect.value;
+  if(!roll){
+    clearStudentUI();
+    saveEvalBtn.disabled = true;
+    return;
+  }
+saveEvalBtn.disabled = false;
+  showLoader("Loading student details…");
+
+  Promise.all([
+    fetch(BACKEND,{
+      method:"POST",
+      body:new URLSearchParams({
+        action:"getStudentDetailsByRoll",
+        roll
+      })
+    }).then(r=>r.json()),
+
+    fetch(BACKEND,{
+      method:"POST",
+      body:new URLSearchParams({
+        action:"getGDGroupByRoll",
+        roll
+      })
+    }).then(r=>r.json())
+  ])
+  .then(([student, gd])=>{
+    /* --- Student info --- */
+    studentInfo.innerHTML = `
+      <b>${student.roll}</b><br>
+      ${student.name}
+    `;
+
+    seminarInfo.innerHTML =
+      student.seminarTopic || "-";
+
+    /* --- GD group --- */
+    if(gd.status==="OK"){
+      gdGroupInfo.innerHTML = gd.group
+        .map(m=>`${m.roll} - ${m.name}`)
+        .join("<br>");
+    }else{
+      gdGroupInfo.innerHTML = "-";
+    }
+
+    /* --- GD topic (from allocations) --- */
+    loadGDTopicForStudent(roll);
+
+    /* --- Load latest evaluation for selected type --- */
+    loadLatestPerformance();
+  })
+  .finally(hideLoader);
+}
+  function loadGDTopicForStudent(roll){
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getMyLatestPastAllocation",
+      token: roll
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    if(res.status==="FOUND" && res.category==="GD"){
+      gdTopicInfo.innerHTML = res.topic || "-";
+    }else{
+      gdTopicInfo.innerHTML = "-";
+    }
+  });
+}
+  function loadLatestPerformance(){
+  const roll = studentSelect.value;
+  const type = typeSelect.value;
+
+  if(!roll) return;
+
+  showLoader("Loading past evaluation…");
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getLatestPerformance",
+      roll,
+      type
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    if(res.status==="FOUND"){
+      marks.value = res.marks;
+      positives.value = res.positives;
+      improvements.value = res.improvements;
+    }else{
+      marks.value = "";
+      positives.value = "";
+      improvements.value = "";
+    }
+  })
+  .finally(hideLoader);
+}
+  function saveEvaluation(){
+  const roll = studentSelect.value;
+  const type = typeSelect.value;
+
+  if(!roll){
+    alert("Please select a student");
+    return;
+  }
+
+  showLoader("Saving evaluation…");
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"savePerformance",
+      roll,
+      type,
+      marks: marks.value,
+      positives: positives.value,
+      improvements: improvements.value
+    })
+  })
+  .then(r=>r.json())
+  .then(()=>{
+    alert("Evaluation saved successfully");
+  })
+  .finally(hideLoader);
+}
+  function clearStudentUI(){
+  studentInfo.innerHTML = "";
+  gdTopicInfo.innerHTML = "";
+  gdGroupInfo.innerHTML = "";
+  seminarInfo.innerHTML = "";
+
+  marks.value = "";
+  positives.value = "";
+  improvements.value = "";
+  saveEvalBtn.disabled = true;
 }
 </script>
 </body>
