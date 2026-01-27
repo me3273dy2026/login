@@ -619,6 +619,23 @@ saveEvalBtn.disabled = false;
   })
   .then(r=>r.json())
   .then(()=>{
+    // 🔑 CRITICAL FIX: reload latest saved evaluation
+    return fetch(BACKEND,{
+      method:"POST",
+      body:new URLSearchParams({
+        action:"getLatestPerformance",
+        roll,
+        type
+      })
+    });
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    if(res.status==="FOUND"){
+      marks.value = res.marks;
+      positives.value = res.positives;
+      improvements.value = res.improvements;
+    }
     alert("Evaluation saved successfully");
   })
   .finally(hideLoader);
