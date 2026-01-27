@@ -214,6 +214,9 @@ textarea{min-height:90px;}
 </div>
 
 <script>
+  if(sessionStorage.getItem("facultyLoggedIn") !== "YES"){
+  window.location.replace("faculty_login.html");
+}
 const BACKEND="https://script.google.com/macros/s/AKfycbz5CjCcoNkS9_yeSVZEzUV42rIeqdX2AVwf8yaxu0AxCgzx_6Vkjcr5aqmXAJuaH3HJ/exec";
 const saveEvalBtn = document.getElementById("saveEvalBtn");
 saveEvalBtn.disabled = true;   // disabled by default  
@@ -229,7 +232,10 @@ const studentSelect = document.getElementById("studentSelect");
 function openAllocate(){home.style.display="none";allocate.style.display="block";}
 function openEvaluate(){home.style.display="none";evaluate.style.display="block";loadStudentsForEvaluation();}
 function closeSection(){allocate.style.display="none";evaluate.style.display="none";home.style.display="block";}
-function logout(){location.href="login.html";}
+function logout(){
+  sessionStorage.removeItem("facultyLoggedIn");
+  window.location.replace("faculty_login.html");
+}
 
 /* Loader */
 function showLoader(t){loaderOverlay.style.display="flex";document.querySelector(".loader-text").innerText=t;}
