@@ -344,11 +344,24 @@ const gd = allocations.find(a =>
 );
 
 if(gd){
+  const topic   = getGDTopic(gd);
+  const members = getGDMembers(gd);
+
   html += `
     <div class="detailBlock">
       <div class="detailTitle">Group Discussion</div>
-      <div class="detailText"><b>Topic:</b> ${getGDTopic(gd)}</div>
-      <div class="detailText"><b>Group Members:</b><br>${getGDMembers(gd)}</div>
+
+      ${
+        topic !== "—"
+        ? `<div class="detailText"><b>Topic:</b> ${topic}</div>`
+        : `<div class="detailText"><i>Topic will be announced</i></div>`
+      }
+
+      ${
+        members !== "—"
+        ? `<div class="detailText"><b>Group Members:</b><br>${members}</div>`
+        : `<div class="detailText"><i>Group members will be announced</i></div>`
+      }
     </div>
   `;
 }
