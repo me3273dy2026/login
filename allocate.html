@@ -200,7 +200,12 @@ footer div{font-size:12px;color:#90a4ae}
     <h1 id="welcome"></h1>
     <h2>ME3273 · Seminar & Group Discussion</h2>
   </div>
-
+<div id="attendanceBox" class="infoBox" style="display:none;text-align:center">
+  Your current attendance percentage is:
+  <div id="attendanceValue"
+       style="font-size:22px;font-weight:800;margin-top:6px">
+  </div>
+</div>
   <div id="loadingBox" class="infoBox loading">
     Fetching your details…
   </div>
@@ -241,7 +246,7 @@ footer div{font-size:12px;color:#90a4ae}
 
 <script>
   
-const BACKEND="https://script.google.com/macros/s/AKfycbz5CjCcoNkS9_yeSVZEzUV42rIeqdX2AVwf8yaxu0AxCgzx_6Vkjcr5aqmXAJuaH3HJ/exec";
+const BACKEND="https://script.google.com/macros/s/AKfycbzBtYTuwosBeEryIjc1a1H2CKruqkqe1E8ZR2-RprfA5y80SxEv2898BThYWpdEdTFtTA/exec";
 const token = sessionStorage.getItem("authToken");
 const roll  = sessionStorage.getItem("studentRoll");
 const perfBtn   = document.getElementById("perfBtn");
@@ -314,9 +319,13 @@ function loadAll(){
 
     fetch(BACKEND,{method:"POST",
       body:new URLSearchParams({action:"getMyLatestPastAllocation",token})
-    }).then(r=>r.json())
+    }).then(r=>r.json()),
+
+    fetch(BACKEND,{method:"POST",
+  body:new URLSearchParams({action:"getMyAttendance",token})
+}).then(r=>r.json())
   ])
-  .then(([dash, upcoming, evaluated, pastAlloc])=>{
+  .then(([dash, upcoming, evaluated, pastAlloc, attendance])=>{
 
     loadingBox.style.display="none";
 
@@ -328,6 +337,17 @@ function loadAll(){
     }
 
     welcome.innerText = `Welcome ${dash.name} (${dash.roll})`;
+    const attendanceBox   = document.getElementById("attendanceBox");
+const attendanceValue = document.getElementById("attendanceValue");
+
+if(attendance.status === "OK"){
+  const p = Number(attendance.percent);
+
+  attendanceValue.innerText = `${p}%`;
+  attendanceValue.style.color = p >= 75 ? "#2e7d32" : "#c62828";
+
+  attendanceBox.style.display = "block";
+}
 
 /* If nothing upcoming, show last allocation details */
 
