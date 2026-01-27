@@ -100,9 +100,14 @@ function loginFaculty(){
   /* ===== HARD-CODED CREDENTIAL CHECK ===== */
   setTimeout(()=>{
     if(fid === "admin" && pwd === "me3273"){
-      window.location.href = "faculty.html?token=admin";
-      return;
-    }
+
+  // 🔐 Store login session
+  sessionStorage.setItem("facultyLoggedIn", "YES");
+
+  // ✅ Redirect WITHOUT token
+  window.location.href = "faculty.html";
+  return;
+}
 
     msg.style.color = "red";
     msg.innerText = "Invalid credentials.";
