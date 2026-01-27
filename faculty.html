@@ -175,7 +175,7 @@ let sessionStage="GD";
 
 /* Navigation */
 function openAllocate(){home.style.display="none";allocate.style.display="block";}
-function openEvaluate(){home.style.display="none";evaluate.style.display="block";}
+function openEvaluate(){home.style.display="none";evaluate.style.display="block";loadStudentsForEvaluation();}
 function closeSection(){allocate.style.display="none";evaluate.style.display="none";home.style.display="block";}
 function logout(){location.href="login.html";}
 
@@ -422,6 +422,26 @@ function loadPI(){
   .finally(hideLoader);
 }
 window.onload=resetAllocationUI;
+  function loadStudentsForEvaluation(){
+  showLoader("Loading students…");
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getStudentsForEvaluation"
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    studentSelect.innerHTML = `<option value="">Select Student</option>` +
+      res.students.map(s =>
+        `<option value="${s.roll}">
+          ${s.roll} - ${s.name}
+        </option>`
+      ).join("");
+  })
+  .finally(hideLoader);
+}
 </script>
 </body>
 </html>
