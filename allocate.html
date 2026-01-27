@@ -255,6 +255,15 @@ function isPast(iso){
 
   return d < today;   // STRICTLY before today
 }
+function isToday(iso){
+  const t = new Date();
+  t.setHours(0,0,0,0);
+
+  const d = new Date(iso);
+  d.setHours(0,0,0,0);
+
+  return d.getTime() === t.getTime();
+}
 
 loadAll();
 
@@ -297,18 +306,19 @@ function loadAll(){
 
     /* UPCOMING */
     if(
-      upcoming.status==="FOUND" &&
-      upcoming.date &&
-      !isPast(upcoming.date)
-    ){
-      messages.push(`
-        <div class="upcomingBox">
-          Upcoming: You have <b>${upcoming.category}</b><br>
-          on <b>${prettyDate(upcoming.date)}</b>
-          ${upcoming.topic ? `<br>Topic: ${upcoming.topic}` : ""}
-        </div>
-      `);
-    }
+  (upcoming.status==="FOUND" && !isPast(upcoming.date)) ||
+  (pastAlloc.status==="FOUND" && isToday(pastAlloc.date))
+){
+  const src = upcoming.status==="FOUND" ? upcoming : pastAlloc;
+
+  messages.push(`
+    <div class="upcomingBox">
+      Upcoming: You have <b>${src.category}</b><br>
+      on <b>${prettyDate(src.date)}</b>
+      ${src.topic ? `<br>Topic: ${src.topic}` : ""}
+    </div>
+  `);
+}
 
     /* COMPLETED BUT NOT EVALUATED */
    if(
@@ -343,8 +353,8 @@ function loadAll(){
     }
 
     if(messages.length){
-      pastBox.innerHTML = messages.join("");
-      pastBox.style.display = "block";
+      upcomingBox.innerHTML = messages.join("");
+upcomingBox.style.display = "block";
     }else{
   pastBox.innerHTML = `
     <div class="pastBox" style="background:#eef3f7;border:1px dashed #90a4ae;color:#455a64">
