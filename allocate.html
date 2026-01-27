@@ -290,7 +290,9 @@ function isToday(iso){
 
   return d.getTime() === t.getTime();
 }
-
+function normCategory(c){
+  return String(c || "").toLowerCase().replace(/\s+/g,"");
+}
 loadAll();
 
 function loadAll(){
@@ -327,42 +329,50 @@ function loadAll(){
     }
 
     welcome.innerText = `Welcome ${dash.name} (${dash.roll})`;
-/* ===== CURRENT DETAILS (SAFE VERSION) ===== */
+
+/* ===== CURRENT DETAILS (FINAL, CORRECT) ===== */
 const detailsBox = document.getElementById("currentDetails");
 let html = "";
 
-/* Decide which allocation to show */
-let active = null;
-if(upcoming.status === "FOUND") active = upcoming;
-else if(pastAlloc.status === "FOUND") active = pastAlloc;
+/* Collect all possible allocations */
+const allocations = [upcoming, pastAlloc];
 
 /* Group Discussion */
-if(active && active.category === "GD"){
+const gd = allocations.find(a =>
+  a?.status === "FOUND" &&
+  ["gd","groupdiscussion"].includes(normCategory(a.category))
+);
+
+if(gd){
   html += `
     <div class="detailBlock">
       <div class="detailTitle">Group Discussion</div>
-      <div class="detailText"><b>Topic:</b> ${getGDTopic(active)}</div>
-      <div class="detailText"><b>Group Members:</b><br>${getGDMembers(active)}</div>
+      <div class="detailText"><b>Topic:</b> ${getGDTopic(gd)}</div>
+      <div class="detailText"><b>Group Members:</b><br>${getGDMembers(gd)}</div>
     </div>
   `;
 }
 
 /* Seminar */
-if(active && active.category === "SEMINAR"){
+const sem = allocations.find(a =>
+  a?.status === "FOUND" &&
+  normCategory(a.category) === "seminar"
+);
+
+if(sem){
   html += `
     <div class="detailBlock">
       <div class="detailTitle">Seminar</div>
-      <div class="detailText"><b>Topic:</b> ${getSeminarTopic(active)}</div>
+      <div class="detailText"><b>Topic:</b> ${getSeminarTopic(sem)}</div>
     </div>
   `;
 }
 
-/* Render */
+/* Render once */
 if(html){
   detailsBox.innerHTML = html;
   detailsBox.style.display = "block";
 }
-
 /* If nothing upcoming, show last allocation details */
 
     let upcomingMsgs = [];
