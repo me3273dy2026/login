@@ -311,7 +311,10 @@ function loadAll(){
     }
 
     /* COMPLETED BUT NOT EVALUATED */
-    if(pastAlloc.status==="FOUND"){
+   if(
+  pastAlloc.status === "FOUND" &&
+  isPast(pastAlloc.date)   // 👈 THIS is the missing condition
+){
       let isEvaluatedSame =
         evaluated.status==="FOUND" &&
         evaluated.category === pastAlloc.category &&
