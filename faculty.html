@@ -168,7 +168,7 @@ textarea{min-height:90px;}
 </div>
 
 <script>
-const BACKEND="https://script.google.com/macros/s/AKfycbzYTuR7uS0eBfOgJypAwoiOf5hSWvJqbz1JZFnAgAsfdU1L22piPOuLwYbhUR4kUKcyTA/exec";
+const BACKEND="https://script.google.com/macros/s/AKfycbz5CjCcoNkS9_yeSVZEzUV42rIeqdX2AVwf8yaxu0AxCgzx_6Vkjcr5aqmXAJuaH3HJ/exec";
   
 let allocationState={date:"",gdDone:false,semDone:false,piDone:false};
 let sessionStage="GD";
@@ -226,8 +226,30 @@ function loadAllocationsByDate(d){
   fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getAllocationsByDate",date:d})})
   .then(r=>r.json())
   .then(res=>{
-    gdExisting.innerHTML=res.allocations.filter(a=>a.category==="GD").map(a=>a.roll+" - "+a.name).join("<br>")||"-";
-    semExisting.innerHTML=res.allocations.filter(a=>a.category==="SEMINAR").map(a=>a.roll+" - "+a.name).join("<br>")||"-";
+    const gd = res.allocations.filter(a=>a.category==="GD");
+
+if(gd.length){
+  const groups = {};
+  gd.forEach(a=>{
+    if(!groups[a.topic]) groups[a.topic] = [];
+    groups[a.topic].push(a.roll+" - "+a.name);
+  });
+
+  gdExisting.innerHTML = Object.keys(groups)
+    .map(t =>
+      `<b>Topic: ${t}</b><br>${groups[t].join("<br>")}`
+    )
+    .join("<br><br>");
+}else{
+  gdExisting.innerHTML = "-";
+}
+   semExisting.innerHTML =
+  res.allocations
+    .filter(a=>a.category==="SEMINAR")
+    .map(a =>
+      `${a.roll} - ${a.name} (${a.seminarTopic})`
+    )
+    .join("<br>") || "-";
     piExisting.innerHTML=res.allocations.filter(a=>a.category==="PI").map(a=>a.roll+" - "+a.name).join("<br>")||"-";
     updateButtons();
   })
