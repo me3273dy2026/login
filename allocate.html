@@ -241,6 +241,7 @@ footer div{font-size:12px;color:#90a4ae}
 </div>
 
 <script>
+  
 const BACKEND="https://script.google.com/macros/s/AKfycbz5CjCcoNkS9_yeSVZEzUV42rIeqdX2AVwf8yaxu0AxCgzx_6Vkjcr5aqmXAJuaH3HJ/exec";
 const token = sessionStorage.getItem("authToken");
 const roll  = sessionStorage.getItem("studentRoll");
@@ -253,6 +254,17 @@ if(!token || !roll){
   sessionStorage.clear();
   alert("Session expired. Please login again.");
   window.location.replace("index.html");
+}
+  function getGDTopic(obj){
+  return obj.topic || obj.gdTopic || obj.GDTopic || "—";
+}
+
+function getGDMembers(obj){
+  return obj.members || obj.gdMembers || obj.groupMembers || obj.membersList || "—";
+}
+
+function getSeminarTopic(obj){
+  return obj.topic || obj.seminarTopic || obj.SeminarTopic || "—";
 }
 function prettyDate(iso){
   const d=new Date(iso);
@@ -323,8 +335,23 @@ if(upcoming.status==="FOUND" && upcoming.category==="GD"){
   html += `
     <div class="detailBlock">
       <div class="detailTitle">Group Discussion</div>
-      <div class="detailText"><b>Topic:</b> ${upcoming.topic || "—"}</div>
-      <div class="detailText"><b>Group Members:</b><br>${upcoming.members || "—"}</div>
+      if(upcoming.status==="FOUND" && upcoming.category==="GD"){
+  html += `
+    <div class="detailBlock">
+      <div class="detailTitle">Group Discussion</div>
+      <div class="detailText"><b>Topic:</b> ${getGDTopic(upcoming)}</div>
+      <div class="detailText"><b>Group Members:</b><br>${getGDMembers(upcoming)}</div>
+    </div>`;
+}
+
+/* Seminar details */
+if(upcoming.status==="FOUND" && upcoming.category==="SEMINAR"){
+  html += `
+    <div class="detailBlock">
+      <div class="detailTitle">Seminar</div>
+      <div class="detailText"><b>Topic:</b> ${getSeminarTopic(upcoming)}</div>
+    </div>`;
+}
     </div>`;
 }
 
