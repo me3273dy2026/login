@@ -327,66 +327,44 @@ function loadAll(){
     }
 
     welcome.innerText = `Welcome ${dash.name} (${dash.roll})`;
-  const detailsBox = document.getElementById("currentDetails");
+/* ===== CURRENT DETAILS (SAFE VERSION) ===== */
+const detailsBox = document.getElementById("currentDetails");
 let html = "";
 
-/* GD details */
-if(upcoming.status==="FOUND" && upcoming.category==="GD"){
+/* Decide which allocation to show */
+let active = null;
+if(upcoming.status === "FOUND") active = upcoming;
+else if(pastAlloc.status === "FOUND") active = pastAlloc;
+
+/* Group Discussion */
+if(active && active.category === "GD"){
   html += `
     <div class="detailBlock">
       <div class="detailTitle">Group Discussion</div>
-      if(upcoming.status==="FOUND" && upcoming.category==="GD"){
-  html += `
-    <div class="detailBlock">
-      <div class="detailTitle">Group Discussion</div>
-      <div class="detailText"><b>Topic:</b> ${getGDTopic(upcoming)}</div>
-      <div class="detailText"><b>Group Members:</b><br>${getGDMembers(upcoming)}</div>
-    </div>`;
+      <div class="detailText"><b>Topic:</b> ${getGDTopic(active)}</div>
+      <div class="detailText"><b>Group Members:</b><br>${getGDMembers(active)}</div>
+    </div>
+  `;
 }
 
-/* Seminar details */
-if(upcoming.status==="FOUND" && upcoming.category==="SEMINAR"){
+/* Seminar */
+if(active && active.category === "SEMINAR"){
   html += `
     <div class="detailBlock">
       <div class="detailTitle">Seminar</div>
-      <div class="detailText"><b>Topic:</b> ${getSeminarTopic(upcoming)}</div>
-    </div>`;
-}
-    </div>`;
-}
-
-/* Seminar details */
-if(upcoming.status==="FOUND" && upcoming.category==="SEMINAR"){
-  html += `
-    <div class="detailBlock">
-      <div class="detailTitle">Seminar</div>
-      <div class="detailText"><b>Topic:</b> ${upcoming.topic || "—"}</div>
-    </div>`;
+      <div class="detailText"><b>Topic:</b> ${getSeminarTopic(active)}</div>
+    </div>
+  `;
 }
 
-/* If nothing upcoming, show last allocation details */
-if(!html && pastAlloc.status==="FOUND"){
-  if(pastAlloc.category==="GD"){
-    html += `
-      <div class="detailBlock">
-        <div class="detailTitle">Group Discussion</div>
-        <div class="detailText"><b>Topic:</b> ${pastAlloc.topic || "—"}</div>
-        <div class="detailText"><b>Group Members:</b><br>${pastAlloc.members || "—"}</div>
-      </div>`;
-  }
-  if(pastAlloc.category==="SEMINAR"){
-    html += `
-      <div class="detailBlock">
-        <div class="detailTitle">Seminar</div>
-        <div class="detailText"><b>Topic:</b> ${pastAlloc.topic || "—"}</div>
-      </div>`;
-  }
-}
-
+/* Render */
 if(html){
   detailsBox.innerHTML = html;
   detailsBox.style.display = "block";
 }
+
+/* If nothing upcoming, show last allocation details */
+
     let upcomingMsgs = [];
 let pendingMsgs  = [];
 let doneMsgs     = [];
