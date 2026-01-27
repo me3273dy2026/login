@@ -479,7 +479,7 @@ window.onload=resetAllocationUI;
   fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({
-      action:"getStudentsForEvaluation"
+      action:"getAllStudents"
     })
   })
   .then(r=>r.json())
