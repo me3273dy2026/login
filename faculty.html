@@ -152,7 +152,53 @@ textarea{min-height:90px;}
 
 <div id="evaluate" class="section">
   <h2>Evaluate Students</h2>
-  <select id="studentSelect" onchange="loadStudentDetails()"></select>
+
+  <label>Select Student</label>
+  <select id="studentSelect" onchange="loadStudentDetails()">
+    <option value="">Loading…</option>
+  </select>
+
+  <div class="row">
+    <!-- LEFT COLUMN -->
+    <div class="box">
+      <h3>Student Details</h3>
+      <div id="studentInfo" class="sub"></div>
+
+      <h3>GD Topic</h3>
+      <div id="gdTopicInfo" class="sub"></div>
+
+      <h3>GD Group Members</h3>
+      <div id="gdGroupInfo" class="sub"></div>
+
+      <h3>Seminar Topic</h3>
+      <div id="seminarInfo" class="sub"></div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="box">
+      <h3>Evaluation</h3>
+
+      <label>Type</label>
+      <select id="typeSelect" onchange="loadLatestPerformance()">
+        <option value="GD">GD</option>
+        <option value="SEMINAR">Seminar</option>
+        <option value="PI">PI</option>
+      </select>
+
+      <label>Marks</label>
+      <input type="number" id="marks" min="0" max="100">
+
+      <label>Positives</label>
+      <textarea id="positives"></textarea>
+
+      <label>Improvements</label>
+      <textarea id="improvements"></textarea>
+
+      <button class="btn-main" onclick="saveEvaluation()">Save Evaluation</button>
+    </div>
+  </div>
+
+  <button class="btn-close" onclick="closeSection()">Close</button>
 </div>
 
 <div id="loaderOverlay">
