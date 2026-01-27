@@ -207,7 +207,6 @@ footer div{font-size:12px;color:#90a4ae}
 
   <div id="upcomingBox" style="display:none"></div>
   <div id="pastBox" style="display:none"></div>
-  <div id="currentDetails" class="infoBox" style="display:none"></div>
   <button id="perfBtn" class="btn-primary" disabled onclick="togglePanel()">
     View Performance Evaluation
   </button>
@@ -330,62 +329,6 @@ function loadAll(){
 
     welcome.innerText = `Welcome ${dash.name} (${dash.roll})`;
 
-/* ===== CURRENT DETAILS (FINAL, CORRECT) ===== */
-const detailsBox = document.getElementById("currentDetails");
-let html = "";
-
-/* Collect all possible allocations */
-const allocations = [upcoming, pastAlloc];
-
-/* Group Discussion */
-const gd = allocations.find(a =>
-  a?.status === "FOUND" &&
-  ["gd","groupdiscussion"].includes(normCategory(a.category))
-);
-
-if(gd){
-  const topic   = getGDTopic(gd);
-  const members = getGDMembers(gd);
-
-  html += `
-    <div class="detailBlock">
-      <div class="detailTitle">Group Discussion</div>
-
-      ${
-        topic !== "—"
-        ? `<div class="detailText"><b>Topic:</b> ${topic}</div>`
-        : `<div class="detailText"><i>Topic will be announced</i></div>`
-      }
-
-      ${
-        members !== "—"
-        ? `<div class="detailText"><b>Group Members:</b><br>${members}</div>`
-        : `<div class="detailText"><i>Group members will be announced</i></div>`
-      }
-    </div>
-  `;
-}
-
-/* Seminar */
-const sem = allocations.find(a =>
-  a?.status === "FOUND" &&
-  normCategory(a.category) === "seminar"
-);
-
-if(sem){
-  html += `
-    <div class="detailBlock">
-      <div class="detailTitle">Seminar</div>
-      <div class="detailText"><b>Topic:</b> ${getSeminarTopic(sem)}</div>
-    </div>
-  `;
-}
-
-/* Render once */
-if(html){
-  detailsBox.innerHTML = html;
-  detailsBox.style.display = "block";
-}
 /* If nothing upcoming, show last allocation details */
 
     let upcomingMsgs = [];
