@@ -302,16 +302,19 @@ function loadAll(){
 
     welcome.innerText = `Welcome ${dash.name} (${dash.roll})`;
 
-    let messages = [];
+    let upcomingMsgs = [];
+let pendingMsgs  = [];
+let doneMsgs     = [];
+    
 
     /* UPCOMING */
-    if(
+  if(
   (upcoming.status==="FOUND" && !isPast(upcoming.date)) ||
   (pastAlloc.status==="FOUND" && isToday(pastAlloc.date))
 ){
   const src = upcoming.status==="FOUND" ? upcoming : pastAlloc;
 
-  messages.push(`
+  upcomingMsgs.push(`
     <div class="upcomingBox">
       Upcoming: You have <b>${src.category}</b><br>
       on <b>${prettyDate(src.date)}</b>
@@ -322,46 +325,52 @@ function loadAll(){
 
     /* COMPLETED BUT NOT EVALUATED */
    if(
-  pastAlloc.status === "FOUND" &&
-  isPast(pastAlloc.date)   // 👈 THIS is the missing condition
+  pastAlloc.status==="FOUND" &&
+  isPast(pastAlloc.date)
 ){
-      let isEvaluatedSame =
-        evaluated.status==="FOUND" &&
-        evaluated.category === pastAlloc.category &&
-        evaluated.date === pastAlloc.date;
+  const isEvaluatedSame =
+    evaluated.status==="FOUND" &&
+    evaluated.category === pastAlloc.category &&
+    evaluated.date === pastAlloc.date;
 
-      if(!isEvaluatedSame){
-        messages.push(`
-          <div class="pastBox" style="background:#fffde7;border:1px solid #fbc02d;color:#795548">
-            Completed: You had <b>${pastAlloc.category}</b><br>
-            on <b>${prettyDate(pastAlloc.date)}</b><br>
-            <i>Evaluation under process</i>
-          </div>
-        `);
-      }
-    }
+  if(!isEvaluatedSame){
+    pendingMsgs.push(`
+      <div class="pastBox" style="background:#fffde7;border:1px solid #fbc02d;color:#795548">
+        Completed: You had <b>${pastAlloc.category}</b><br>
+        on <b>${prettyDate(pastAlloc.date)}</b><br>
+        <i>Evaluation under process</i>
+      </div>
+    `);
+  }
+}
 
     /* COMPLETED & EVALUATED */
-    if(evaluated.status==="FOUND"){
-      messages.push(`
-        <div class="pastBox">
-          Completed: You had <b>${evaluated.category}</b><br>
-          on <b>${prettyDate(evaluated.date)}</b><br>
-          <i>Evaluation completed</i>
-        </div>
-      `);
-    }
+   if(evaluated.status==="FOUND"){
+  doneMsgs.push(`
+    <div class="pastBox">
+      Completed: You had <b>${evaluated.category}</b><br>
+      on <b>${prettyDate(evaluated.date)}</b><br>
+      <i>Evaluation completed</i>
+    </div>
+  `);
+}
 
-    if(messages.length){
-      upcomingBox.innerHTML = messages.join("");
-upcomingBox.style.display = "block";
-    }else{
-  pastBox.innerHTML = `
+    const allMessages = [
+  ...upcomingMsgs,
+  ...pendingMsgs,
+  ...doneMsgs
+];
+
+if(allMessages.length){
+  upcomingBox.innerHTML = allMessages.join("");
+  upcomingBox.style.display = "block";
+}else{
+  upcomingBox.innerHTML = `
     <div class="pastBox" style="background:#eef3f7;border:1px dashed #90a4ae;color:#455a64">
       You don’t have any allocation for the coming week.
     </div>
   `;
-  pastBox.style.display = "block";
+  upcomingBox.style.display = "block";
 }
 
     perfBtn.disabled = false;
