@@ -219,6 +219,11 @@ const BACKEND="https://script.google.com/macros/s/AKfycbz5CjCcoNkS9_yeSVZEzUV42r
 let allocationState={date:"",gdDone:false,semDone:false,piDone:false};
 let sessionStage="GD";
 
+const home     = document.getElementById("home");
+const allocate = document.getElementById("allocate");
+const evaluate = document.getElementById("evaluate");
+
+const studentSelect = document.getElementById("studentSelect");
 /* Navigation */
 function openAllocate(){home.style.display="none";allocate.style.display="block";}
 function openEvaluate(){home.style.display="none";evaluate.style.display="block";loadStudentsForEvaluation();}
