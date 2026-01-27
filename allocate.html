@@ -88,7 +88,21 @@ button{
   font-weight:600;
   cursor:pointer;
 }
-
+.detailBlock{
+  background:#eef3f7;
+  border-radius:12px;
+  padding:12px;
+  margin-top:10px;
+}
+.detailTitle{
+  font-weight:700;
+  color:#203a43;
+  margin-bottom:6px;
+}
+.detailText{
+  font-size:14px;
+  color:#444;
+}
 .btn-primary{
   background:linear-gradient(135deg,#2c5364,#203a43);
   color:#fff;
@@ -193,7 +207,7 @@ footer div{font-size:12px;color:#90a4ae}
 
   <div id="upcomingBox" style="display:none"></div>
   <div id="pastBox" style="display:none"></div>
-
+  <div id="currentDetails" class="infoBox" style="display:none"></div>
   <button id="perfBtn" class="btn-primary" disabled onclick="togglePanel()">
     View Performance Evaluation
   </button>
@@ -301,7 +315,51 @@ function loadAll(){
     }
 
     welcome.innerText = `Welcome ${dash.name} (${dash.roll})`;
+  const detailsBox = document.getElementById("currentDetails");
+let html = "";
 
+/* GD details */
+if(upcoming.status==="FOUND" && upcoming.category==="GD"){
+  html += `
+    <div class="detailBlock">
+      <div class="detailTitle">Group Discussion</div>
+      <div class="detailText"><b>Topic:</b> ${upcoming.topic || "—"}</div>
+      <div class="detailText"><b>Group Members:</b><br>${upcoming.members || "—"}</div>
+    </div>`;
+}
+
+/* Seminar details */
+if(upcoming.status==="FOUND" && upcoming.category==="SEMINAR"){
+  html += `
+    <div class="detailBlock">
+      <div class="detailTitle">Seminar</div>
+      <div class="detailText"><b>Topic:</b> ${upcoming.topic || "—"}</div>
+    </div>`;
+}
+
+/* If nothing upcoming, show last allocation details */
+if(!html && pastAlloc.status==="FOUND"){
+  if(pastAlloc.category==="GD"){
+    html += `
+      <div class="detailBlock">
+        <div class="detailTitle">Group Discussion</div>
+        <div class="detailText"><b>Topic:</b> ${pastAlloc.topic || "—"}</div>
+        <div class="detailText"><b>Group Members:</b><br>${pastAlloc.members || "—"}</div>
+      </div>`;
+  }
+  if(pastAlloc.category==="SEMINAR"){
+    html += `
+      <div class="detailBlock">
+        <div class="detailTitle">Seminar</div>
+        <div class="detailText"><b>Topic:</b> ${pastAlloc.topic || "—"}</div>
+      </div>`;
+  }
+}
+
+if(html){
+  detailsBox.innerHTML = html;
+  detailsBox.style.display = "block";
+}
     let upcomingMsgs = [];
 let pendingMsgs  = [];
 let doneMsgs     = [];
