@@ -500,7 +500,6 @@ function toggleAttendanceDetails(){
   panel.style.display =
     panel.style.display === "none" ? "block" : "none";
 
-  // Load only once
   if(panel.dataset.loaded) return;
   panel.dataset.loaded = "yes";
 
@@ -511,25 +510,23 @@ function toggleAttendanceDetails(){
       token
     })
   })
- .then(r => r.text())
-.then(t => {
-  console.log("Attendance details raw response:", t);
-  const res = JSON.parse(t);
+  .then(r => r.json())
+  .then(res => {
 
-  if(res.status !== "OK"){
-    document.getElementById("attendedDates").innerHTML = "No data";
-    document.getElementById("absentDates").innerHTML   = "No data";
-    return;
-  }
+    if(res.status !== "OK"){
+      document.getElementById("attendedDates").innerHTML = "No data";
+      document.getElementById("absentDates").innerHTML   = "No data";
+      return;
+    }
 
-  renderDates("attendedDates", res.attended, "date-green");
-  renderDates("absentDates", res.absent, "date-red");
-})
-.catch(err=>{
-  console.error("Attendance details error:", err);
-  document.getElementById("attendedDates").innerHTML="Failed to load";
-  document.getElementById("absentDates").innerHTML="Failed to load";
-});
+    renderDates("attendedDates", res.attended, "date-green");
+    renderDates("absentDates",   res.absent,   "date-red");
+  })
+  .catch(err=>{
+    console.error("Attendance details error:", err);
+    document.getElementById("attendedDates").innerHTML="Failed to load";
+    document.getElementById("absentDates").innerHTML="Failed to load";
+  });
 }
 
 function renderDates(id, list, cls){
