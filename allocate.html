@@ -213,6 +213,20 @@ footer{
   font-weight:600;
 }
 footer div{font-size:12px;color:#90a4ae}
+  #actionButtons{
+  animation: fadeIn .35s ease;
+}
+
+@keyframes fadeIn{
+  from{
+    opacity:0;
+    transform:translateY(6px);
+  }
+  to{
+    opacity:1;
+    transform:none;
+  }
+}
 </style>
 </head>
 
@@ -235,6 +249,7 @@ footer div{font-size:12px;color:#90a4ae}
 
   <div id="upcomingBox" style="display:none"></div>
   <div id="pastBox" style="display:none"></div>
+  <div id="actionButtons" style="display:none">
   <button id="perfBtn" class="btn-primary" disabled onclick="togglePanel()">
     View Performance Evaluation
   </button>
@@ -252,7 +267,7 @@ footer div{font-size:12px;color:#90a4ae}
       <div class="section-body" id="PI"></div>
     </div>
   </div>
-  <button class="btn-primary" onclick="toggleAttendanceDetails()">
+  <button class="btn-attendance" onclick="toggleAttendanceDetails()">
   View Attendance Details
 </button>
   <div id="attendancePanel" style="display:none;margin-top:14px">
@@ -270,7 +285,7 @@ footer div{font-size:12px;color:#90a4ae}
 </div>
   <button id="logoutBtn" class="btn-logout" disabled onclick="logout()">Logout</button>
 </div>
-
+</div>
 <footer>
   Developed by Dr. Rajesh Akula
   <div>© 2026 · IIEST Shibpur</div>
@@ -458,13 +473,14 @@ if(allMessages.length){
   `;
   upcomingBox.style.display = "block";
 }
-
+document.getElementById("actionButtons").style.display = "block";
     perfBtn.disabled = false;
     logoutBtn.disabled = false;
   })
   .catch(err=>{
     console.error(err);
     loadingBox.innerText = "Failed to load data. Please refresh.";
+    document.getElementById("actionButtons").style.display = "none";
   });
 }
 
