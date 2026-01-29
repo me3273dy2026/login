@@ -270,6 +270,14 @@ footer div{font-size:12px;color:#90a4ae}
   <button class="btn-attendance" onclick="toggleAttendanceDetails()">
   View Attendance Details
 </button>
+    <div id="attendanceLoadingMsg"
+     style="display:none;
+            margin-top:8px;
+            color:#c62828;
+            font-weight:600;
+            text-align:center;">
+  Loading… please wait
+</div>
   <div id="attendancePanel" style="display:none;margin-top:14px">
 
   <div class="detailBlock" style="background:#e8f5e9">
@@ -519,11 +527,16 @@ function toggleSection(type){
 }
 function toggleAttendanceDetails(){
   const panel = document.getElementById("attendancePanel");
+  const msg   = document.getElementById("attendanceLoadingMsg");
+
   panel.style.display =
     panel.style.display === "none" ? "block" : "none";
 
+  // If already loaded once, don’t fetch again
   if(panel.dataset.loaded) return;
+
   panel.dataset.loaded = "yes";
+  msg.style.display = "block";   // 🔴 SHOW loading message
 
   fetch(BACKEND,{
     method:"POST",
@@ -534,6 +547,8 @@ function toggleAttendanceDetails(){
   })
   .then(r => r.json())
   .then(res => {
+
+    msg.style.display = "none";  // ✅ HIDE after success
 
     if(res.status !== "OK"){
       document.getElementById("attendedDates").innerHTML = "No data";
@@ -546,6 +561,7 @@ function toggleAttendanceDetails(){
   })
   .catch(err=>{
     console.error("Attendance details error:", err);
+    msg.style.display = "none";  // ✅ HIDE on error
     document.getElementById("attendedDates").innerHTML="Failed to load";
     document.getElementById("absentDates").innerHTML="Failed to load";
   });
