@@ -321,15 +321,22 @@ footer div{font-size:12px;color:#90a4ae}
 
 <script>
   
-const BACKEND="https://script.google.com/macros/s/AKfycbyjWx7Ulbebs0TOO_-5W6vnUdif7__lyRCN6iNg___j-q6wkrjM8apjOQuG7A7cwdz-TA/exec";
-const token = sessionStorage.getItem("authToken");
-const roll  = sessionStorage.getItem("studentRoll");
+const BACKEND="https://script.google.com/macros/s/AKfycbxm5T6r5OdJ-QVg2C_9sxeNbcP4zdiIh5UBEQW9k9SPpg11DRG8SCJEM67xgecdTDvUEw/exec";
+//const token = sessionStorage.getItem("authToken");
+//const roll  = sessionStorage.getItem("studentRoll");
 const perfBtn   = document.getElementById("perfBtn");
 const logoutBtn = document.getElementById("logoutBtn");
 const welcome   = document.getElementById("welcome");
 const loadingBox = document.getElementById("loadingBox");
 const perfPanel = document.getElementById("perfPanel");
-if(!token || !roll){
+/*if(!token || !roll){
+  sessionStorage.clear();
+  alert("Session expired. Please login again.");
+  window.location.replace("index.html");
+}*/
+  const token = sessionStorage.getItem("token");
+
+if(!token){
   sessionStorage.clear();
   alert("Session expired. Please login again.");
   window.location.replace("index.html");
