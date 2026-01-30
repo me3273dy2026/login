@@ -123,7 +123,7 @@ button:disabled{background:#999;cursor:not-allowed;}
 
 <script>
 const BACKEND_URL =
-"https://script.google.com/macros/s/AKfycbzGLwJHb2twnKcJn1wrIcDDQD5YrGtnF6nSrQyT2rjuKyytaP3Y5_2ZhnF7lm_mBmT8MA/exec";  
+"https://script.google.com/macros/s/AKfycbxm5T6r5OdJ-QVg2C_9sxeNbcP4zdiIh5UBEQW9k9SPpg11DRG8SCJEM67xgecdTDvUEw/exec";  
 function login(){
   const roll=document.getElementById("roll").value.trim().toUpperCase();
   const dob=document.getElementById("dob").value;
@@ -149,13 +149,11 @@ function login(){
   })
   .then(r=>r.json())
   .then(res=>{
-    if(res.status==="OK" && res.token){
-      sessionStorage.setItem("authToken", res.token);
-      sessionStorage.setItem("studentRoll", roll);
-      window.location.href="allocate.html";
-      return;
-    }
-
+    if(res.status === "OK" && res.token){
+  sessionStorage.setItem("token", res.token);   // 🔑 CORRECT KEY
+  window.location.href = "student_dashboard.html"; // 🔑 DASHBOARD
+  return;
+}
     msg.style.color="red";
     msg.innerText =
       res.status==="ALREADY_LOGGED_IN"
