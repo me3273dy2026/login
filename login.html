@@ -151,7 +151,7 @@ function login(){
   .then(res=>{
     if(res.status === "OK" && res.token){
   sessionStorage.setItem("token", res.token);   // 🔑 CORRECT KEY
-  window.location.href = "student_dashboard.html"; // 🔑 DASHBOARD
+  window.location.href = "allocate.html"; // 🔑 DASHBOARD
   return;
 }
     msg.style.color="red";
