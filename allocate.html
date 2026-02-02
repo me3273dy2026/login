@@ -321,7 +321,7 @@ footer div{font-size:12px;color:#90a4ae}
 
 <script>
   
-const BACKEND="https://script.google.com/macros/s/AKfycbyD77sKlqIbzx28FubvvsoQml67dqYC7jkFREj4CuwmFK-G1f45b3V6hx0X4cAj0rNX3w/exec";
+const BACKEND="https://script.google.com/macros/s/AKfycbyu1l1xWffXE1QrLlCN7dn0tHvHydo2SRoz7vrvUHrtRyHXrKMaeXSPEZS2p8nj8dtf/exec";
 //const token = sessionStorage.getItem("authToken");
 //const roll  = sessionStorage.getItem("studentRoll");
 const perfBtn   = document.getElementById("perfBtn");
@@ -474,28 +474,48 @@ let hasUpcoming = false;
 }
 
     /* COMPLETED BUT NOT EVALUATED */
-   if(
-  pastAlloc.status==="FOUND" &&
+ if(
+  pastAlloc.status === "FOUND" &&
   isPast(pastAlloc.date)
 ){
-  const isEvaluatedSame =
-    evaluated.status==="FOUND" &&
-    evaluated.category === pastAlloc.category &&
-    evaluated.date === pastAlloc.date;
 
-  if(!isEvaluatedSame){
+  // ❌ ABSENT CASE
+  if(pastAlloc.wasPresent === false){
     pendingMsgs.push(`
-      <div class="pastBox" style="background:#fffde7;border:1px solid #fbc02d;color:#795548">
-        Completed: You had <b>${pastAlloc.category}</b><br>
+      <div class="pastBox"
+           style="background:#fdecea;border:1px solid #e53935;color:#b71c1c">
+        You were supposed to have <b>${pastAlloc.category}</b><br>
         on <b>${prettyDate(pastAlloc.date)}</b><br>
-        <i>Evaluation under process</i>
+        <i>But you were absent</i>
       </div>
     `);
+  }
+
+  // ✅ PRESENT BUT NOT YET EVALUATED
+  else{
+    const isEvaluatedSame =
+      evaluated.status==="FOUND" &&
+      evaluated.category === pastAlloc.category &&
+      evaluated.date === pastAlloc.date;
+
+    if(!isEvaluatedSame){
+      pendingMsgs.push(`
+        <div class="pastBox"
+             style="background:#fffde7;border:1px solid #fbc02d;color:#795548">
+          Completed: You had <b>${pastAlloc.category}</b><br>
+          on <b>${prettyDate(pastAlloc.date)}</b><br>
+          <i>Evaluation under process</i>
+        </div>
+      `);
+    }
   }
 }
 
     /* COMPLETED & EVALUATED */
-   if(evaluated.status==="FOUND"){
+   if(
+  evaluated.status==="FOUND" &&
+  pastAlloc.wasPresent !== false
+){
   doneMsgs.push(`
     <div class="pastBox">
       Completed: You had <b>${evaluated.category}</b><br>
@@ -504,7 +524,6 @@ let hasUpcoming = false;
     </div>
   `);
 }
-
     const allMessages = [
   ...upcomingMsgs,
   ...pendingMsgs,
