@@ -454,13 +454,15 @@ if(attendance.status === "OK"){
 let pendingMsgs  = [];
 let doneMsgs     = [];
     
-
+let hasUpcoming = false;
     /* UPCOMING */
   if(
   (upcoming.status==="FOUND" && !isPast(upcoming.date)) ||
   (pastAlloc.status==="FOUND" && isToday(pastAlloc.date))
 ){
   const src = upcoming.status==="FOUND" ? upcoming : pastAlloc;
+
+  hasUpcoming = true;   // ✅ IMPORTANT
 
   upcomingMsgs.push(`
     <div class="upcomingBox">
@@ -509,17 +511,21 @@ let doneMsgs     = [];
   ...doneMsgs
 ];
 
-if(allMessages.length){
-  upcomingBox.innerHTML = allMessages.join("");
-  upcomingBox.style.display = "block";
-}else{
-  upcomingBox.innerHTML = `
+if(!hasUpcoming){
+  upcomingMsgs.unshift(`
     <div class="pastBox" style="background:#eef3f7;border:1px dashed #90a4ae;color:#455a64">
       You don’t have any allocation for the coming week.
     </div>
-  `;
-  upcomingBox.style.display = "block";
+  `);
 }
+
+upcomingBox.innerHTML = [
+  ...upcomingMsgs,
+  ...pendingMsgs,
+  ...doneMsgs
+].join("");
+
+upcomingBox.style.display = "block";
 document.getElementById("actionButtons").style.display = "block";
     perfBtn.disabled = false;
     logoutBtn.disabled = false;
