@@ -368,13 +368,12 @@ function isPast(iso){
   return d < today;   // STRICTLY before today
 }
 function isToday(iso){
-  const t = new Date();
-  t.setHours(0,0,0,0);
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm   = String(today.getMonth()+1).padStart(2,"0");
+  const dd   = String(today.getDate()).padStart(2,"0");
 
-  const d = new Date(iso);
-  d.setHours(0,0,0,0);
-
-  return d.getTime() === t.getTime();
+  return iso === `${yyyy}-${mm}-${dd}`;
 }
 function normCategory(c){
   return String(c || "").toLowerCase().replace(/\s+/g,"");
@@ -383,24 +382,22 @@ loadAll();
 function canShowUpcoming(isoDate){
   const now = new Date();
 
-  const d = new Date(isoDate);
-  d.setHours(0,0,0,0);
+  // future date
+  if(isoDate > getTodayISO()) return true;
 
-  const today = new Date();
-  today.setHours(0,0,0,0);
-
-  // Future date → always show
-  if(d > today) return true;
-
-  // Today → show only before 1:50 PM
-  if(d.getTime() === today.getTime()){
+  // today
+  if(isoDate === getTodayISO()){
     const cutoff = new Date();
     cutoff.setHours(13, 50, 0, 0); // 1:50 PM
     return now < cutoff;
   }
 
-  // Past date → never upcoming
   return false;
+}
+
+function getTodayISO(){
+  const t = new Date();
+  return `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,"0")}-${String(t.getDate()).padStart(2,"0")}`;
 }
   function before2PMOnDate(isoDate){
   const now = new Date();
