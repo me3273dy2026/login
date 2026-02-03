@@ -217,7 +217,7 @@ textarea{min-height:90px;}
   if(sessionStorage.getItem("facultyLoggedIn") !== "YES"){
   window.location.replace("faculty_login.html");
 }
-const BACKEND="https://script.google.com/macros/s/AKfycbyI-YKLn7X1IPwMMaDw3MkSjFGC4wkydbQrDoxl3rckAZB3prauxzr69q9S0rhTRaJtEw/exec";
+const BACKEND="https://script.google.com/macros/s/AKfycbyfX1SVfcOoX_YmAsa6S1F5xLrPMjvVHRNoUma_Sxpodn9fXOU9KO1Yh1LIvzJJS3gtkQ/exec";
 const saveEvalBtn = document.getElementById("saveEvalBtn");
 saveEvalBtn.disabled = true;   // disabled by default  
 let allocationState={date:"",gdDone:false,semDone:false,piDone:false};
@@ -617,6 +617,7 @@ window.onload=resetAllocationUI;
     method:"POST",
     body:new URLSearchParams({
       action:"savePerformance",
+      token: sessionStorage.getItem("facultyToken"),
       roll,
       type,
       marks: marks.value,
