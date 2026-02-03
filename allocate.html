@@ -394,7 +394,7 @@ function canShowUpcoming(isoDate){
 
   // Today → show only before 2 PM
   if(d.getTime() === today.getTime()){
-    return now.getHours() < 9;
+    return now.getHours() < 14;
   }
 
   // Past date
