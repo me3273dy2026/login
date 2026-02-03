@@ -320,20 +320,13 @@ footer div{font-size:12px;color:#90a4ae}
 </div>
 
 <script>
-  
+  const logoutOverlay = document.getElementById("logoutOverlay");
 const BACKEND="https://script.google.com/macros/s/AKfycbyPY1Lm-IxEg4BU9q15Rxd9wgVYeOeRomQ5bkQYKyjglhN9gkMdfEg9TSGiXsfTps6PUQ/exec";
-//const token = sessionStorage.getItem("authToken");
-//const roll  = sessionStorage.getItem("studentRoll");
 const perfBtn   = document.getElementById("perfBtn");
 const logoutBtn = document.getElementById("logoutBtn");
 const welcome   = document.getElementById("welcome");
 const loadingBox = document.getElementById("loadingBox");
 const perfPanel = document.getElementById("perfPanel");
-/*if(!token || !roll){
-  sessionStorage.clear();
-  alert("Session expired. Please login again.");
-  window.location.replace("index.html");
-}*/
   const token = sessionStorage.getItem("token");
 
 if(!token){
@@ -528,42 +521,26 @@ if(
   isPast(pastAlloc.date)
 ){
 
-  // ❌ ABSENT CASE
-  if(pastAlloc.wasPresent === false){
-    pendingMsgs.push(`
-      <div class="pastBox"
-           style="background:#fdecea;border:1px solid #e53935;color:#b71c1c">
-        You were supposed to have <b>${pastAlloc.category}</b><br>
-        on <b>${prettyDate(pastAlloc.date)}</b><br>
-        <i>But you were absent</i>
-      </div>
-    `);
-  }
+  const isEvaluatedSame =
+  evaluated.status==="FOUND" &&
+  evaluated.category === pastAlloc.category &&
+  evaluated.date === pastAlloc.date;
 
-  // ✅ PRESENT BUT NOT YET EVALUATED
-  else{
-    const isEvaluatedSame =
-      evaluated.status==="FOUND" &&
-      evaluated.category === pastAlloc.category &&
-      evaluated.date === pastAlloc.date;
-
-    if(!isEvaluatedSame){
-      pendingMsgs.push(`
-        <div class="pastBox"
-             style="background:#fffde7;border:1px solid #fbc02d;color:#795548">
-          Completed: You had <b>${pastAlloc.category}</b><br>
-          on <b>${prettyDate(pastAlloc.date)}</b><br>
-          <i>Evaluation under process</i>
-        </div>
-      `);
-    }
-  }
+if(!isEvaluatedSame){
+  pendingMsgs.push(`
+    <div class="pastBox"
+         style="background:#fffde7;border:1px solid #fbc02d;color:#795548">
+      Completed: You had <b>${pastAlloc.category}</b><br>
+      on <b>${prettyDate(pastAlloc.date)}</b><br>
+      <i>Evaluation under process</i>
+    </div>
+  `);
+}
 }
 
     /* COMPLETED & EVALUATED */
    if(
-  evaluated.status==="FOUND" &&
-  pastAlloc.wasPresent !== false
+  evaluated.status==="FOUND" 
 ){
   doneMsgs.push(`
     <div class="pastBox">
@@ -711,7 +688,10 @@ function logout(){
   if(!confirm("Are you sure you want to logout?")) return;
   logoutOverlay.style.display="flex";
   fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"logout",token})})
-    .finally(()=>setTimeout(()=>location.replace("index.html"),600));
+  .finally(()=>{
+    sessionStorage.clear();
+    setTimeout(()=>location.replace("index.html"),600);
+  });
 }
 </script>
 
