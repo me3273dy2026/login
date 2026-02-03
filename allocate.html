@@ -490,20 +490,27 @@ let pendingMsgs  = [];
 let doneMsgs     = [];
     
 let hasUpcoming = false;
+    let hasTodayAllocation = false;
     /* UPCOMING */
-  if(
-  upcoming.status === "FOUND" &&
-  canShowUpcoming(upcoming.date)
-){
-  hasUpcoming = true;
+ if(upcoming.status === "FOUND"){
 
-  upcomingMsgs.push(`
-    <div class="upcomingBox">
-      Upcoming: You have <b>${upcoming.category}</b><br>
-      on <b>${prettyDate(upcoming.date)}</b>
-      ${upcoming.topic ? `<br>Topic: ${upcoming.topic}` : ""}
-    </div>
-  `);
+  // Step-1 magic: remember that today has an allocation
+  if(isToday(upcoming.date)){
+    hasTodayAllocation = true;
+  }
+
+  // Step-2: decide whether to SHOW it
+  if(canShowUpcoming(upcoming.date)){
+    hasUpcoming = true;
+
+    upcomingMsgs.push(`
+      <div class="upcomingBox">
+        Upcoming: You have <b>${upcoming.category}</b><br>
+        on <b>${prettyDate(upcoming.date)}</b>
+        ${upcoming.topic ? `<br>Topic: ${upcoming.topic}` : ""}
+      </div>
+    `);
+  }
 }
      /* COMPLETED BUT NOT EVALUATED */
  if(
@@ -564,20 +571,10 @@ let hasUpcoming = false;
 
 if(!hasUpcoming){
 
-  let msg = "Allocation for the coming week has not been done yet.";
-
-  // If max allocation date is today AND before 2 PM
-  if(
-    pastAlloc.status === "FOUND" &&
-    before2PMOnDate(pastAlloc.date)
-  ){
-    msg = "You don’t have any allocation for the coming week.";
-  }
-
   upcomingMsgs.unshift(`
     <div class="pastBox"
          style="background:#eef3f7;border:1px dashed #90a4ae;color:#455a64">
-      ${msg}
+      Allocation for the coming week has not been done yet.
     </div>
   `);
 }
