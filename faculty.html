@@ -222,11 +222,36 @@ const saveEvalBtn = document.getElementById("saveEvalBtn");
 saveEvalBtn.disabled = true;   // disabled by default  
 let allocationState={date:"",gdDone:false,semDone:false,piDone:false};
 let sessionStage="GD";
+const gdExisting = document.getElementById("gdExisting");
+const semExisting = document.getElementById("semExisting");
+const piExisting = document.getElementById("piExisting");
 
+const semBox = document.getElementById("semBox");
+const piBox = document.getElementById("piBox");
+
+const saveSemBtn = document.getElementById("saveSemBtn");
+const savePIBtn = document.getElementById("savePIBtn");
+
+const gdOpenBtn = document.getElementById("gdOpenBtn");
+const semOpenBtn = document.getElementById("semOpenBtn");
+const piOpenBtn = document.getElementById("piOpenBtn");
+
+const loaderOverlay = document.getElementById("loaderOverlay");
+const typeSelect = document.getElementById("typeSelect");
+
+const positives = document.getElementById("positives");
+const improvements = document.getElementById("improvements");
+
+const studentInfo = document.getElementById("studentInfo");
+const gdTopicInfo = document.getElementById("gdTopicInfo");
+const gdGroupInfo = document.getElementById("gdGroupInfo");
+const seminarInfo = document.getElementById("seminarInfo");
 const home     = document.getElementById("home");
 const allocate = document.getElementById("allocate");
 const evaluate = document.getElementById("evaluate");
-
+const gdBox = document.getElementById("gdBox");
+const saveGDBtn = document.getElementById("saveGDBtn");
+const marks = document.getElementById("marks");
 const studentSelect = document.getElementById("studentSelect");
 /* Navigation */
 function openAllocate(){home.style.display="none";allocate.style.display="block";}
