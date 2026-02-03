@@ -88,15 +88,39 @@ function loginFaculty(){
   const msg = document.getElementById("msg");
   const btn = document.getElementById("loginBtn");
 
-  if(fid === "admin" && pwd === "me3273"){
-    sessionStorage.setItem("facultyLoggedIn","YES");
-    sessionStorage.setItem("facultyToken", fid);
-    window.location.href = "faculty.html";
+  if(!fid || !pwd){
+    msg.style.color = "red";
+    msg.innerText = "Enter Faculty ID and Password";
     return;
   }
 
-  msg.style.color="red";
-  msg.innerText="Invalid credentials";
+  btn.disabled = true;
+  msg.innerHTML = "Authenticating…";
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action: "facultyLogin",
+      fid: fid,
+      pwd: pwd
+    })
+  })
+  .then(r => r.json())
+  .then(res => {
+    if(res.status === "OK" && res.token){
+      sessionStorage.setItem("facultyToken", res.token);
+      window.location.href = "faculty.html";
+    } else {
+      msg.style.color = "red";
+      msg.innerText = "Invalid credentials";
+      btn.disabled = false;
+    }
+  })
+  .catch(() => {
+    msg.style.color = "red";
+    msg.innerText = "Server error";
+    btn.disabled = false;
+  });
 }
 </script>
 
