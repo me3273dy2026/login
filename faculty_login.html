@@ -98,16 +98,26 @@ function loginFaculty(){
   msg.innerText = "Authenticating…";
 
   /* ===== HARD-CODED CREDENTIAL CHECK ===== */
-  setTimeout(()=>{
-    if(fid === "admin" && pwd === "me3273"){
-
-  // 🔐 Store login session
-  sessionStorage.setItem("facultyLoggedIn", "YES");
-
-  // ✅ Redirect WITHOUT token
-  window.location.href = "faculty.html";
-  return;
-}
+  fetch(BACKEND,{
+  method:"POST",
+  body:new URLSearchParams({
+    action:"facultyLogin",
+    fid,
+    pwd
+  })
+})
+.then(r=>r.json())
+.then(res=>{
+  if(res.status === "OK"){
+    sessionStorage.setItem("facultyLoggedIn", "YES");
+    sessionStorage.setItem("facultyToken", res.token); // 🔑 IMPORTANT
+    window.location.href = "faculty.html";
+  }else{
+    msg.style.color="red";
+    msg.innerText="Invalid credentials.";
+    btn.disabled=false;
+  }
+});
 
     msg.style.color = "red";
     msg.innerText = "Invalid credentials.";
