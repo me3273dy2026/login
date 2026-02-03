@@ -215,7 +215,9 @@ textarea{min-height:90px;}
 
 <script>
 /* ================= AUTH ================= */
-if(sessionStorage.getItem("facultyLoggedIn") !== "YES"){
+const facultyToken = sessionStorage.getItem("facultyToken");
+if(!facultyToken){
+  sessionStorage.clear();
   window.location.replace("faculty_login.html");
 }
 
@@ -270,8 +272,16 @@ function openEvaluate(){ home.style.display="none"; evaluate.style.display="bloc
 function closeSection(){ allocate.style.display="none"; evaluate.style.display="none"; home.style.display="block"; }
 
 function logout(){
-  sessionStorage.clear();
-  window.location.replace("faculty_login.html");
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"logout",
+      token: facultyToken
+    })
+  }).finally(()=>{
+    sessionStorage.clear();
+    window.location.replace("faculty_login.html");
+  });
 }
 
 /* ================= LOADER ================= */
@@ -311,7 +321,7 @@ function updateButtons(){
 function loadAllocationsByDate(d){
   fetch(BACKEND,{
     method:"POST",
-    body:new URLSearchParams({ action:"getAllocationsByDate", date:d })
+    body:new URLSearchParams({ action:"getAllocationsByDate", token: facultyToken, date:d })
   })
   .then(r=>r.json())
   .then(res=>{
@@ -342,7 +352,7 @@ function loadGD(){
 
   fetch(BACKEND,{
     method:"POST",
-    body:new URLSearchParams({ action:"getGDTopicStatus", date:allocationState.date })
+    body:new URLSearchParams({ action:"getGDTopicStatus", token: facultyToken, date:allocationState.date })
   })
   .then(r=>r.json())
   .then(res=>{
@@ -363,6 +373,7 @@ function saveGD(){
     method:"POST",
     body:new URLSearchParams({
       action:"saveGDAllocation",
+      token: facultyToken,
       date:allocationState.date,
       topics:[...gdBox.querySelectorAll("input:checked")].map(i=>i.value).join(",")
     })
@@ -374,11 +385,126 @@ function saveGD(){
   })
   .finally(()=>{ saveGDBtn.disabled=false; hideLoader(); });
 }
+function loadSeminar(){
+  showLoader("Loading Seminar…");
+  semOpenBtn.style.display = "none";
 
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getSeminarStudentStatus",
+      token: facultyToken,
+      date: allocationState.date
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    semBox.style.display = "block";
+    saveSemBtn.style.display = "block";
+
+    semBox.innerHTML = res.students.map(s=>`
+      <label>
+        <input type="checkbox"
+               value="${s.roll}"
+               ${s.checked ? "checked" : ""}>
+        ${s.roll} - ${s.name}
+      </label>
+    `).join("");
+  })
+  .finally(hideLoader);
+}
+
+function saveSeminar(){
+  saveSemBtn.disabled = true;
+  showLoader("Saving Seminar…");
+
+  const selected = [...semBox.querySelectorAll("input:checked")]
+                    .map(i=>i.value)
+                    .join(",");
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"saveIndividualAllocation",
+      token: facultyToken,
+      date: allocationState.date,
+      category: "SEMINAR",
+      rolls: selected
+    })
+  })
+  .then(()=>{
+    sessionStage = "PI";
+    semBox.style.display = saveSemBtn.style.display = "none";
+    loadAllocationsByDate(allocationState.date);
+  })
+  .finally(()=>{
+    saveSemBtn.disabled = false;
+    hideLoader();
+  });
+}
+
+/* ================= PI ================= */
+function loadPI(){
+  showLoader("Loading PI…");
+  piOpenBtn.style.display = "none";
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getPIStudentStatus",
+      token: facultyToken,
+      date: allocationState.date
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    piBox.style.display = "block";
+    savePIBtn.style.display = "block";
+
+    piBox.innerHTML = res.students.map(s=>`
+      <label>
+        <input type="checkbox"
+               value="${s.roll}"
+               ${s.checked ? "checked" : ""}>
+        ${s.roll} - ${s.name}
+      </label>
+    `).join("");
+  })
+  .finally(hideLoader);
+}
+
+function savePI(){
+  savePIBtn.disabled = true;
+  showLoader("Saving PI…");
+
+  const selected = [...piBox.querySelectorAll("input:checked")]
+                    .map(i=>i.value)
+                    .join(",");
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"saveIndividualAllocation",
+      token: facultyToken,
+      date: allocationState.date,
+      category: "PI",
+      rolls: selected
+    })
+  })
+  .then(()=>{
+    sessionStage = "DONE";
+    piBox.style.display = savePIBtn.style.display = "none";
+    loadAllocationsByDate(allocationState.date);
+  })
+  .finally(()=>{
+    savePIBtn.disabled = false;
+    hideLoader();
+  });
+}
 /* ================= EVALUATION ================= */
 function loadStudentsForEvaluation(){
   showLoader("Loading students…");
-  fetch(BACKEND,{ method:"POST", body:new URLSearchParams({ action:"getAllStudents" })})
+  fetch(BACKEND,{ method:"POST", body:new URLSearchParams({ action:"getAllStudents", token: facultyToken })})
   .then(r=>r.json())
   .then(res=>{
     studentSelect.innerHTML =
@@ -396,8 +522,8 @@ function onStudentChange(){
   showLoader("Loading student…");
 
   Promise.all([
-    fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getStudentDetailsByRoll",roll})}).then(r=>r.json()),
-    fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getGDGroupByRoll",roll})}).then(r=>r.json()),
+    fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getStudentDetailsByRoll",token: facultyToken, roll})}).then(r=>r.json()),
+    fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getGDGroupByRoll",token: facultyToken, roll})}).then(r=>r.json()),
     loadLatestPerformance()
   ])
   .then(([stu,gd])=>{
@@ -419,6 +545,7 @@ function loadLatestPerformance(){
     method:"POST",
     body:new URLSearchParams({
       action:"getLatestPerformance",
+      token: facultyToken,
       roll,
       type:typeSelect.value
     })
@@ -443,6 +570,7 @@ function saveEvaluation(){
     method:"POST",
     body:new URLSearchParams({
       action:"savePerformance",
+      token: facultyToken,
       roll:studentSelect.value,
       type:typeSelect.value,
       marks:marks.value,
@@ -458,6 +586,20 @@ function clearStudentUI(){
   studentInfo.innerHTML=gdTopicInfo.innerHTML=gdGroupInfo.innerHTML=seminarInfo.innerHTML="";
   marks.value=positives.value=improvements.value="";
   saveEvalBtn.disabled=true;
+}
+  function onEvaluationTypeChange(){
+  const roll = studentSelect.value;
+
+  // Clear current inputs
+  marks.value = "";
+  positives.value = "";
+  improvements.value = "";
+
+  // If a student is selected, load latest evaluation for this type
+  if(roll){
+    showLoader("Loading previous evaluation…");
+    loadLatestPerformance().finally(hideLoader);
+  }
 }
 </script>
 </body>
