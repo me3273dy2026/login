@@ -214,494 +214,250 @@ textarea{min-height:90px;}
 </div>
 
 <script>
-  if(sessionStorage.getItem("facultyLoggedIn") !== "YES"){
+/* ================= AUTH ================= */
+if(sessionStorage.getItem("facultyLoggedIn") !== "YES"){
   window.location.replace("faculty_login.html");
 }
-const BACKEND="https://script.google.com/macros/s/AKfycbyPY1Lm-IxEg4BU9q15Rxd9wgVYeOeRomQ5bkQYKyjglhN9gkMdfEg9TSGiXsfTps6PUQ/exec";
-const saveEvalBtn = document.getElementById("saveEvalBtn");
-saveEvalBtn.disabled = true;   // disabled by default  
-let allocationState={date:"",gdDone:false,semDone:false,piDone:false};
-let sessionStage="GD";
+
+const BACKEND = "https://script.google.com/macros/s/AKfycbyPY1Lm-IxEg4BU9q15Rxd9wgVYeOeRomQ5bkQYKyjglhN9gkMdfEg9TSGiXsfTps6PUQ/exec";
+
+/* ================= DOM ================= */
+const home = document.getElementById("home");
+const allocate = document.getElementById("allocate");
+const evaluate = document.getElementById("evaluate");
+
+const dateInput = document.getElementById("date");
+
 const gdExisting = document.getElementById("gdExisting");
 const semExisting = document.getElementById("semExisting");
 const piExisting = document.getElementById("piExisting");
-
-const semBox = document.getElementById("semBox");
-const piBox = document.getElementById("piBox");
-
-const saveSemBtn = document.getElementById("saveSemBtn");
-const savePIBtn = document.getElementById("savePIBtn");
 
 const gdOpenBtn = document.getElementById("gdOpenBtn");
 const semOpenBtn = document.getElementById("semOpenBtn");
 const piOpenBtn = document.getElementById("piOpenBtn");
 
+const gdBox = document.getElementById("gdBox");
+const semBox = document.getElementById("semBox");
+const piBox = document.getElementById("piBox");
+
+const saveGDBtn = document.getElementById("saveGDBtn");
+const saveSemBtn = document.getElementById("saveSemBtn");
+const savePIBtn = document.getElementById("savePIBtn");
+
 const loaderOverlay = document.getElementById("loaderOverlay");
-const typeSelect = document.getElementById("typeSelect");
 
-const positives = document.getElementById("positives");
-const improvements = document.getElementById("improvements");
-
+const studentSelect = document.getElementById("studentSelect");
 const studentInfo = document.getElementById("studentInfo");
 const gdTopicInfo = document.getElementById("gdTopicInfo");
 const gdGroupInfo = document.getElementById("gdGroupInfo");
 const seminarInfo = document.getElementById("seminarInfo");
-const home     = document.getElementById("home");
-const allocate = document.getElementById("allocate");
-const evaluate = document.getElementById("evaluate");
-const gdBox = document.getElementById("gdBox");
-const saveGDBtn = document.getElementById("saveGDBtn");
+
+const typeSelect = document.getElementById("typeSelect");
 const marks = document.getElementById("marks");
-const studentSelect = document.getElementById("studentSelect");
-/* Navigation */
-function openAllocate(){home.style.display="none";allocate.style.display="block";}
-function openEvaluate(){home.style.display="none";evaluate.style.display="block";loadStudentsForEvaluation();}
-function closeSection(){allocate.style.display="none";evaluate.style.display="none";home.style.display="block";}
+const positives = document.getElementById("positives");
+const improvements = document.getElementById("improvements");
+const saveEvalBtn = document.getElementById("saveEvalBtn");
+
+saveEvalBtn.disabled = true;
+
+/* ================= STATE ================= */
+let allocationState = { date:"" };
+let sessionStage = "GD";
+
+/* ================= NAV ================= */
+function openAllocate(){ home.style.display="none"; allocate.style.display="block"; }
+function openEvaluate(){ home.style.display="none"; evaluate.style.display="block"; loadStudentsForEvaluation(); }
+function closeSection(){ allocate.style.display="none"; evaluate.style.display="none"; home.style.display="block"; }
+
 function logout(){
-  sessionStorage.removeItem("facultyLoggedIn");
-  sessionStorage.removeItem("facultyToken"); // ✅ add
+  sessionStorage.clear();
   window.location.replace("faculty_login.html");
 }
 
-/* Loader */
-function showLoader(t){loaderOverlay.style.display="flex";document.querySelector(".loader-text").innerText=t;}
-function hideLoader(){loaderOverlay.style.display="none";}
+/* ================= LOADER ================= */
+function showLoader(t){
+  loaderOverlay.style.display="flex";
+  loaderOverlay.querySelector(".loader-text").innerText=t;
+}
+function hideLoader(){ loaderOverlay.style.display="none"; }
 
-/* Date */
+/* ================= DATE ================= */
 function onDate(){
-  allocationState={date:date.value,gdDone:false,semDone:false,piDone:false};
-  sessionStage="GD";
+  allocationState.date = dateInput.value;
+  sessionStage = "GD";
   resetAllocationUI();
   showLoader("Loading allocations…");
-  loadAllocationsByDate(date.value);
+  loadAllocationsByDate(allocationState.date);
 }
 
 function resetAllocationUI(){
-  gdExisting.innerHTML = "";
-  semExisting.innerHTML = "";
-  piExisting.innerHTML = "";
+  gdExisting.innerHTML = semExisting.innerHTML = piExisting.innerHTML = "-";
 
-  gdBox.style.display = "none";
-  semBox.style.display = "none";
-  piBox.style.display = "none";
+  gdBox.style.display = semBox.style.display = piBox.style.display = "none";
+  saveGDBtn.style.display = saveSemBtn.style.display = savePIBtn.style.display = "none";
 
-  saveGDBtn.style.display = "none";
-  saveSemBtn.style.display = "none";
-  savePIBtn.style.display = "none";
-
-  // 🔑 CRITICAL FIX: restore Allocate buttons visibility
-  gdOpenBtn.style.display  = "block";
-  semOpenBtn.style.display = "block";
-  piOpenBtn.style.display  = "block";
-
-  gdOpenBtn.disabled  = true;
-  semOpenBtn.disabled = true;
-  piOpenBtn.disabled  = true;
+  gdOpenBtn.style.display = semOpenBtn.style.display = piOpenBtn.style.display = "block";
+  gdOpenBtn.disabled = semOpenBtn.disabled = piOpenBtn.disabled = true;
 }
 
 function updateButtons(){
-  gdOpenBtn.disabled=semOpenBtn.disabled=piOpenBtn.disabled=true;
+  gdOpenBtn.disabled = semOpenBtn.disabled = piOpenBtn.disabled = true;
   if(sessionStage==="GD") gdOpenBtn.disabled=false;
   else if(sessionStage==="SEMINAR") semOpenBtn.disabled=false;
   else if(sessionStage==="PI") piOpenBtn.disabled=false;
 }
 
+/* ================= LOAD ALLOC ================= */
 function loadAllocationsByDate(d){
-  fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getAllocationsByDate",date:d})})
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({ action:"getAllocationsByDate", date:d })
+  })
   .then(r=>r.json())
   .then(res=>{
     const gd = res.allocations.filter(a=>a.category==="GD");
+    gdExisting.innerHTML = gd.length
+      ? gd.map(a=>`<b>${a.topic}</b><br>${a.roll} - ${a.name}`).join("<br><br>")
+      : "-";
 
-if(gd.length){
-  const groups = {};
-  gd.forEach(a=>{
-    if(!groups[a.topic]) groups[a.topic] = [];
-    groups[a.topic].push(a.roll+" - "+a.name);
-  });
+    semExisting.innerHTML = res.allocations
+      .filter(a=>a.category==="SEMINAR")
+      .map(a=>`${a.roll} - ${a.name} (${a.seminarTopic})`)
+      .join("<br>") || "-";
 
-  gdExisting.innerHTML = Object.keys(groups)
-    .map(t =>
-      `<b>Topic: ${t}</b><br>${groups[t].join("<br>")}`
-    )
-    .join("<br><br>");
-}else{
-  gdExisting.innerHTML = "-";
-}
-   semExisting.innerHTML =
-  res.allocations
-    .filter(a=>a.category==="SEMINAR")
-    .map(a =>
-      `${a.roll} - ${a.name} (${a.seminarTopic})`
-    )
-    .join("<br>") || "-";
-    piExisting.innerHTML=res.allocations.filter(a=>a.category==="PI").map(a=>a.roll+" - "+a.name).join("<br>")||"-";
+    piExisting.innerHTML = res.allocations
+      .filter(a=>a.category==="PI")
+      .map(a=>`${a.roll} - ${a.name}`)
+      .join("<br>") || "-";
+
     updateButtons();
   })
   .finally(hideLoader);
 }
 
-/* Allocation actions */
+/* ================= GD ================= */
 function loadGD(){
   showLoader("Loading GD…");
+  gdOpenBtn.style.display="none";
 
   fetch(BACKEND,{
     method:"POST",
-    body:new URLSearchParams({
-      action:"getGDTopicStatus",
-      date: allocationState.date
-    })
+    body:new URLSearchParams({ action:"getGDTopicStatus", date:allocationState.date })
   })
   .then(r=>r.json())
   .then(res=>{
-    // 🔑 Hide Allocate/Update GD button
-    gdOpenBtn.style.display = "none";
-
-    // 🔑 Show GD topics + Save button
-    gdBox.style.display = "block";
-    saveGDBtn.style.display = "block";
-    saveGDBtn.disabled = false;
-
+    gdBox.style.display="block";
+    saveGDBtn.style.display="block";
     gdBox.innerHTML = res.topics.map(t=>`
-      <label>
-        <input type="checkbox" value="${t.topic}" ${t.checked?"checked":""}>
-        ${t.topic}
-      </label>
+      <label><input type="checkbox" value="${t.topic}" ${t.checked?"checked":""}> ${t.topic}</label>
     `).join("");
   })
   .finally(hideLoader);
 }
-  function saveGD(){
+
+function saveGD(){
+  saveGDBtn.disabled=true;
   showLoader("Saving GD…");
 
   fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({
       action:"saveGDAllocation",
-      date: allocationState.date,
-      topics: [...gdBox.querySelectorAll("input:checked")]
-                .map(i=>i.value).join(",")
+      date:allocationState.date,
+      topics:[...gdBox.querySelectorAll("input:checked")].map(i=>i.value).join(",")
     })
   })
   .then(()=>{
-    // 🔑 Advance workflow
-    sessionStage = "SEMINAR";
-
-    // 🔑 HIDE GD UI completely
-    gdBox.style.display = "none";
-    saveGDBtn.style.display = "none";
-
-    // (GD allocate button must remain hidden in this cycle)
-    // gdOpenBtn stays hidden
-
-    // Reload allocations & enable Seminar
+    sessionStage="SEMINAR";
+    gdBox.style.display=saveGDBtn.style.display="none";
     loadAllocationsByDate(allocationState.date);
   })
-  .finally(hideLoader);
+  .finally(()=>{ saveGDBtn.disabled=false; hideLoader(); });
 }
-function loadSeminar(){
-  showLoader("Loading Seminar…");
 
-  // 🔑 Hide Allocate/Update Seminar button
-  semOpenBtn.style.display = "none";
-
-  fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({
-      action:"getSeminarStudentStatus",
-      date: allocationState.date
-    })
-  })
-  .then(r=>r.json())
-  .then(res=>{
-    semBox.style.display = "block";
-    saveSemBtn.style.display = "block";
-    saveSemBtn.disabled = false;
-
-    semBox.innerHTML = res.students.map(s=>`
-      <label>
-        <input type="checkbox" value="${s.roll}" ${s.checked?"checked":""}>
-        ${s.roll} - ${s.name}
-      </label>
-    `).join("");
-  })
-  .finally(hideLoader);
-}
-function saveSeminar(){
-  showLoader("Saving Seminar…");
-
-  fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({
-      action:"saveIndividualAllocation",
-      category:"SEMINAR",
-      date: allocationState.date,
-      rolls: [...semBox.querySelectorAll("input:checked")]
-              .map(i=>i.value).join(",")
-    })
-  })
-  .then(()=>{
-    // 🔑 Advance workflow
-    sessionStage = "PI";
-
-    // 🔑 Hide Seminar UI
-    semBox.style.display = "none";
-    saveSemBtn.style.display = "none";
-
-    // Reload allocations & enable PI
-    loadAllocationsByDate(allocationState.date);
-  })
-  .finally(hideLoader);
-}
-function loadPI(){
-  showLoader("Loading PI…");
-
-  // 🔑 Hide Allocate/Update PI button
-  piOpenBtn.style.display = "none";
-
-  fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({
-      action:"getPIStudentStatus",
-      date: allocationState.date
-    })
-  })
-  .then(r=>r.json())
-  .then(res=>{
-    piBox.style.display = "block";
-    savePIBtn.style.display = "block";
-    savePIBtn.disabled = false;
-
-    piBox.innerHTML = res.students.map(s=>`
-      <label>
-        <input type="checkbox" value="${s.roll}" ${s.checked?"checked":""}>
-        ${s.roll} - ${s.name}
-      </label>
-    `).join("");
-  })
-  .finally(hideLoader);
-}
-  function savePI(){
-  showLoader("Saving PI…");
-
-  fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({
-      action:"saveIndividualAllocation",
-      category:"PI",
-      date: allocationState.date,
-      rolls: [...piBox.querySelectorAll("input:checked")]
-              .map(i=>i.value).join(",")
-    })
-  })
-  .then(()=>{
-    // 🔑 Reset workflow (cycle complete)
-    sessionStage = "GD";
-
-    // 🔑 Hide PI UI
-    piBox.style.display = "none";
-    savePIBtn.style.display = "none";
-
-    loadAllocationsByDate(allocationState.date);
-  })
-  .finally(hideLoader);
-}
-window.onload=resetAllocationUI;
-  function loadStudentsForEvaluation(){
+/* ================= EVALUATION ================= */
+function loadStudentsForEvaluation(){
   showLoader("Loading students…");
-
-  fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({
-      action:"getAllStudents"
-    })
-  })
+  fetch(BACKEND,{ method:"POST", body:new URLSearchParams({ action:"getAllStudents" })})
   .then(r=>r.json())
   .then(res=>{
-    studentSelect.innerHTML = `<option value="">Select Student</option>` +
-      res.students.map(s =>
-        `<option value="${s.roll}">
-          ${s.roll} - ${s.name}
-        </option>`
-      ).join("");
+    studentSelect.innerHTML =
+      `<option value="">Select Student</option>` +
+      res.students.map(s=>`<option value="${s.roll}">${s.roll} - ${s.name}</option>`).join("");
   })
   .finally(hideLoader);
 }
- function onStudentChange(){
+
+function onStudentChange(){
   const roll = studentSelect.value;
+  if(!roll){ clearStudentUI(); return; }
 
-  if(!roll){
-    clearStudentUI();
-    saveEvalBtn.disabled = true;
-    return;
-  }
-
-  saveEvalBtn.disabled = false;
-  showLoader("Loading student details…");
+  saveEvalBtn.disabled=false;
+  showLoader("Loading student…");
 
   Promise.all([
-    // Student basic details
-    fetch(BACKEND,{
-      method:"POST",
-      body:new URLSearchParams({
-        action:"getStudentDetailsByRoll",
-        roll
-      })
-    }).then(r=>r.json()),
-
-    // GD group
-    fetch(BACKEND,{
-      method:"POST",
-      body:new URLSearchParams({
-        action:"getGDGroupByRoll",
-        roll
-      })
-    }).then(r=>r.json()),
-
-    // GD topic
-    loadGDTopicForStudent(roll),
-
-    // Latest evaluation
+    fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getStudentDetailsByRoll",roll})}).then(r=>r.json()),
+    fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getGDGroupByRoll",roll})}).then(r=>r.json()),
     loadLatestPerformance()
   ])
-  .then(([student, gd])=>{
-    // Student info
-    studentInfo.innerHTML = `
-      <b>${student.roll}</b><br>
-      ${student.name}
-    `;
-
-    seminarInfo.innerHTML = student.seminarTopic || "-";
-
-    if(gd.status==="OK"){
-      gdGroupInfo.innerHTML = gd.group
-        .map(m=>`${m.roll} - ${m.name}`)
-        .join("<br>");
-    }else{
-      gdGroupInfo.innerHTML = "-";
-    }
+  .then(([stu,gd])=>{
+    studentInfo.innerHTML = `<b>${stu.roll}</b><br>${stu.name}`;
+    seminarInfo.innerText = stu.seminarTopic || "-";
+    gdTopicInfo.innerText = "-";   // backend does not expose latest GD topic by roll
+    gdGroupInfo.innerHTML = gd.status==="OK"
+      ? gd.group.map(m=>`${m.roll} - ${m.name}`).join("<br>")
+      : "-";
   })
   .finally(hideLoader);
 }
-  function loadGDTopicForStudent(roll){
-  return fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({
-      action:"getLatestGDAllocationByRoll",
-      roll
-    })
-  })
-  .then(r=>r.json())
-  .then(res=>{
-    if(res.status === "FOUND"){
-      gdTopicInfo.innerHTML = res.topic || "-";
-    }else{
-      gdTopicInfo.innerHTML = "-";
-    }
-  });
-}
-  function loadLatestPerformance(){
-  const roll = studentSelect.value;
-  const type = typeSelect.value;
 
-  if(!roll){
-    return Promise.resolve();
-  }
+function loadLatestPerformance(){
+  const roll = studentSelect.value;
+  if(!roll) return Promise.resolve();
 
   return fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({
       action:"getLatestPerformance",
       roll,
-      type
+      type:typeSelect.value
     })
   })
   .then(r=>r.json())
   .then(res=>{
     if(res.status==="FOUND"){
-      marks.value = res.marks;
-      positives.value = res.positives;
-      improvements.value = res.improvements;
+      marks.value=res.marks;
+      positives.value=res.positives;
+      improvements.value=res.improvements;
     }else{
-      marks.value = "";
-      positives.value = "";
-      improvements.value = "";
+      marks.value=positives.value=improvements.value="";
     }
   });
 }
- function saveEvaluation(){
-  const roll = studentSelect.value;
-  const type = typeSelect.value;
 
-  if(!roll){
-    alert("Please select a student");
-    return;
-  }
-
+function saveEvaluation(){
+  saveEvalBtn.disabled=true;
   showLoader("Saving evaluation…");
 
   fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({
       action:"savePerformance",
-      token: sessionStorage.getItem("facultyToken"),
-      roll,
-      type,
-      marks: marks.value,
-      positives: positives.value,
-      improvements: improvements.value
+      roll:studentSelect.value,
+      type:typeSelect.value,
+      marks:marks.value,
+      positives:positives.value,
+      improvements:improvements.value
     })
   })
-  .then(r=>r.json())
-  .then(res=>{
-    // 🔑 CHECK backend result
-    if(res.status !== "SAVED"){
-      alert("Save failed: " + res.status);
-      throw new Error("Save failed");
-    }
-
-    // ✅ Only reload if save actually succeeded
-    return fetch(BACKEND,{
-      method:"POST",
-      body:new URLSearchParams({
-        action:"getLatestPerformance",
-        roll,
-        type
-      })
-    });
-  })
-  .then(r=>r.json())
-  .then(res=>{
-    if(res.status==="FOUND"){
-      marks.value = res.marks;
-      positives.value = res.positives;
-      improvements.value = res.improvements;
-    }
-    alert("Evaluation saved successfully");
-  })
-  .catch(err=>{
-    console.error(err);
-  })
-  .finally(hideLoader);
+  .then(()=>alert("Evaluation saved"))
+  .finally(()=>{ saveEvalBtn.disabled=false; hideLoader(); });
 }
-  function onEvaluationTypeChange(){
-  const roll = studentSelect.value;
-  if(!roll) return;
 
-  showLoader("Loading evaluation…");
-
-  loadLatestPerformance()
-    .finally(hideLoader);
-}
-  function clearStudentUI(){
-  studentInfo.innerHTML = "";
-  gdTopicInfo.innerHTML = "";
-  gdGroupInfo.innerHTML = "";
-  seminarInfo.innerHTML = "";
-
-  marks.value = "";
-  positives.value = "";
-  improvements.value = "";
-  saveEvalBtn.disabled = true;
+function clearStudentUI(){
+  studentInfo.innerHTML=gdTopicInfo.innerHTML=gdGroupInfo.innerHTML=seminarInfo.innerHTML="";
+  marks.value=positives.value=improvements.value="";
+  saveEvalBtn.disabled=true;
 }
 </script>
 </body>
