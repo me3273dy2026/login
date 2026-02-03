@@ -416,7 +416,7 @@ function getTodayISO(){
 
   if(d.getTime() !== todayIST.getTime()) return false;
 
-  return nowIST.getHours() < 14; // before 2 PM IST
+  return nowIST.getHours() < 10; // before 2 PM IST
 }
 function loadAll(){
   const loadingBox  = document.getElementById("loadingBox");
