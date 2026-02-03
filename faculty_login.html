@@ -80,6 +80,8 @@ button:disabled{background:#999;cursor:not-allowed;}
 </div>
 
 <script>
+const BACKEND = "https://script.google.com/macros/s/AKfycbyfX1SVfcOoX_YmAsa6S1F5xLrPMjvVHRNoUma_Sxpodn9fXOU9KO1Yh1LIvzJJS3gtkQ/exec";
+
 function loginFaculty(){
 
   const fid = document.getElementById("fid").value.trim();
@@ -97,32 +99,32 @@ function loginFaculty(){
   msg.style.color="#555";
   msg.innerText = "Authenticating…";
 
-  /* ===== HARD-CODED CREDENTIAL CHECK ===== */
   fetch(BACKEND,{
-  method:"POST",
-  body:new URLSearchParams({
-    action:"facultyLogin",
-    fid,
-    pwd
+    method:"POST",
+    body:new URLSearchParams({
+      action:"facultyLogin",
+      fid,
+      pwd
+    })
   })
-})
-.then(r=>r.json())
-.then(res=>{
-  if(res.status === "OK"){
-    sessionStorage.setItem("facultyLoggedIn", "YES");
-    sessionStorage.setItem("facultyToken", res.token); // 🔑 IMPORTANT
-    window.location.href = "faculty.html";
-  }else{
+  .then(r=>r.json())
+  .then(res=>{
+    if(res.status === "OK"){
+      sessionStorage.setItem("facultyLoggedIn", "YES");
+      sessionStorage.setItem("facultyToken", res.token); // 🔑 key line
+      window.location.href = "faculty.html";
+    }else{
+      msg.style.color="red";
+      msg.innerText="Invalid credentials.";
+      btn.disabled=false;
+    }
+  })
+  .catch(err=>{
     msg.style.color="red";
-    msg.innerText="Invalid credentials.";
+    msg.innerText="Server error. Check console.";
     btn.disabled=false;
-  }
-});
-
-    msg.style.color = "red";
-    msg.innerText = "Invalid credentials.";
-    btn.disabled = false;
-  }, 600);
+    console.error(err);
+  });
 }
 </script>
 
