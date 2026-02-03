@@ -400,6 +400,20 @@ function canShowUpcoming(isoDate){
   // Past date
   return false;
 }
+  function before2PMOnDate(isoDate){
+  const now = new Date();
+
+  const d = new Date(isoDate);
+  d.setHours(0,0,0,0);
+
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  // Only relevant on the same date
+  if(d.getTime() !== today.getTime()) return false;
+
+  return now.getHours() < 14; // before 2 PM
+}You don’t have any allocation for the coming week
 function loadAll(){
   const loadingBox  = document.getElementById("loadingBox");
   const upcomingBox = document.getElementById("upcomingBox");
@@ -547,13 +561,24 @@ let hasUpcoming = false;
 ];
 
 if(!hasUpcoming){
+
+  let msg = "Allocation for the coming week has not been done yet.";
+
+  // If max allocation date is today AND before 2 PM
+  if(
+    pastAlloc.status === "FOUND" &&
+    before2PMOnDate(pastAlloc.date)
+  ){
+    msg = "You don’t have any allocation for the coming week.";
+  }
+
   upcomingMsgs.unshift(`
-    <div class="pastBox" style="background:#eef3f7;border:1px dashed #90a4ae;color:#455a64">
-      You don’t have any allocation for the coming week.
+    <div class="pastBox"
+         style="background:#eef3f7;border:1px dashed #90a4ae;color:#455a64">
+      ${msg}
     </div>
   `);
 }
-
 upcomingBox.innerHTML = [
   ...upcomingMsgs,
   ...pendingMsgs,
