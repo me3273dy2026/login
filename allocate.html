@@ -581,10 +581,20 @@ if(
 
 if(!hasUpcoming){
 
+  const nowIST = new Date(
+    new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+  );
+
+  const isBefore2PM = nowIST.getHours() < 14;
+
+  const msg = isBefore2PM
+    ? "You don’t have any allocations for the coming week."
+    : "Allocation for the coming week has not been done yet.";
+
   upcomingMsgs.unshift(`
     <div class="pastBox"
          style="background:#eef3f7;border:1px dashed #90a4ae;color:#455a64">
-      Allocation for the coming week has not been done yet.
+      ${msg}
     </div>
   `);
 }
