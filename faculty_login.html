@@ -83,48 +83,20 @@ button:disabled{background:#999;cursor:not-allowed;}
 const BACKEND = "https://script.google.com/macros/s/AKfycbyPY1Lm-IxEg4BU9q15Rxd9wgVYeOeRomQ5bkQYKyjglhN9gkMdfEg9TSGiXsfTps6PUQ/exec";
 
 function loginFaculty(){
-
   const fid = document.getElementById("fid").value.trim();
   const pwd = document.getElementById("pwd").value.trim();
   const msg = document.getElementById("msg");
   const btn = document.getElementById("loginBtn");
 
-  if(!fid || !pwd){
-    msg.style.color="red";
-    msg.innerText="Enter Faculty ID and Password";
+  if(fid === "faculty" && pwd === "me3273"){
+    sessionStorage.setItem("facultyLoggedIn","YES");
+    sessionStorage.setItem("facultyToken", fid);
+    window.location.href = "faculty.html";
     return;
   }
 
-  btn.disabled = true;
-  msg.style.color="#555";
-  msg.innerText = "Authenticating…";
-
-  fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({
-      action:"facultyLogin",
-      fid,
-      pwd
-    })
-  })
-  .then(r=>r.json())
-  .then(res=>{
-    if(res.status === "OK"){
-      sessionStorage.setItem("facultyLoggedIn", "YES");
-      sessionStorage.setItem("facultyToken", res.token); // 🔑 key line
-      window.location.href = "faculty.html";
-    }else{
-      msg.style.color="red";
-      msg.innerText="Invalid credentials.";
-      btn.disabled=false;
-    }
-  })
-  .catch(err=>{
-    msg.style.color="red";
-    msg.innerText="Server error. Check console.";
-    btn.disabled=false;
-    console.error(err);
-  });
+  msg.style.color="red";
+  msg.innerText="Invalid credentials";
 }
 </script>
 
