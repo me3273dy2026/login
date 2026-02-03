@@ -456,7 +456,10 @@ let doneMsgs     = [];
     
 let hasUpcoming = false;
     /* UPCOMING */
-  if(
+    const evaluatedToday =
+  evaluated.status === "FOUND" &&
+  isToday(evaluated.date);
+  if(!evaluatedToday &&
   (upcoming.status==="FOUND" && !isPast(upcoming.date)) ||
   (pastAlloc.status==="FOUND" && isToday(pastAlloc.date))
 ){
