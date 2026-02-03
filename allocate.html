@@ -400,18 +400,23 @@ function getTodayISO(){
   return `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,"0")}-${String(t.getDate()).padStart(2,"0")}`;
 }
   function before2PMOnDate(isoDate){
-  const now = new Date();
+  // Current time in IST
+  const nowIST = new Date(
+    new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+  );
+
+  const todayIST = new Date(
+    nowIST.getFullYear(),
+    nowIST.getMonth(),
+    nowIST.getDate()
+  );
 
   const d = new Date(isoDate);
   d.setHours(0,0,0,0);
 
-  const today = new Date();
-  today.setHours(0,0,0,0);
+  if(d.getTime() !== todayIST.getTime()) return false;
 
-  // Only relevant on the same date
-  if(d.getTime() !== today.getTime()) return false;
-
-  return now.getHours() < 14; // before 2 PM
+  return nowIST.getHours() < 14; // before 2 PM IST
 }
 function loadAll(){
   const loadingBox  = document.getElementById("loadingBox");
@@ -482,21 +487,13 @@ if(attendance.status === "OK"){
 
 /* If nothing upcoming, show last allocation details */
 
-    let upcomingMsgs = [];
+ let hasUpcoming = false;
+let upcomingMsgs = [];
 let pendingMsgs  = [];
 let doneMsgs     = [];
-    
-let hasUpcoming = false;
-    let hasTodayAllocation = false;
-    /* UPCOMING */
- if(upcoming.status === "FOUND"){
 
-  // Step-1 magic: remember that today has an allocation
-  if(isToday(upcoming.date)){
-    hasTodayAllocation = true;
-  }
-
-  // Step-2: decide whether to SHOW it
+/* ========== UPCOMING (FUTURE) ========== */
+if(upcoming.status === "FOUND"){
   if(canShowUpcoming(upcoming.date)){
     hasUpcoming = true;
 
@@ -508,6 +505,22 @@ let hasUpcoming = false;
       </div>
     `);
   }
+}
+
+/* ========== TODAY (SPECIAL CASE) ========== */
+if(
+  pastAlloc.status === "FOUND" &&
+  isToday(pastAlloc.date) &&
+  before2PMOnDate(pastAlloc.date)
+){
+  hasUpcoming = true;
+
+  upcomingMsgs.push(`
+    <div class="upcomingBox">
+      Today: You have <b>${pastAlloc.category}</b><br>
+      on <b>${prettyDate(pastAlloc.date)}</b>
+    </div>
+  `);
 }
      /* COMPLETED BUT NOT EVALUATED */
  if(
