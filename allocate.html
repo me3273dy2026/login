@@ -585,7 +585,7 @@ if(!hasUpcoming){
     new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
   );
 
-  const isBefore2PM = nowIST.getHours() < 14;
+  const isBefore2PM = nowIST.getHours() < 10;
 
   const msg = isBefore2PM
     ? "You don’t have any allocations for the coming week."
