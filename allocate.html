@@ -392,12 +392,14 @@ function canShowUpcoming(isoDate){
   // Future date → always show
   if(d > today) return true;
 
-  // Today → show only before 2 PM
+  // Today → show only before 1:50 PM
   if(d.getTime() === today.getTime()){
-    return now.getHours() < 14;
+    const cutoff = new Date();
+    cutoff.setHours(13, 50, 0, 0); // 1:50 PM
+    return now < cutoff;
   }
 
-  // Past date
+  // Past date → never upcoming
   return false;
 }
   function before2PMOnDate(isoDate){
