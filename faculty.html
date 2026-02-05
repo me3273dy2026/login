@@ -221,7 +221,7 @@ if(!facultyToken){
   window.location.replace("faculty_login.html");
 }
 
-const BACKEND = "https://script.google.com/macros/s/AKfycbymQF7P4ZO46dk_saPBwseQEqnncsrMdXaQUurw16jzTFwCTavvqbQavPVIxV1tNGdqOg/exec";
+const BACKEND = "https://script.google.com/macros/s/AKfycbwS-4HBC0kj4-fRB-zpe3XgnMLHztg34Xscjq9DdhnxrOd4pECaexUeeFLlguC8UfPjbA/exec";
 
 /* ================= DOM ================= */
 const home = document.getElementById("home");
@@ -325,10 +325,11 @@ function loadAllocationsByDate(d){
   })
   .then(r=>r.json())
   .then(res=>{
-    const gd = res.allocations.filter(a=>a.category==="GD");
-    gdExisting.innerHTML = gd.length
-      ? gd.map(a=>`<b>${a.topic}</b><br>${a.roll} - ${a.name}`).join("<br><br>")
-      : "-";
+    const gdTopics = res.gdTopics || [];
+
+gdExisting.innerHTML = gdTopics.length
+  ? gdTopics.map(t => `• ${t}`).join("<br>")
+  : "-";
 
     semExisting.innerHTML = res.allocations
       .filter(a=>a.category==="SEMINAR")
