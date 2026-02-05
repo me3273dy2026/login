@@ -492,27 +492,44 @@ function toggleSection(t){
 
     const m = Number(res.marks);
 
-    let cls, tag;
-    if(m >= 80){
-      cls = "score-80";
-      tag = "Excellent performance";
-    }else if(m >= 70){
-      cls = "score-70";
-      tag = "Good performance";
-    }else if(m >= 60){
-      cls = "score-60";
-      tag = "Satisfactory performance";
-    }else{
-      cls = "score-low";
-      tag = "Needs improvement";
-    }
+    let cls, tag, note;
+
+if(m >= 80){
+  cls  = "score-80";
+  tag  = "Excellent performance";
+  note = "Keep up the excellent work and maintain this consistency.";
+}
+else if(m >= 70){
+  cls  = "score-70";
+  tag  = "Good performance";
+  note = "You are very close to excellence — a little more refinement will take you there.";
+}
+else if(m >= 60){
+  cls  = "score-60";
+  tag  = "Satisfactory performance";
+  note = "With focused effort and practice, you can significantly improve your performance.";
+}
+else{
+  cls  = "score-low";
+  tag  = "Needs improvement";
+  note = "Don’t be discouraged — consistent effort will help you improve.";
+}
 
    body.innerHTML = `
   <div style="text-align:center">
     <div class="scoreBox ${cls}">
-      <div style="font-size:26px">${m} / 100</div>
-      <div class="tagline">${tag}</div>
-    </div>
+    <div style="font-size:26px">${m} / 100</div>
+    <div class="tagline">${tag}</div>
+  </div>
+
+  <div style="
+    margin-top:6px;
+    font-size:13px;
+    font-weight:600;
+    color:#455a64;
+  ">
+    ${note}
+  </div>
   </div>
 
   <div class="feedbackBox positivesBox">
