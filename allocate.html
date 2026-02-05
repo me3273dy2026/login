@@ -83,6 +83,22 @@ button{
   background:linear-gradient(135deg,#e74c3c,#c0392b);
   color:#fff;
 }
+  .dateChip{
+  display:inline-block;
+  padding:6px 10px;
+  margin:6px 6px 0 0;
+  border-radius:8px;
+  font-size:13px;
+  font-weight:600;
+}
+.date-green{
+  background:#c8e6c9;
+  color:#1b5e20;
+}
+.date-red{
+  background:#ffcdd2;
+  color:#b71c1c;
+}
 .section{
   margin-top:10px;
   border-radius:14px;
@@ -283,7 +299,51 @@ function toggleSection(t){
     document.getElementById(t).innerHTML=res.status==="FOUND"?`Marks: ${res.marks}/100`:"Not yet evaluated";
   });
 }
-function toggleAttendanceDetails(){ attendancePanel.style.display=attendancePanel.style.display==="none"?"block":"none"; }
+function toggleAttendanceDetails(){
+  const panel = document.getElementById("attendancePanel");
+
+  panel.style.display =
+    panel.style.display === "none" ? "block" : "none";
+
+  // Load only once
+  if(panel.dataset.loaded) return;
+  panel.dataset.loaded = "yes";
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getMyAttendanceDetails",
+      token
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    if(res.status !== "OK"){
+      attendedDates.innerHTML = "<i>No data</i>";
+      absentDates.innerHTML   = "<i>No data</i>";
+      return;
+    }
+
+    renderDates("attendedDates", res.attended, "date-green");
+    renderDates("absentDates",   res.absent,   "date-red");
+  })
+  .catch(()=>{
+    attendedDates.innerHTML = "Failed to load";
+    absentDates.innerHTML   = "Failed to load";
+  });
+}
+  function renderDates(id, list, cls){
+  const box = document.getElementById(id);
+
+  if(!list || !list.length){
+    box.innerHTML = "<i>No records</i>";
+    return;
+  }
+
+  box.innerHTML = list
+    .map(d => `<span class="dateChip ${cls}">${prettyDate(d)}</span>`)
+    .join("");
+}
 function logout(){ sessionStorage.clear(); location.replace("index.html"); }
 </script>
 
