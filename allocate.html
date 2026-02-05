@@ -221,7 +221,7 @@ Promise.all([
     attendanceValue.innerText=`${attendance.percent}%`;
   }
 
-  let msgs=[], hasUpcoming=false;
+  let msgs=[], pastMsgs=[], hasUpcoming=false;
 
   if(upcoming.status==="FOUND" && canShowUpcoming(upcoming.date)){
     hasUpcoming=true;
@@ -236,13 +236,37 @@ Promise.all([
     msgs.push(`<div class="pastBox" style="background:#eef3f7">${msg}</div>`);
   }
 
-  if(pastList.status==="OK"){
-    pastList.allocations.forEach(a=>{
-      msgs.push(`<div class="pastBox">${a.category} · ${prettyDate(a.date)}<br><i>${a.evaluated?"Evaluation completed":"Evaluation under process"}</i></div>`);
-    });
-  }
+ if(pastList.status==="OK"){
+  pastList.allocations.forEach(a=>{
 
-  upcomingBox.innerHTML=msgs.join("");
+    const style = a.evaluated
+      ? ""
+      : "background:#fff9c4;border:1px solid #fdd835;color:#5d4037";
+
+    pastMsgs.push(`
+      <div class="pastBox" style="${style}">
+        ${a.category} · ${prettyDate(a.date)}<br>
+        <i>${a.evaluated?"Evaluation completed":"Evaluation under process"}</i>
+      </div>
+    `);
+  });
+}
+  if(pastMsgs.length){
+  pastMsgs.unshift(`
+    <div class="infoBox"
+         style="background:#eef3f7;
+                font-weight:700;
+                text-align:center;
+                color:#203a43;">
+      Completed:
+    </div>
+  `);
+}
+
+  upcomingBox.innerHTML = [
+  ...msgs,      // upcoming / messages
+  ...pastMsgs   // completed section
+].join("");
   upcomingBox.style.display="block";
   actionButtons.style.display="block";
 });
