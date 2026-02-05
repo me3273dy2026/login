@@ -99,6 +99,28 @@ button{
   background:#ffcdd2;
   color:#b71c1c;
 }
+  .attendance-group{
+  margin-top:12px;
+  padding:14px;
+  border-radius:14px;
+}
+
+.attendance-present{
+  background:#e8f5e9;          /* light green */
+  border:1px solid #c8e6c9;
+  color:#1b5e20;
+}
+
+.attendance-absent{
+  background:#fdecea;          /* light red */
+  border:1px solid #f5c6cb;
+  color:#b71c1c;
+}
+
+.attendance-group b{
+  display:block;
+  margin-bottom:8px;
+}
 .section{
   margin-top:10px;
   border-radius:14px;
@@ -178,13 +200,15 @@ footer{
     <div id="attendancePanel" style="display:none;margin-top:14px">
 
   <div id="attendanceContent" style="display:none">
-    <div><b>Attended:</b>
-      <div id="attendedDates"></div>
-    </div>
+   <div class="attendance-group attendance-present">
+  <b>Attended</b>
+  <div id="attendedDates"></div>
+</div>
 
-    <div style="margin-top:10px"><b>Absent:</b>
-      <div id="absentDates"></div>
-    </div>
+<div class="attendance-group attendance-absent" style="margin-top:10px">
+  <b>Absent</b>
+  <div id="absentDates"></div>
+</div>
   </div>
 
 </div>
