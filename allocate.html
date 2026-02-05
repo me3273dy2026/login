@@ -360,6 +360,18 @@ function isPast(iso){
 
   return d < today;   // STRICTLY before today
 }
+  function isAfter2PMOfDate(isoDate){
+  const cutoff = new Date(
+    new Date(isoDate).toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+  );
+  cutoff.setHours(14, 0, 0, 0); // 2 PM IST on allocated date
+
+  const nowIST = new Date(
+    new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+  );
+
+  return nowIST >= cutoff;
+}
 function isToday(iso){
   const today = new Date();
   const yyyy = today.getFullYear();
@@ -572,15 +584,14 @@ if(!isEvaluatedSame){
 
 if(!hasUpcoming){
 
-  const nowIST = new Date(
-    new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
-  );
+  let msg = "You don’t have any allocations for the coming week.";
 
-  const isBefore2PM = nowIST.getHours() < 14;
-
-  const msg = isBefore2PM
-    ? "You don’t have any allocations for the coming week."
-    : "Allocation for the coming week has not been done yet.";
+  if(
+    pastAlloc.status === "FOUND" &&
+    isAfter2PMOfDate(pastAlloc.date)
+  ){
+    msg = "Allocation for the coming week has not been done yet.";
+  }
 
   upcomingMsgs.unshift(`
     <div class="pastBox"
