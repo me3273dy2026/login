@@ -116,7 +116,13 @@ button{
   border:1px solid #f5c6cb;
   color:#b71c1c;
 }
+.attendance-good{
+  color:#1b5e20;   /* green */
+}
 
+.attendance-bad{
+  color:#b71c1c;   /* red */
+}
 .attendance-group b{
   display:block;
   margin-bottom:8px;
@@ -145,6 +151,7 @@ footer{
   font-size:13px;
   font-weight:600;
 }
+  
 </style>
 </head>
 
@@ -274,9 +281,19 @@ Promise.all([
   }
 
   if(attendance.status==="OK"){
-    attendanceBox.style.display="block";
-    attendanceValue.innerText=`${attendance.percent}%`;
+  attendanceBox.style.display="block";
+
+  const pct = Number(attendance.percent);
+  attendanceValue.innerText = `${pct}%`;
+
+  attendanceValue.classList.remove("attendance-good","attendance-bad");
+
+  if(pct >= 75){
+    attendanceValue.classList.add("attendance-good");
+  }else{
+    attendanceValue.classList.add("attendance-bad");
   }
+}
 
   let msgs=[], pastMsgs=[], hasUpcoming=false;
 
