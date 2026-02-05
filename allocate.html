@@ -167,6 +167,14 @@ footer{
     </div>
 
     <button class="btn-attendance" onclick="toggleAttendanceDetails()">View Attendance Details</button>
+    <div id="attendanceLoadingMsg"
+     style="display:none;
+            margin-top:8px;
+            color:#c62828;
+            font-weight:600;
+            text-align:center;">
+  Loading… Please wait
+</div>
     <div id="attendancePanel" style="display:none;margin-top:14px">
       <div><b>Attended:</b> <div id="attendedDates"></div></div>
       <div style="margin-top:10px"><b>Absent:</b> <div id="absentDates"></div></div>
@@ -301,6 +309,7 @@ function toggleSection(t){
 }
 function toggleAttendanceDetails(){
   const panel = document.getElementById("attendancePanel");
+  const msg   = document.getElementById("attendanceLoadingMsg");
 
   panel.style.display =
     panel.style.display === "none" ? "block" : "none";
@@ -308,6 +317,8 @@ function toggleAttendanceDetails(){
   // Load only once
   if(panel.dataset.loaded) return;
   panel.dataset.loaded = "yes";
+
+  msg.style.display = "block";   // 🔴 SHOW loading message
 
   fetch(BACKEND,{
     method:"POST",
@@ -318,6 +329,8 @@ function toggleAttendanceDetails(){
   })
   .then(r=>r.json())
   .then(res=>{
+    msg.style.display = "none";  // ✅ HIDE after load
+
     if(res.status !== "OK"){
       attendedDates.innerHTML = "<i>No data</i>";
       absentDates.innerHTML   = "<i>No data</i>";
@@ -328,6 +341,7 @@ function toggleAttendanceDetails(){
     renderDates("absentDates",   res.absent,   "date-red");
   })
   .catch(()=>{
+    msg.style.display = "none";  // ✅ HIDE on error
     attendedDates.innerHTML = "Failed to load";
     absentDates.innerHTML   = "Failed to load";
   });
