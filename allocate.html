@@ -62,10 +62,11 @@ body{
   margin-top:10px;
 }
   .scoreBox{
+  display:inline-block;        /* 🔑 key change */
   text-align:center;
-  padding:14px;
+  padding:12px 18px;
   border-radius:14px;
-  margin-bottom:12px;
+  margin:0 auto 12px;
   font-weight:800;
 }
 
@@ -89,6 +90,26 @@ body{
 .feedbackBox b{
   display:block;
   margin-bottom:6px;
+}
+  .positivesBox{
+  background:#e8f5e9;          /* light green */
+  border:1px solid #c8e6c9;
+  border-radius:12px;
+  padding:12px;
+  margin-top:10px;
+}
+
+.improveBox{
+  background:#fff9c4;          /* light yellow */
+  border:1px solid #fbc02d;
+  border-radius:12px;
+  padding:12px;
+  margin-top:10px;
+}
+
+.feedbackBox ol{
+  margin:6px 0 0 18px;
+  padding:0;
 }
   .loading-text{
   font-weight:600;
@@ -308,6 +329,12 @@ function isToday(d){
   const t=new Date();
   return d===`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,"0")}-${String(t.getDate()).padStart(2,"0")}`;
 }
+  function toList(txt){
+  if(!txt) return "<i>Not available</i>";
+  return `<ol>${
+    txt.split(/\n+/).map(t=>`<li>${t.trim()}</li>`).join("")
+  }</ol>`;
+}
 function isAfter2PMOfDate(d){
   const cut=new Date(new Date(d).toLocaleString("en-US",{timeZone:"Asia/Kolkata"}));
   cut.setHours(14,0,0,0);
@@ -480,22 +507,24 @@ function toggleSection(t){
       tag = "Needs improvement";
     }
 
-    body.innerHTML = `
-      <div class="scoreBox ${cls}">
-        <div style="font-size:26px">${m} / 100</div>
-        <div class="tagline">${tag}</div>
-      </div>
+   body.innerHTML = `
+  <div style="text-align:center">
+    <div class="scoreBox ${cls}">
+      <div style="font-size:26px">${m} / 100</div>
+      <div class="tagline">${tag}</div>
+    </div>
+  </div>
 
-      <div class="feedbackBox">
-        <b>Positives</b>
-        ${res.positives || "<i>Not available</i>"}
-      </div>
+  <div class="feedbackBox positivesBox">
+    <b>Positives</b>
+    ${toList(res.positives)}
+  </div>
 
-      <div class="feedbackBox">
-        <b>Scope for Improvement</b>
-        ${res.improvements || "<i>Not available</i>"}
-      </div>
-    `;
+  <div class="feedbackBox improveBox">
+    <b>Scope for Improvement</b>
+    ${toList(res.improvements)}
+  </div>
+`;
   })
   .catch(()=>{
     body.innerHTML = "Failed to load";
