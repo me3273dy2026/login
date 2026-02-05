@@ -329,10 +329,20 @@ function isToday(d){
   const t=new Date();
   return d===`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,"0")}-${String(t.getDate()).padStart(2,"0")}`;
 }
-  function toList(txt){
+ function toList(txt){
   if(!txt) return "<i>Not available</i>";
+
+  const items = txt
+    .split(/\n+/)                 // split lines
+    .map(t => t.trim())           // trim spaces
+    .filter(t => t && t !== "-"); // ❌ remove empty / dash-only lines
+
+  if(!items.length){
+    return "<i>Not available</i>";
+  }
+
   return `<ol>${
-    txt.split(/\n+/).map(t=>`<li>${t.trim()}</li>`).join("")
+    items.map(t => `<li>${t}</li>`).join("")
   }</ol>`;
 }
 function isAfter2PMOfDate(d){
