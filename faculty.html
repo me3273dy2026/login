@@ -325,7 +325,9 @@ function loadAllocationsByDate(d){
   })
   .then(r=>r.json())
   .then(res=>{
-    const gdTopics = res.gdTopics || [];
+    const gdTopics = res.allocations
+  .filter(a => a.category === "GD")
+  .map(a => a.topic);
 
 gdExisting.innerHTML = gdTopics.length
   ? gdTopics.map(t => `• ${t}`).join("<br>")
