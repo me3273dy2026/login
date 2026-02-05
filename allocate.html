@@ -176,9 +176,18 @@ footer{
   Loading… Please wait
 </div>
     <div id="attendancePanel" style="display:none;margin-top:14px">
-      <div><b>Attended:</b> <div id="attendedDates"></div></div>
-      <div style="margin-top:10px"><b>Absent:</b> <div id="absentDates"></div></div>
+
+  <div id="attendanceContent" style="display:none">
+    <div><b>Attended:</b>
+      <div id="attendedDates"></div>
     </div>
+
+    <div style="margin-top:10px"><b>Absent:</b>
+      <div id="absentDates"></div>
+    </div>
+  </div>
+
+</div>
 
     <button id="logoutBtn" class="btn-logout" onclick="logout()">Logout</button>
   </div>
@@ -308,17 +317,22 @@ function toggleSection(t){
   });
 }
 function toggleAttendanceDetails(){
-  const panel = document.getElementById("attendancePanel");
-  const msg   = document.getElementById("attendanceLoadingMsg");
+  const panel   = document.getElementById("attendancePanel");
+  const content = document.getElementById("attendanceContent");
+  const msg     = document.getElementById("attendanceLoadingMsg");
 
   panel.style.display =
     panel.style.display === "none" ? "block" : "none";
 
-  // Load only once
-  if(panel.dataset.loaded) return;
-  panel.dataset.loaded = "yes";
+  // If already loaded, just toggle visibility
+  if(panel.dataset.loaded){
+    content.style.display = "block";
+    return;
+  }
 
-  msg.style.display = "block";   // 🔴 SHOW loading message
+  panel.dataset.loaded = "yes";
+  msg.style.display = "block";       // 🔴 Show loading
+  content.style.display = "none";    // ❌ Hide headings
 
   fetch(BACKEND,{
     method:"POST",
@@ -329,7 +343,8 @@ function toggleAttendanceDetails(){
   })
   .then(r=>r.json())
   .then(res=>{
-    msg.style.display = "none";  // ✅ HIDE after load
+    msg.style.display = "none";      // ✅ Hide loading
+    content.style.display = "block"; // ✅ Show headings
 
     if(res.status !== "OK"){
       attendedDates.innerHTML = "<i>No data</i>";
@@ -341,7 +356,8 @@ function toggleAttendanceDetails(){
     renderDates("absentDates",   res.absent,   "date-red");
   })
   .catch(()=>{
-    msg.style.display = "none";  // ✅ HIDE on error
+    msg.style.display = "none";
+    content.style.display = "block";
     attendedDates.innerHTML = "Failed to load";
     absentDates.innerHTML   = "Failed to load";
   });
