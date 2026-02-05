@@ -615,7 +615,24 @@ function toggleAttendanceDetails(){
     .map(d => `<span class="dateChip ${cls}">${prettyDate(d)}</span>`)
     .join("");
 }
-function logout(){ sessionStorage.clear(); location.replace("index.html"); }
+function logout(){
+
+  const ok = confirm("Are you sure you want to logout?");
+  if(!ok) return;
+
+  // Disable all buttons to prevent further actions
+  document.querySelectorAll("button").forEach(btn=>{
+    btn.disabled = true;
+    btn.style.opacity = "0.6";
+    btn.style.cursor = "not-allowed";
+  });
+
+  // Optional: small delay for UX smoothness
+  setTimeout(()=>{
+    sessionStorage.clear();
+    location.replace("index.html");
+  }, 400);
+}
 </script>
 
 </body>
