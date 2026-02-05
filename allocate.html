@@ -61,6 +61,11 @@ body{
   border-radius:14px;
   margin-top:10px;
 }
+  .loading-text{
+  font-weight:600;
+  color:#c62828;
+  text-align:center;
+}
 button{
   width:100%;
   padding:13px;
@@ -401,12 +406,36 @@ else{
 /* ===== GLOBAL FUNCTIONS ===== */
 function togglePanel(){ perfPanel.style.display=perfPanel.style.display==="none"?"block":"none"; }
 function toggleSection(t){
-  const s=document.getElementById(t).parentElement;
-  s.classList.toggle("open");
-  if(document.getElementById(t).innerHTML) return;
-  fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getMyPerformance",token,type:t})})
-  .then(r=>r.json()).then(res=>{
-    document.getElementById(t).innerHTML=res.status==="FOUND"?`Marks: ${res.marks}/100`:"Not yet evaluated";
+  const body = document.getElementById(t);
+  const section = body.parentElement;
+
+  section.classList.toggle("open");
+
+  // If already loaded, don't fetch again
+  if(body.dataset.loaded) return;
+
+  // 🔴 Show loading immediately
+  body.innerHTML = `<div class="loading-text">Loading… Please wait</div>`;
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"getMyPerformance",
+      token,
+      type:t
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    body.dataset.loaded = "yes";
+
+    body.innerHTML =
+      res.status === "FOUND"
+        ? `Marks: ${res.marks}/100`
+        : "Not yet evaluated";
+  })
+  .catch(()=>{
+    body.innerHTML = "Failed to load";
   });
 }
 function toggleAttendanceDetails(){
