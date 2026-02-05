@@ -127,6 +127,36 @@ button{
   display:block;
   margin-bottom:8px;
 }
+  .status-upcoming{
+  background:#fdecea;            /* pale red */
+  border:2px solid #e53935;
+  color:#b71c1c;
+  font-weight:800;
+  text-align:center;
+  padding:14px;
+  border-radius:14px;
+  animation:blink 1.6s infinite;
+}
+
+.status-none{
+  background:#e3f2fd;            /* pale blue */
+  border:1px solid #64b5f6;
+  color:#0d47a1;
+  font-weight:800;
+  text-align:center;
+  padding:14px;
+  border-radius:14px;
+}
+
+.status-pending{
+  background:#fff9c4;            /* pale yellow */
+  border:1px solid #fbc02d;
+  color:#f57f17;
+  font-weight:800;
+  text-align:center;
+  padding:14px;
+  border-radius:14px;
+}
 .section{
   margin-top:10px;
   border-radius:14px;
@@ -295,20 +325,42 @@ Promise.all([
   }
 }
 
-  let msgs=[], pastMsgs=[], hasUpcoming=false;
+ let msgs = [], pastMsgs = [];
 
-  if(upcoming.status==="FOUND" && canShowUpcoming(upcoming.date)){
-    hasUpcoming=true;
-    msgs.push(`<div class="upcomingBox">Upcoming: <b>${upcoming.category}</b><br>${prettyDate(upcoming.date)}</div>`);
-  }
+/* ===== CASE 1: Student has upcoming allocation ===== */
+if(upcoming.status === "FOUND" && canShowUpcoming(upcoming.date)){
+  msgs.push(`
+    <div class="status-upcoming">
+      Upcoming: You have <b>${upcoming.category}</b><br>
+      on ${prettyDate(upcoming.date)}
+    </div>
+  `);
+}
 
-  if(!hasUpcoming){
-    let msg="You don’t have any allocations for the coming week.";
-    if(pastList.status==="OK" && pastList.allocations.length && isAfter2PMOfDate(pastList.allocations[0].date)){
-      msg="Allocation for the coming week has not been done yet.";
-    }
-    msgs.push(`<div class="pastBox" style="background:#eef3f7">${msg}</div>`);
+/* ===== CASE 2 & 3: Student has NO upcoming ===== */
+else{
+
+  /* Any future allocation exists for anyone? */
+  const futureExists =
+    pastList.status === "OK" &&
+    pastList.allocations.some(a => !isAfter2PMOfDate(a.date));
+
+  if(futureExists){
+    // 🔵 Case 2
+    msgs.push(`
+      <div class="status-none">
+        You don’t have any allocations for the coming week
+      </div>
+    `);
+  }else{
+    // 🟡 Case 3
+    msgs.push(`
+      <div class="status-pending">
+        The allocation for the coming week has not been done yet
+      </div>
+    `);
   }
+}
 
  if(pastList.status==="OK"){
   pastList.allocations.forEach(a=>{
