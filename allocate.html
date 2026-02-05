@@ -61,6 +61,35 @@ body{
   border-radius:14px;
   margin-top:10px;
 }
+  .scoreBox{
+  text-align:center;
+  padding:14px;
+  border-radius:14px;
+  margin-bottom:12px;
+  font-weight:800;
+}
+
+.score-80{ background:#e8f5e9; color:#1b5e20; }
+.score-70{ background:#e3f2fd; color:#0d47a1; }
+.score-60{ background:#fff9c4; color:#f57f17; }
+.score-low{ background:#fdecea; color:#b71c1c; }
+
+.tagline{
+  font-weight:600;
+  margin-top:6px;
+}
+
+.feedbackBox{
+  background:#f5f7fa;
+  border-radius:12px;
+  padding:10px;
+  margin-top:10px;
+}
+
+.feedbackBox b{
+  display:block;
+  margin-bottom:6px;
+}
   .loading-text{
   font-weight:600;
   color:#c62828;
@@ -414,7 +443,7 @@ function toggleSection(t){
   // If already loaded, don't fetch again
   if(body.dataset.loaded) return;
 
-  // 🔴 Show loading immediately
+  // 🔴 Loading state
   body.innerHTML = `<div class="loading-text">Loading… Please wait</div>`;
 
   fetch(BACKEND,{
@@ -429,10 +458,44 @@ function toggleSection(t){
   .then(res=>{
     body.dataset.loaded = "yes";
 
-    body.innerHTML =
-      res.status === "FOUND"
-        ? `Marks: ${res.marks}/100`
-        : "Not yet evaluated";
+    if(res.status !== "FOUND"){
+      body.innerHTML = "Not yet evaluated";
+      return;
+    }
+
+    const m = Number(res.marks);
+
+    let cls, tag;
+    if(m >= 80){
+      cls = "score-80";
+      tag = "Excellent performance";
+    }else if(m >= 70){
+      cls = "score-70";
+      tag = "Good performance";
+    }else if(m >= 60){
+      cls = "score-60";
+      tag = "Satisfactory performance";
+    }else{
+      cls = "score-low";
+      tag = "Needs improvement";
+    }
+
+    body.innerHTML = `
+      <div class="scoreBox ${cls}">
+        <div style="font-size:26px">${m} / 100</div>
+        <div class="tagline">${tag}</div>
+      </div>
+
+      <div class="feedbackBox">
+        <b>Positives</b>
+        ${res.positives || "<i>Not available</i>"}
+      </div>
+
+      <div class="feedbackBox">
+        <b>Scope for Improvement</b>
+        ${res.improvements || "<i>Not available</i>"}
+      </div>
+    `;
   })
   .catch(()=>{
     body.innerHTML = "Failed to load";
