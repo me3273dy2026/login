@@ -318,11 +318,11 @@ Promise.all([
       : "background:#fff9c4;border:1px solid #fdd835;color:#5d4037";
 
     pastMsgs.push(`
-      <div class="pastBox" style="${style}">
-        ${a.category} · ${prettyDate(a.date)}<br>
-        <i>${a.evaluated?"Evaluation completed":"Evaluation under process"}</i>
-      </div>
-    `);
+  <div class="pastBox" style="${style}">
+    ${a.category} · ${prettyDate(a.date)}<br>
+    <i>(${a.evaluated ? "Evaluation completed" : "Evaluation under process"})</i>
+  </div>
+`);
   });
 }
   if(pastMsgs.length){
