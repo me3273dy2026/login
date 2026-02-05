@@ -494,25 +494,25 @@ function toggleSection(t){
 
     let cls, tag, note;
 
-if(m >= 80){
+if(m >= 90){
   cls  = "score-80";
   tag  = "Excellent performance";
   note = "Keep up the excellent work and maintain this consistency.";
 }
-else if(m >= 70){
+else if(m >= 80){
   cls  = "score-70";
   tag  = "Good performance";
-  note = "You are very close to excellence — a little more refinement will take you there.";
+  note = "You are performing well — a little more refinement will take you to the next level.";
 }
-else if(m >= 60){
+else if(m >= 70){
   cls  = "score-60";
   tag  = "Satisfactory performance";
-  note = "With focused effort and practice, you can significantly improve your performance.";
+  note = "You have a good foundation — focused effort can significantly improve your performance.";
 }
 else{
   cls  = "score-low";
   tag  = "Needs improvement";
-  note = "Don’t be discouraged — consistent effort will help you improve.";
+  note = "Don’t be discouraged — consistent effort and guidance will help you improve.";
 }
 
    body.innerHTML = `
