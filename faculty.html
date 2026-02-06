@@ -394,24 +394,31 @@ function loadGD(){
 }
 
 function saveGD(){
-  saveGDBtn.disabled=true;
+  saveGDBtn.disabled = true;
   showLoader("Saving GD…");
+
+  const selectedTopics = [...gdBox.querySelectorAll("input:checked")]
+                          .map(i=>i.value);
 
   fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({
-      action:"saveGDAllocation",
+      action: "saveGDAllocation",
       token: facultyToken,
-      date:allocationState.date,
-      topics:[...gdBox.querySelectorAll("input:checked")].map(i=>i.value).join(",")
+      date: allocationState.date,
+      topics: selectedTopics.join(","),   // FULL current state
+      overwrite: "true"                   // 🔑 intent flag
     })
   })
   .then(()=>{
     sessionStage="SEMINAR";
-    gdBox.style.display=saveGDBtn.style.display="none";
+    gdBox.style.display = saveGDBtn.style.display = "none";
     loadAllocationsByDate(allocationState.date);
   })
-  .finally(()=>{ saveGDBtn.disabled=false; hideLoader(); });
+  .finally(()=>{
+    saveGDBtn.disabled = false;
+    hideLoader();
+  });
 }
 function loadSeminar(){
   showLoader("Loading Seminar…");
@@ -451,15 +458,16 @@ function saveSeminar(){
                     .join(",");
 
   fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({
-      action:"saveIndividualAllocation",
-      token: facultyToken,
-      date: allocationState.date,
-      category: "SEMINAR",
-      rolls: selected
-    })
+  method:"POST",
+  body:new URLSearchParams({
+    action:"saveIndividualAllocation",
+    token: facultyToken,
+    date: allocationState.date,
+    category: "SEMINAR",
+    rolls: selected,      // FULL list
+    overwrite: "true"     // 🔑
   })
+})
   .then(()=>{
     sessionStage = "PI";
     semBox.style.display = saveSemBtn.style.display = "none";
@@ -509,16 +517,17 @@ function savePI(){
                     .map(i=>i.value)
                     .join(",");
 
-  fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({
-      action:"saveIndividualAllocation",
-      token: facultyToken,
-      date: allocationState.date,
-      category: "PI",
-      rolls: selected
-    })
+ fetch(BACKEND,{
+  method:"POST",
+  body:new URLSearchParams({
+    action:"saveIndividualAllocation",
+    token: facultyToken,
+    date: allocationState.date,
+    category: "PI",
+    rolls: selected,
+    overwrite: "true"
   })
+})
   .then(()=>{
     sessionStage = "DONE";
     piBox.style.display = savePIBtn.style.display = "none";
