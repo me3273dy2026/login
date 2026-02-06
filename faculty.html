@@ -270,7 +270,6 @@ let sessionStage = "GD";
 function openAllocate(){ home.style.display="none"; allocate.style.display="block"; }
 function openEvaluate(){ home.style.display="none"; evaluate.style.display="block"; loadStudentsForEvaluation(); }
 function closeSection(){ allocate.style.display="none"; evaluate.style.display="none"; home.style.display="block"; }
-
 function logout(){
   fetch(BACKEND,{
     method:"POST",
