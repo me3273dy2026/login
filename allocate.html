@@ -259,16 +259,15 @@ footer{
   <div id="loadingBox" class="infoBox loading">Fetching your details…</div>
   <div id="upcomingBox" style="display:none"></div>
 
-  <div id="profileBox" class="infoBox" style="display:none">
+   <div id="actionButtons" style="display:none">
+    <button class="btn-secondary" onclick="toggleProfileDetails()">
+    View GD / Seminar Details
+  </button>
+     <div id="profileBox" class="infoBox" style="display:none">
     <div><b>GD Topic:</b> <span id="gdTopic">-</span></div>
     <div style="margin-top:8px"><b>GD Group Members:</b> <div id="gdMembers">-</div></div>
     <div style="margin-top:8px"><b>Seminar Topic:</b> <span id="seminarTopic">-</span></div>
   </div>
-
-  <div id="actionButtons" style="display:none">
-    <button class="btn-secondary" onclick="toggleProfileDetails()">
-    View GD / Seminar Details
-  </button>
     <button id="perfBtn" class="btn-primary" onclick="togglePanel()">View Performance Evaluation</button>
 
     <div id="perfPanel" style="display:none">
