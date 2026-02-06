@@ -91,6 +91,21 @@ body{
   display:block;
   margin-bottom:6px;
 }
+  .completedBox{
+  background:#eef3f7;
+  border:1px solid #d0d7de;
+  border-radius:14px;
+  padding:14px;
+  margin-top:14px;
+}
+
+.completedBox h3{
+  margin:0 0 10px;
+  font-size:15px;
+  font-weight:800;
+  color:#203a43;
+  text-align:left;   /* 👈 left aligned */
+}
   .positivesBox{
   background:#e8f5e9;          /* light green */
   border:1px solid #c8e6c9;
@@ -459,21 +474,19 @@ if (activeDate) {
 `);
   });
 }
-  if(pastMsgs.length){
-  pastMsgs.unshift(`
-    <div class="infoBox"
-         style="background:#eef3f7;
-                font-weight:700;
-                text-align:center;
-                color:#203a43;">
-      Completed:
-    </div>
-  `);
-}
+ let completedHTML = "";
 
-  upcomingBox.innerHTML = [
-  ...msgs,      // upcoming / messages
-  ...pastMsgs   // completed section
+if(pastMsgs.length){
+  completedHTML = `
+    <div class="completedBox">
+      <h3>Completed</h3>
+      ${pastMsgs.join("")}
+    </div>
+  `;
+} 
+ upcomingBox.innerHTML = [
+  ...msgs,
+  completedHTML
 ].join("");
   upcomingBox.style.display="block";
   actionButtons.style.display="block";
