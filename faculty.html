@@ -221,7 +221,7 @@ if(!facultyToken){
   window.location.replace("faculty_login.html");
 }
 
-const BACKEND = "https://script.google.com/macros/s/AKfycbzvUmCW2u2K2F4N9ZY9H9xzUiFB9NyX0KemJkd4AT1FzI-eGT632kTKr7qcOl0SDzIGLQ/exec";
+const BACKEND = "https://script.google.com/macros/s/AKfycbxxGH7NJJ8h2NbBuYaREszV-uVmN4jsbAS2VzDjd5tQLQNazL48NqcK9k0gywinWfG5nw/exec";
 
 /* ================= DOM ================= */
 const home = document.getElementById("home");
@@ -319,26 +319,51 @@ function updateButtons(){
 
 /* ================= LOAD ALLOC ================= */
 function loadAllocationsByDate(d){
-  fetch(BACKEND,{
-    method:"POST",
-    body:new URLSearchParams({ action:"getAllocationsByDate", token: facultyToken, date:d })
-  })
-  .then(r=>r.json())
-  .then(res=>{
-    const gdTopics = res.allocations
-  .filter(a => a.category === "GD")
-  .map(a => a.topic);
+  showLoader("Loading allocations…");
 
-gdExisting.innerHTML = gdTopics.length
-  ? gdTopics.map(t => `• ${t}`).join("<br>")
-  : "-";
+  Promise.all([
+    // 1️⃣ GD topic → members
+    fetch(BACKEND,{
+      method:"POST",
+      body:new URLSearchParams({
+        action:"getGDDetailsByDate",
+        token: facultyToken,
+        date:d
+      })
+    }).then(r=>r.json()),
 
-    semExisting.innerHTML = res.allocations
+    // 2️⃣ Seminar + PI allocations
+    fetch(BACKEND,{
+      method:"POST",
+      body:new URLSearchParams({
+        action:"getAllocationsByDate",
+        token: facultyToken,
+        date:d
+      })
+    }).then(r=>r.json())
+  ])
+  .then(([gdRes, allocRes])=>{
+
+    /* ---------- GD ---------- */
+    if(gdRes.status === "OK" && Object.keys(gdRes.topics).length){
+      gdExisting.innerHTML = Object.entries(gdRes.topics).map(
+        ([topic, members]) =>
+          `<b>${topic}</b><br>
+           Members:<br>
+           ${members.map(m=>`${m.name} - ${m.roll}`).join("<br>")}`
+      ).join("<br><br>");
+    }else{
+      gdExisting.innerHTML = "-";
+    }
+
+    /* ---------- SEMINAR ---------- */
+    semExisting.innerHTML = allocRes.allocations
       .filter(a=>a.category==="SEMINAR")
       .map(a=>`${a.roll} - ${a.name} (${a.seminarTopic})`)
       .join("<br>") || "-";
 
-    piExisting.innerHTML = res.allocations
+    /* ---------- PI ---------- */
+    piExisting.innerHTML = allocRes.allocations
       .filter(a=>a.category==="PI")
       .map(a=>`${a.roll} - ${a.name}`)
       .join("<br>") || "-";
