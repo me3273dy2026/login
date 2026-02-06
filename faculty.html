@@ -293,7 +293,7 @@ function logout(){
   .catch(()=>{}) // even if backend fails, we still logout safely
   .finally(()=>{
     sessionStorage.clear();
-    window.location.replace("faculty_login.html");
+    window.location.replace("allocate.html");
   });
 }
 
