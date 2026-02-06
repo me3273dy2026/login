@@ -315,7 +315,7 @@ footer{
 </footer>
 
 <script>
-const BACKEND="https://script.google.com/macros/s/AKfycbzaTaCWIYegbYWaOcVcmzpvl93a4zoudaIPKOCzobuJF082aMy_xlzVhV645wsFouLlKA/exec";
+const BACKEND="https://script.google.com/macros/s/AKfycbxureVsEZDkKjpAjoEt-CAY8mPfjtCSjeckH-rfZOW8ov_FmX3JoKhLPByXjGhdOOdNkA/exec";
 const token=sessionStorage.getItem("token");
 if(!token){ alert("Session expired"); location.replace("index.html"); }
 
@@ -398,48 +398,45 @@ Promise.all([
 
  let msgs = [], pastMsgs = [];
 
-/* ===== CASE 1: Student has upcoming allocation ===== */
-if(upcoming.status === "FOUND" && canShowUpcoming(upcoming.date)){
-  msgs.push(`
-    <div class="status-upcoming">
-      Upcoming: You have <b>${upcoming.category}</b><br>
-      on ${prettyDate(upcoming.date)}
-    </div>
-  `);
-}
+/* ===== ALLOCATION STATUS (BACKEND DRIVEN) ===== */
 
-/* ===== CASE 2 & 3: Student has NO upcoming ===== */
-else{
+const activeDate = pastList.activeAllocationDate;
+const nextWeek   = pastList.nextWeekDate;
 
-  const today = new Date().toISOString().slice(0,10);
+if (activeDate) {
 
-  const futureDates =
-    pastList.status === "OK" && Array.isArray(pastList.allFutureDates)
-      ? pastList.allFutureDates.filter(d => d >= today)
-      : [];
+  // Student has allocation on active date?
+  if (upcoming.status === "FOUND" && upcoming.date === activeDate) {
 
-  if(futureDates.length){
+    msgs.push(`
+      <div class="status-upcoming">
+        Upcoming: You have <b>${upcoming.category}</b><br>
+        on ${prettyDate(activeDate)}
+      </div>
+    `);
 
-    // ✅ Allocation HAS been done for coming week
-    const refDate = futureDates.sort()[0]; // earliest future allocation
+  } else {
 
     msgs.push(`
       <div class="status-none">
         You don’t have any allocations for the coming week
         <br>
-        <b>(${prettyDate(refDate)})</b>
-      </div>
-    `);
-
-  }else{
-
-    // ❌ No future allocations at all → not done yet
-    msgs.push(`
-      <div class="status-pending">
-        The allocation for the coming week has not been done yet
+        <b>(${prettyDate(activeDate)})</b>
       </div>
     `);
   }
+
+} else {
+
+  // No active allocation → allocation cycle closed
+  msgs.push(`
+    <div class="status-pending">
+      The allocation for the next week
+      <br>
+      <b>(${prettyDate(nextWeek)})</b>
+      has not been done yet
+    </div>
+  `);
 }
 
  if(pastList.status==="OK"){
