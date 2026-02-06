@@ -270,14 +270,28 @@ let sessionStage = "GD";
 function openAllocate(){ home.style.display="none"; allocate.style.display="block"; }
 function openEvaluate(){ home.style.display="none"; evaluate.style.display="block"; loadStudentsForEvaluation(); }
 function closeSection(){ allocate.style.display="none"; evaluate.style.display="none"; home.style.display="block"; }
+function disableAllUI(){
+  document.querySelectorAll("button, input, select, textarea")
+    .forEach(el => el.disabled = true);
+}
+
 function logout(){
+  const confirmLogout = confirm("Are you sure you want to logout?");
+  if(!confirmLogout) return;
+
+  // Freeze UI immediately
+  disableAllUI();
+  showLoader("Logging out…");
+
   fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({
       action:"logout",
       token: facultyToken
     })
-  }).finally(()=>{
+  })
+  .catch(()=>{}) // even if backend fails, we still logout safely
+  .finally(()=>{
     sessionStorage.clear();
     window.location.replace("faculty_login.html");
   });
