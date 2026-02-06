@@ -411,20 +411,29 @@ if(upcoming.status === "FOUND" && canShowUpcoming(upcoming.date)){
 /* ===== CASE 2 & 3: Student has NO upcoming ===== */
 else{
 
-  /* Any future allocation exists for anyone? */
-  const futureExists =
-    pastList.status === "OK" &&
-    pastList.allocations.some(a => !isAfter2PMOfDate(a.date));
+  const today = new Date().toISOString().slice(0,10);
 
-  if(futureExists){
-    // 🔵 Case 2
+  const futureDates =
+    pastList.status === "OK" && Array.isArray(pastList.allFutureDates)
+      ? pastList.allFutureDates.filter(d => d >= today)
+      : [];
+
+  if(futureDates.length){
+
+    // ✅ Allocation HAS been done for coming week
+    const refDate = futureDates.sort()[0]; // earliest future allocation
+
     msgs.push(`
       <div class="status-none">
         You don’t have any allocations for the coming week
+        <br>
+        <b>(${prettyDate(refDate)})</b>
       </div>
     `);
+
   }else{
-    // 🟡 Case 3
+
+    // ❌ No future allocations at all → not done yet
     msgs.push(`
       <div class="status-pending">
         The allocation for the coming week has not been done yet
