@@ -648,18 +648,25 @@ function logout(){
   const ok = confirm("Are you sure you want to logout?");
   if(!ok) return;
 
-  // Disable all buttons to prevent further actions
+  // Disable all buttons immediately
   document.querySelectorAll("button").forEach(btn=>{
     btn.disabled = true;
     btn.style.opacity = "0.6";
     btn.style.cursor = "not-allowed";
   });
 
-  // Optional: small delay for UX smoothness
-  setTimeout(()=>{
+  // 🔑 CALL BACKEND LOGOUT
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"logout",
+      token: token   // 👈 THIS WAS MISSING
+    })
+  })
+  .finally(()=>{   // even if backend fails, force logout UX
     sessionStorage.clear();
     location.replace("index.html");
-  }, 400);
+  });
 }
 </script>
 
