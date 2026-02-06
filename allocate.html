@@ -263,6 +263,9 @@ footer{
   </div>
 
   <div id="actionButtons" style="display:none">
+    <button class="btn-primary" onclick="toggleProfileDetails()">
+    View GD / Seminar Details
+  </button>
     <button id="perfBtn" class="btn-primary" onclick="togglePanel()">View Performance Evaluation</button>
 
     <div id="perfPanel" style="display:none">
@@ -363,6 +366,7 @@ function canShowUpcoming(d){
 }
 
 loadAll();
+  
 function loadAll(){
 Promise.all([
   fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"dashboard",token})}).then(r=>r.json()),
@@ -378,7 +382,6 @@ Promise.all([
     gdTopic.innerText=profile.gdTopic||"-";
     seminarTopic.innerText=profile.seminarTopic||"-";
     gdMembers.innerHTML=profile.members.map(m=>`<div>${m}</div>`).join("");
-    profileBox.style.display="block";
   }
 
   if(attendance.status==="OK"){
@@ -477,6 +480,10 @@ if (activeDate) {
 
 /* ===== GLOBAL FUNCTIONS ===== */
 function togglePanel(){ perfPanel.style.display=perfPanel.style.display==="none"?"block":"none"; }
+  function toggleProfileDetails(){
+  const box = document.getElementById("profileBox");
+  box.style.display = box.style.display === "none" ? "block" : "none";
+}
 function toggleSection(t){
   const body = document.getElementById(t);
   const section = body.parentElement;
