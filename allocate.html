@@ -254,7 +254,43 @@ footer{
   font-size:13px;
   font-weight:600;
 }
-  
+/* ===== Logout Overlay ===== */
+.logout-overlay{
+  position:fixed;
+  top:0; left:0; right:0; bottom:0;
+  background:rgba(15,32,39,0.75);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+}
+
+.logout-box{
+  background:#ffffff;
+  padding:22px 28px;
+  border-radius:16px;
+  text-align:center;
+  box-shadow:0 20px 40px rgba(0,0,0,0.3);
+}
+
+.spinner{
+  width:42px;
+  height:42px;
+  border:4px solid #cfd8dc;
+  border-top:4px solid #203a43;
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+  margin:0 auto 12px;
+}
+
+@keyframes spin{
+  to{ transform:rotate(360deg); }
+}
+
+.logout-text{
+  font-weight:700;
+  color:#203a43;
+}  
 </style>
 </head>
 
@@ -655,20 +691,27 @@ function logout(){
     btn.style.cursor = "not-allowed";
   });
 
-  // 🔑 CALL BACKEND LOGOUT
+  // ✅ Show logout spinner
+  document.getElementById("logoutOverlay").style.display = "flex";
+
   fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({
       action:"logout",
-      token: token   // 👈 THIS WAS MISSING
+      token: token
     })
   })
-  .finally(()=>{   // even if backend fails, force logout UX
+  .finally(()=>{
     sessionStorage.clear();
     location.replace("index.html");
   });
 }
 </script>
-
+<div id="logoutOverlay" class="logout-overlay">
+  <div class="logout-box">
+    <div class="spinner"></div>
+    <div class="logout-text">Logging out… Please wait</div>
+  </div>
+</div>
 </body>
 </html>
