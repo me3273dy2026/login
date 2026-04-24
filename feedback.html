@@ -7,38 +7,75 @@
 <style>
 body{
   font-family:"Segoe UI",Arial;
-  background:#203a43;
+  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
   display:flex;
   justify-content:center;
   align-items:center;
-  height:100vh;
+  min-height:100vh;
   margin:0;
+  padding:12px;
 }
+
 .card{
   background:#fff;
-  padding:25px;
-  border-radius:12px;
+  padding:20px;
+  border-radius:14px;
   width:100%;
-  max-width:500px;
+  max-width:480px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.25);
 }
-h2{text-align:center;margin-bottom:15px;}
 
-.q{margin-top:12px;font-weight:600;}
-select,textarea{
+h2{
+  text-align:center;
+  margin-bottom:12px;
+  font-size:20px;
+  color:#203a43;
+}
+
+.q{
+  margin-top:12px;
+  font-weight:600;
+  font-size:14px;
+}
+
+select, textarea{
   width:100%;
-  padding:8px;
+  padding:10px;
   margin-top:5px;
+  border-radius:8px;
+  border:1px solid #ccc;
+  font-size:14px;
+}
+
+textarea{
+  min-height:80px;
+  resize:none;
 }
 
 button{
   margin-top:18px;
   width:100%;
   padding:12px;
-  background:#203a43;
+  background:linear-gradient(135deg,#2c5364,#203a43);
   color:#fff;
   border:none;
-  border-radius:8px;
+  border-radius:25px;
   font-weight:600;
+  font-size:15px;
+}
+
+.msg{
+  text-align:center;
+  margin-top:10px;
+  font-weight:600;
+  color:red;
+}
+
+/* 📱 Extra mobile tweak */
+@media(max-width:480px){
+  .card{
+    padding:16px;
+  }
 }
 </style>
 </head>
@@ -50,6 +87,7 @@ button{
 
 <div class="q">Group Discussion usefulness</div>
 <select id="q1">
+<option value="" disabled selected>Select</option>
 <option>Very Good</option>
 <option>Good</option>
 <option>Average</option>
@@ -59,6 +97,7 @@ button{
 
 <div class="q">Seminar effectiveness</div>
 <select id="q2">
+<option value="" disabled selected>Select</option>
 <option>Very Good</option>
 <option>Good</option>
 <option>Average</option>
@@ -68,6 +107,7 @@ button{
 
 <div class="q">Interview preparation support</div>
 <select id="q3">
+<option value="" disabled selected>Select</option>
 <option>Very Good</option>
 <option>Good</option>
 <option>Average</option>
@@ -77,6 +117,7 @@ button{
 
 <div class="q">Skill improvement</div>
 <select id="q4">
+<option value="" disabled selected>Select</option>
 <option>Very Good</option>
 <option>Good</option>
 <option>Average</option>
@@ -86,6 +127,7 @@ button{
 
 <div class="q">Faculty support & guidance</div>
 <select id="q5">
+<option value="" disabled selected>Select</option>
 <option>Very Good</option>
 <option>Good</option>
 <option>Average</option>
@@ -96,7 +138,9 @@ button{
 <div class="q">Suggestions</div>
 <textarea id="suggestion"></textarea>
 
-<button onclick="submitFeedback()">Submit Feedback</button>
+<button id="submitBtn" onclick="submitFeedback()" disabled>
+  Submit Feedback
+</button>
 
 <div id="msg"></div>
 </div>
@@ -105,7 +149,35 @@ button{
 const BACKEND="https://script.google.com/macros/s/AKfycbzML6CAbaEQTO7rAcBz7A2aPU5Gj5o-TCUPvXC1ZlQIgGFahfpCmyqjb6SgYBxTWf1RaA/exec";
 const token=sessionStorage.getItem("token");
 
+if(!token){
+  alert("Session expired");
+  location.replace("index.html");
+}
+
+document.querySelectorAll("select").forEach(sel=>{
+  sel.addEventListener("change", checkAllFilled);
+});
+
+function checkAllFilled(){
+  const filled =
+  document.getElementById("q1").value &&
+  document.getElementById("q2").value &&
+  document.getElementById("q3").value &&
+  document.getElementById("q4").value &&
+  document.getElementById("q5").value;
+  document.getElementById("submitBtn").disabled = !filled;
+}
+
 function submitFeedback(){
+
+  const msg = document.getElementById("msg");
+
+  if(!q1.value || !q2.value || !q3.value || !q4.value || !q5.value){
+    msg.innerText = "Please answer all questions";
+    return;
+  }
+
+  msg.innerText = "Submitting...";
 
   fetch(BACKEND,{
     method:"POST",
@@ -122,11 +194,14 @@ function submitFeedback(){
   })
   .then(r=>r.json())
   .then(res=>{
-    if(res.status==="OK"){
+    if(res.status==="OK" || res.status==="ALREADY_SUBMITTED"){
       window.location.href="allocate.html";
     }else{
       msg.innerText="Submission failed";
     }
+  })
+  .catch(()=>{
+    msg.innerText="Server error";
   });
 }
 </script>
