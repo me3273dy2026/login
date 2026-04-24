@@ -824,7 +824,7 @@ function logout(){
     else if(finalMarks >= 40) grade="D";
 
     // ===== UI =====
-    box.innerHTML = `
+   box.innerHTML = `
 <div style="overflow-x:auto">
 
 <table style="
@@ -843,25 +843,26 @@ function logout(){
 
 <tr style="background:#e3f2fd">
   <td>GD</td>
-  <td>${gd}/20</td>
-  <td>${gd.toFixed(1)}</td>
+  <td>${(gd/20*100).toFixed(0)}</td>
+  <td>${gd.toFixed(1)} / 20</td>
 </tr>
 
 <tr style="background:#e3f2fd">
   <td>Seminar</td>
-  <td>${seminar}/20</td>
-  <td>${seminar.toFixed(1)}</td>
+  <td>${(seminar/20*100).toFixed(0)}</td>
+  <td>${seminar.toFixed(1)} / 20</td>
 </tr>
 
 <tr style="background:#e3f2fd">
   <td>PI</td>
-  <td>${pi}/20</td>
-  <td>${pi.toFixed(1)}</td>
+  <td>${(pi/20*100).toFixed(0)}</td>
+  <td>${pi.toFixed(1)} / 20</td>
 </tr>
 
 <tr style="background:#bbdefb;font-weight:800">
-  <td colspan="2">Total (Activities)</td>
-  <td>${total60.toFixed(1)} / 60</td>
+  <td colspan="3">
+    Total (Activities): ${total60.toFixed(1)} / 60
+  </td>
 </tr>
 
 <tr><td colspan="3"><hr></td></tr>
@@ -873,13 +874,15 @@ function logout(){
 </tr>
 
 <tr style="background:#ede7f6;font-weight:900">
-  <td colspan="2">FINAL MARKS</td>
-  <td>${finalMarks.toFixed(1)} / 100</td>
+  <td colspan="3">
+    FINAL MARKS: ${finalMarks.toFixed(1)} / 100
+  </td>
 </tr>
 
 <tr style="background:#fff3e0;font-weight:900">
-  <td colspan="2">GRADE</td>
-  <td>${grade}</td>
+  <td colspan="3">
+    GRADE: ${grade}
+  </td>
 </tr>
 
 </table>
