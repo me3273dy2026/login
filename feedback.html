@@ -172,7 +172,13 @@ function submitFeedback(){
 
   const msg = document.getElementById("msg");
 
-  if(!q1.value || !q2.value || !q3.value || !q4.value || !q5.value){
+  if(
+  !document.getElementById("q1").value ||
+  !document.getElementById("q2").value ||
+  !document.getElementById("q3").value ||
+  !document.getElementById("q4").value ||
+  !document.getElementById("q5").value
+){
     msg.innerText = "Please answer all questions";
     return;
   }
