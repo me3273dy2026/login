@@ -154,7 +154,23 @@ function login(){
   .then(res=>{
     if(res.status === "OK" && res.token){
   sessionStorage.setItem("token", res.token);   // 🔑 CORRECT KEY
-  window.location.href = "allocate.html"; // 🔑 DASHBOARD
+  //window.location.href = "allocate.html"; // 🔑 DASHBOARD
+
+   fetch(BACKEND_URL,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"checkFeedbackStatus",
+      token:res.token
+    })
+  })
+  .then(r=>r.json())
+  .then(fb=>{
+    if(fb.submitted){
+      window.location.href = "allocate.html";
+    }else{
+      window.location.href = "feedback.html";
+    }
+  });    
   return;
 }
     msg.style.color="red";
