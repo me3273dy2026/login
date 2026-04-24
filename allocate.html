@@ -275,7 +275,19 @@ footer{
   text-align:center;
   box-shadow:0 20px 40px rgba(0,0,0,0.3);
 }
+.new-badge{
+  font-size:13px;
+  font-weight:800;
+  animation:blinkColors 1s infinite;
+}
 
+@keyframes blinkColors{
+  0%   { color:#ff1744; }   /* red */
+  25%  { color:#00e676; }   /* green */
+  50%  { color:#2979ff; }   /* blue */
+  75%  { color:#ffea00; }   /* yellow */
+  100% { color:#ff1744; }
+}
 .spinner{
   width:42px;
   height:42px;
@@ -294,6 +306,23 @@ footer{
   font-weight:700;
   color:#203a43;
 }  
+  .btn-marks{
+  width:100%;
+  padding:12px;
+  margin-top:12px;
+  background:linear-gradient(135deg,#8e24aa,#5e35b1); /* purple theme */
+  color:#fff;
+  border:none;
+  font-size:16px;
+  font-weight:700;
+  border-radius:30px;
+  cursor:pointer;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:10px;
+  box-shadow:0 6px 18px rgba(94,53,177,0.4);
+}
 </style>
 </head>
 
@@ -322,8 +351,9 @@ footer{
     <div style="margin-top:8px"><b>GD Group Members:</b> <div id="gdMembers">-</div></div>
     <div style="margin-top:8px"><b>Seminar Topic:</b> <span id="seminarTopic">-</span></div>
   </div>
-     <button class="btn-primary" onclick="toggleMarksSheet()">
+    <button class="btn-marks" onclick="toggleMarksSheet()">
   Marks Sheet
+  <span class="new-badge">NEW</span>
 </button>
 
 <div id="marksLoading" class="loading-text" style="display:none">
