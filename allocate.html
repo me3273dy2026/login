@@ -322,6 +322,15 @@ footer{
     <div style="margin-top:8px"><b>GD Group Members:</b> <div id="gdMembers">-</div></div>
     <div style="margin-top:8px"><b>Seminar Topic:</b> <span id="seminarTopic">-</span></div>
   </div>
+     <button class="btn-primary" onclick="toggleMarksSheet()">
+  Marks Sheet
+</button>
+
+<div id="marksLoading" class="loading-text" style="display:none">
+  Loading… Please wait
+</div>
+
+<div id="marksBox" class="infoBox" style="display:none"></div>
     <button id="perfBtn" class="btn-primary" onclick="togglePanel()">View Performance Evaluation</button>
 
     <div id="perfPanel" style="display:none">
@@ -374,7 +383,7 @@ footer{
 </footer>
 
 <script>
-const BACKEND="https://script.google.com/macros/s/AKfycbzML6CAbaEQTO7rAcBz7A2aPU5Gj5o-TCUPvXC1ZlQIgGFahfpCmyqjb6SgYBxTWf1RaA/exec";
+const BACKEND="https://script.google.com/macros/s/AKfycbzQ68QpW_hg6IaNUbZH5CwLA9XsjGKhQ0L-FqVC6jzPwuFPvehjEPA89-rY0laacYah3Q/exec";
 const token=sessionStorage.getItem("token");
 if(!token){ alert("Session expired"); location.replace("index.html"); }
 // 🔴 Prevent bypass without feedback
@@ -717,6 +726,126 @@ function logout(){
   .finally(()=>{
     sessionStorage.clear();
     location.replace("index.html");
+  });
+}
+  function toggleMarksSheet(){
+
+  const box = document.getElementById("marksBox");
+  const loader = document.getElementById("marksLoading");
+
+  if(box.style.display === "block"){
+    box.style.display = "none";
+    return;
+  }
+
+  // Close other panels (optional but clean)
+  document.getElementById("perfPanel").style.display = "none";
+  document.getElementById("attendancePanel").style.display = "none";
+
+  loader.style.display = "block";
+  box.style.display = "none";
+
+  Promise.all([
+
+    fetch(BACKEND,{
+      method:"POST",
+      body:new URLSearchParams({
+        action:"getMarksSheet",
+        token
+      })
+    }).then(r=>r.json()),
+
+    fetch(BACKEND,{
+      method:"POST",
+      body:new URLSearchParams({
+        action:"getMyAttendance",
+        token
+      })
+    }).then(r=>r.json())
+
+  ])
+  .then(([m,a])=>{
+
+    loader.style.display = "none";
+    box.style.display = "block";
+
+    // ===== DATA =====
+    const gd = m.gd || 0;
+    const seminar = m.seminar || 0;
+    const pi = m.pi || 0;
+
+    const total60 = gd + seminar + pi;
+
+    const attPercent = a.percent || 0;
+    const attMarks = (attPercent/100)*40;
+
+    const finalMarks = total60 + attMarks;
+
+    // ===== GRADE =====
+    let grade = "F";
+    if(finalMarks >= 90) grade="O";
+    else if(finalMarks >= 80) grade="E";
+    else if(finalMarks >= 70) grade="A";
+    else if(finalMarks >= 60) grade="B";
+    else if(finalMarks >= 50) grade="C";
+    else if(finalMarks >= 40) grade="D";
+
+    // ===== UI =====
+    box.innerHTML = `
+      <div style="overflow-x:auto">
+
+      <table style="width:100%;border-collapse:collapse;text-align:center;font-weight:600">
+
+      <tr style="background:#3949ab;color:#fff">
+        <th>Activity</th>
+        <th>Marks</th>
+        <th>Carry Forward</th>
+      </tr>
+
+      <tr style="background:#e3f2fd">
+        <td>GD</td>
+        <td>${gd}/20</td>
+        <td>${gd.toFixed(1)}</td>
+      </tr>
+
+      <tr style="background:#e3f2fd">
+        <td>Seminar</td>
+        <td>${seminar}/20</td>
+        <td>${seminar.toFixed(1)}</td>
+      </tr>
+
+      <tr style="background:#e3f2fd">
+        <td>PI</td>
+        <td>${pi}/20</td>
+        <td>${pi.toFixed(1)}</td>
+      </tr>
+
+      <tr style="background:#bbdefb;font-weight:800">
+        <td colspan="2">Total (Activities)</td>
+        <td>${total60.toFixed(1)} / 60</td>
+      </tr>
+
+      <tr><td colspan="3"><hr></td></tr>
+
+      <tr style="background:#e8f5e9">
+        <td>Attendance (${attPercent}%)</td>
+        <td>--</td>
+        <td>${attMarks.toFixed(1)} / 40</td>
+      </tr>
+
+      <tr style="background:#ede7f6;font-weight:900">
+        <td colspan="2">FINAL MARKS</td>
+        <td>${finalMarks.toFixed(1)} / 100</td>
+      </tr>
+
+      <tr style="background:#fff3e0;font-weight:900">
+        <td colspan="2">GRADE</td>
+        <td>${grade}</td>
+      </tr>
+
+      </table>
+      </div>
+    `;
   });
 }
 </script>
