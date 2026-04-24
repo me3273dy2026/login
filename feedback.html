@@ -6,6 +6,10 @@
 <title>Course Feedback</title>
 
 <style>
+    button:disabled{
+  background:#999;
+  cursor:not-allowed;
+}
 body{
   font-family:"Segoe UI",Arial;
   background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
@@ -46,6 +50,7 @@ select, textarea{
   border-radius:8px;
   border:1px solid #ccc;
   font-size:14px;
+  box-sizing:border-box;   /* 🔴 IMPORTANT FIX */
 }
 .error{
   border:2px solid #e53935 !important;
@@ -196,10 +201,17 @@ function submitFeedback(){
     }
   });
 
-  if(!valid){
-    msg.innerText = "Please answer all questions";
-    return;
+ if(!valid){
+  msg.innerText = "Please answer all questions";
+
+  // 🔽 Scroll to first error
+  const firstError = document.querySelector(".error");
+  if(firstError){
+    firstError.scrollIntoView({ behavior:"smooth", block:"center" });
   }
+
+  return;
+}
 
   msg.innerText = "Submitting...";
 
@@ -233,6 +245,7 @@ function submitFeedback(){
     document.getElementById("submitBtn").disabled = false;
   });
 }
+
 </script>
 
 </body>
