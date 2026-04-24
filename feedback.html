@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Course Feedback</title>
 
 <style>
@@ -46,7 +47,9 @@ select, textarea{
   border:1px solid #ccc;
   font-size:14px;
 }
-
+.error{
+  border:2px solid #e53935 !important;
+}
 textarea{
   min-height:80px;
   resize:none;
@@ -155,7 +158,10 @@ if(!token){
 }
 
 document.querySelectorAll("select").forEach(sel=>{
-  sel.addEventListener("change", checkAllFilled);
+  sel.addEventListener("change", function(){
+    this.classList.remove("error");  // remove red when corrected
+    checkAllFilled();
+  });
 });
 
 function checkAllFilled(){
@@ -172,29 +178,44 @@ function submitFeedback(){
 
   const msg = document.getElementById("msg");
 
-  if(
-  !document.getElementById("q1").value ||
-  !document.getElementById("q2").value ||
-  !document.getElementById("q3").value ||
-  !document.getElementById("q4").value ||
-  !document.getElementById("q5").value
-){
+  const q1El = document.getElementById("q1");
+  const q2El = document.getElementById("q2");
+  const q3El = document.getElementById("q3");
+  const q4El = document.getElementById("q4");
+  const q5El = document.getElementById("q5");
+
+  // 🔴 Reset errors
+  [q1El,q2El,q3El,q4El,q5El].forEach(el => el.classList.remove("error"));
+
+  let valid = true;
+
+  [q1El,q2El,q3El,q4El,q5El].forEach(el=>{
+    if(!el.value){
+      el.classList.add("error");
+      valid = false;
+    }
+  });
+
+  if(!valid){
     msg.innerText = "Please answer all questions";
     return;
   }
 
   msg.innerText = "Submitting...";
 
+  // 🔒 Disable button after click
+  document.getElementById("submitBtn").disabled = true;
+
   fetch(BACKEND,{
     method:"POST",
     body:new URLSearchParams({
       action:"submitFeedback",
       token:token,
-      q1:q1.value,
-      q2:q2.value,
-      q3:q3.value,
-      q4:q4.value,
-      q5:q5.value,
+      q1:q1El.value,
+      q2:q2El.value,
+      q3:q3El.value,
+      q4:q4El.value,
+      q5:q5El.value,
       suggestion:suggestion.value
     })
   })
@@ -204,10 +225,12 @@ function submitFeedback(){
       window.location.href="allocate.html";
     }else{
       msg.innerText="Submission failed";
+      document.getElementById("submitBtn").disabled = false; // re-enable if failed
     }
   })
   .catch(()=>{
     msg.innerText="Server error";
+    document.getElementById("submitBtn").disabled = false;
   });
 }
 </script>
