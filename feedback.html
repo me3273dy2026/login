@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Course Feedback</title>
+
+<style>
+body{
+  font-family:"Segoe UI",Arial;
+  background:#203a43;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  margin:0;
+}
+.card{
+  background:#fff;
+  padding:25px;
+  border-radius:12px;
+  width:100%;
+  max-width:500px;
+}
+h2{text-align:center;margin-bottom:15px;}
+
+.q{margin-top:12px;font-weight:600;}
+select,textarea{
+  width:100%;
+  padding:8px;
+  margin-top:5px;
+}
+
+button{
+  margin-top:18px;
+  width:100%;
+  padding:12px;
+  background:#203a43;
+  color:#fff;
+  border:none;
+  border-radius:8px;
+  font-weight:600;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+<h2>Course Feedback</h2>
+
+<div class="q">Group Discussion usefulness</div>
+<select id="q1">
+<option>Very Good</option>
+<option>Good</option>
+<option>Average</option>
+<option>Bad</option>
+<option>Very Bad</option>
+</select>
+
+<div class="q">Seminar effectiveness</div>
+<select id="q2">
+<option>Very Good</option>
+<option>Good</option>
+<option>Average</option>
+<option>Bad</option>
+<option>Very Bad</option>
+</select>
+
+<div class="q">Interview preparation support</div>
+<select id="q3">
+<option>Very Good</option>
+<option>Good</option>
+<option>Average</option>
+<option>Bad</option>
+<option>Very Bad</option>
+</select>
+
+<div class="q">Skill improvement</div>
+<select id="q4">
+<option>Very Good</option>
+<option>Good</option>
+<option>Average</option>
+<option>Bad</option>
+<option>Very Bad</option>
+</select>
+
+<div class="q">Faculty support & guidance</div>
+<select id="q5">
+<option>Very Good</option>
+<option>Good</option>
+<option>Average</option>
+<option>Bad</option>
+<option>Very Bad</option>
+</select>
+
+<div class="q">Suggestions</div>
+<textarea id="suggestion"></textarea>
+
+<button onclick="submitFeedback()">Submit Feedback</button>
+
+<div id="msg"></div>
+</div>
+
+<script>
+const BACKEND="https://script.google.com/macros/s/AKfycbwLw4ET_KVSSI-sq3MQIRwpfgyvcpt9XcnBEQzvHldRDpjb10HX-sT8j5-42z5A9vYF9w/exec";
+const token=sessionStorage.getItem("token");
+
+function submitFeedback(){
+
+  fetch(BACKEND,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"submitFeedback",
+      token:token,
+      q1:q1.value,
+      q2:q2.value,
+      q3:q3.value,
+      q4:q4.value,
+      q5:q5.value,
+      suggestion:suggestion.value
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    if(res.status==="OK"){
+      window.location.href="allocate.html";
+    }else{
+      msg.innerText="Submission failed";
+    }
+  });
+}
+</script>
+
+</body>
+</html>
