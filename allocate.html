@@ -546,7 +546,7 @@ Promise.all([
   }
 
   // ===== ATTENDANCE =====
-  if(attendance.status==="OK"){
+  /* if(attendance.status==="OK"){
   attendanceBox.style.display = "block";
 
   const pct = Number(attendance.percent || 0);
@@ -559,8 +559,8 @@ Promise.all([
   } else {
     attendanceValue.classList.add("attendance-bad");
   }
-}
-
+} */
+attendanceBox.style.display = "none"; // permanently hidden
   let msgs = [], pastMsgs = [];
 
   // ===== ALLOCATION STATUS =====
@@ -628,9 +628,10 @@ Promise.all([
   }
 
   // ===== RENDER =====
-  upcomingBox.innerHTML = [...msgs, completedHTML].join("");
+  /*upcomingBox.innerHTML = [...msgs, completedHTML].join("");
   upcomingBox.style.display="block";
-  actionButtons.style.display="block";
+  actionButtons.style.display="block";*/
+  upcomingBox.style.display = "none"; // permanently hidden
 
 })
 
