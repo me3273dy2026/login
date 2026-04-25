@@ -629,8 +629,14 @@ attendanceBox.style.display = "none"; // permanently hidden
 
   // ===== RENDER =====
   /*upcomingBox.innerHTML = [...msgs, completedHTML].join("");
-  upcomingBox.style.display="block";*/
-  upcomingBox.style.display = "none"; // permanently hidden
+  upcomingBox.style.display="block";
+  upcomingBox.style.display = "none"; // permanently hidden*/
+  if(completedHTML){
+  upcomingBox.innerHTML = completedHTML;
+  upcomingBox.style.display = "block";
+} else {
+  upcomingBox.style.display = "none";
+}
   actionButtons.style.display="block";
 })
 
