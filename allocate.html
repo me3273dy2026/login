@@ -503,126 +503,151 @@ function canShowUpcoming(d){
 }
 
 loadAll();
-  
+
 function loadAll(){
+
 Promise.all([
   fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"dashboard",token})}).then(r=>r.json()),
   fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getMyUpcomingAllocation",token})}).then(r=>r.json()),
   fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getMyPastAllocations",token})}).then(r=>r.json()),
   fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getMyProfileDetails",token})}).then(r=>r.json()),
   fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getMyAttendance",token})}).then(r=>r.json())
-]).then(([dash,upcoming,pastList,profile,attendance])=>{
-  
-  const upcomingBox = document.getElementById("upcomingBox");   // ✅ ADD THIS
-  const actionButtons = document.getElementById("actionButtons"); // ✅ ADD THIS
-  document.getElementById("loadingBox").style.display="none";
-  document.getElementById("welcome").innerText=`Welcome ${dash.name} (${dash.roll})`;
+])
 
+.then(([dash={}, upcoming={}, pastList={}, profile={}, attendance={}])=>{
+
+  // ✅ Safe DOM references
+  const upcomingBox = document.getElementById("upcomingBox");
+  const actionButtons = document.getElementById("actionButtons");
+  const loadingBox = document.getElementById("loadingBox");
+
+  const gdTopic = document.getElementById("gdTopic");
+  const seminarTopic = document.getElementById("seminarTopic");
+  const gdMembers = document.getElementById("gdMembers");
+
+  const attendanceBox = document.getElementById("attendanceBox");
+  const attendanceValue = document.getElementById("attendanceValue");
+
+  // ✅ Stop loader ALWAYS
+  loadingBox.style.display = "none";
+
+  // ✅ Welcome
+  document.getElementById("welcome").innerText =
+    `Welcome ${dash.name || ""} (${dash.roll || ""})`;
+
+  // ===== PROFILE =====
   if(profile.status==="OK"){
-    gdTopic.innerText=profile.gdTopic||"-";
-    seminarTopic.innerText=profile.seminarTopic||"-";
-    gdMembers.innerHTML=profile.members.map(m=>`<div>${m}</div>`).join("");
+    gdTopic.innerText = profile.gdTopic || "-";
+    seminarTopic.innerText = profile.seminarTopic || "-";
+
+    gdMembers.innerHTML = (profile.members || [])
+      .map(m => `<div>${m}</div>`)
+      .join("");
   }
 
+  // ===== ATTENDANCE =====
   if(attendance.status==="OK"){
-  attendanceBox.style.display="block";
+  attendanceBox.style.display = "block";
 
-  const pct = Number(attendance.percent);
+  const pct = Number(attendance.percent || 0);
   attendanceValue.innerText = `${pct}%`;
 
   attendanceValue.classList.remove("attendance-good","attendance-bad");
 
   if(pct >= 75){
-  attendanceValue.classList.add("attendance-good");
-  }else{
+    attendanceValue.classList.add("attendance-good");
+  } else {
     attendanceValue.classList.add("attendance-bad");
   }
 }
 
+  let msgs = [], pastMsgs = [];
 
- let msgs = [], pastMsgs = [];
+  // ===== ALLOCATION STATUS =====
+  const activeDate = pastList.activeAllocationDate;
 
-/* ===== ALLOCATION STATUS (BACKEND DRIVEN) ===== */
+  if (activeDate) {
 
-const activeDate = pastList.activeAllocationDate;
-const nextWeek   = pastList.nextWeekDate;
+    if (upcoming && upcoming.status === "FOUND" && upcoming.date === activeDate) {
 
-if (activeDate) {
+      msgs.push(`
+        <div class="status-upcoming">
+          Upcoming: You have <b>${upcoming.category}</b><br>
+          on ${prettyDate(activeDate)}
+        </div>
+      `);
 
-  // Student has allocation on active date?
-  if (upcoming.status === "FOUND" && upcoming.date === activeDate) {
+    } else {
 
-    msgs.push(`
-      <div class="status-upcoming">
-        Upcoming: You have <b>${upcoming.category}</b><br>
-        on ${prettyDate(activeDate)}
-      </div>
-    `);
+      msgs.push(`
+        <div class="status-none">
+          You don’t have any allocations for the coming week
+          <br>
+          <b>(${prettyDate(activeDate)})</b>
+        </div>
+      `);
+    }
 
   } else {
 
     msgs.push(`
-      <div class="status-none">
-        You don’t have any allocations for the coming week
-        <br>
-        <b>(${prettyDate(activeDate)})</b>
+      <div class="status-pending">
+        The allocation for the next week has not been done yet
       </div>
     `);
   }
 
-} else {
+  // ===== PAST =====
+  if(pastList.status==="OK" && Array.isArray(pastList.allocations)){
 
-  // No active allocation → allocation cycle closed
-  msgs.push(`
-    <div class="status-pending">
-      The allocation for the next week has not been done yet
-    </div>
-  `);
-}
+    pastList.allocations.forEach(a=>{
 
- if(pastList.status==="OK"){
-  pastList.allocations.forEach(a=>{
+      const style = a.evaluated
+        ? ""
+        : "background:#fff9c4;border:1px solid #fdd835;color:#5d4037";
 
-    const style = a.evaluated
-      ? ""
-      : "background:#fff9c4;border:1px solid #fdd835;color:#5d4037";
+      pastMsgs.push(`
+        <div class="pastBox" style="${style}">
+          ${a.category || "-"} · ${prettyDate(a.date)}<br>
+          <i>(${a.evaluated ? "Evaluation completed" : "Evaluation under process"})</i>
+        </div>
+      `);
 
-    pastMsgs.push(`
-  <div class="pastBox" style="${style}">
-    ${a.category} · ${prettyDate(a.date)}<br>
-    <i>(${a.evaluated ? "Evaluation completed" : "Evaluation under process"})</i>
-  </div>
-`);
-  });
-}
- let completedHTML = "";
+    });
+  }
 
-if(pastMsgs.length){
-  completedHTML = `
-    <div class="completedBox">
-      <h3>Completed</h3>
-      ${pastMsgs.join("")}
-    </div>
-  `;
-} 
-  /* Remove allocation UI */
-//upcomingBox.style.display = "none";
+  let completedHTML = "";
 
-/* Keep buttons visible */
-//actionButtons.style.display = "block";
+  if(pastMsgs.length){
+    completedHTML = `
+      <div class="completedBox">
+        <h3>Completed</h3>
+        ${pastMsgs.join("")}
+      </div>
+    `;
+  }
 
-
-  
- upcomingBox.innerHTML = [
-  ...msgs,
- completedHTML
-].join("");
+  // ===== RENDER =====
+  upcomingBox.innerHTML = [...msgs, completedHTML].join("");
   upcomingBox.style.display="block";
   actionButtons.style.display="block";
+
+})
+
+.catch(err=>{
+  console.error("LOAD ERROR:", err);
+
+  const loadingBox = document.getElementById("loadingBox");
+  loadingBox.innerHTML = "⚠️ Failed to load data. Please refresh.";
 });
+}
 
 /* ===== GLOBAL FUNCTIONS ===== */
-function togglePanel(){ perfPanel.style.display=perfPanel.style.display==="none"?"block":"none"; }
+function togglePanel(){ 
+  const perfPanel = document.getElementById("perfPanel");
+  perfPanel.style.display =
+    perfPanel.style.display === "none" ? "block" : "none";
+}
   function toggleProfileDetails(){
   const box = document.getElementById("profileBox");
   box.style.display = box.style.display === "none" ? "block" : "none";
