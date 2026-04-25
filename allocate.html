@@ -602,16 +602,22 @@ if(pastMsgs.length){
     </div>
   `;
 } 
+  /* Remove allocation UI */
+upcomingBox.style.display = "none";
+
+/* Keep buttons visible */
+actionButtons.style.display = "block";
+
+});
+  
  //upcomingBox.innerHTML = [
  // ...msgs,
  // completedHTML
 //].join("");
 //  upcomingBox.style.display="block";
 //  actionButtons.style.display="block";
-//});
-//}
-upcomingBox.style.display = "none";
-actionButtons.style.display = "block";});
+
+
 /* ===== GLOBAL FUNCTIONS ===== */
 function togglePanel(){ perfPanel.style.display=perfPanel.style.display==="none"?"block":"none"; }
   function toggleProfileDetails(){
