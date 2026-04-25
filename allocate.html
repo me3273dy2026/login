@@ -512,6 +512,9 @@ Promise.all([
   fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getMyProfileDetails",token})}).then(r=>r.json()),
   fetch(BACKEND,{method:"POST",body:new URLSearchParams({action:"getMyAttendance",token})}).then(r=>r.json())
 ]).then(([dash,upcoming,pastList,profile,attendance])=>{
+  
+  const upcomingBox = document.getElementById("upcomingBox");   // ✅ ADD THIS
+  const actionButtons = document.getElementById("actionButtons"); // ✅ ADD THIS
   document.getElementById("loadingBox").style.display="none";
   document.getElementById("welcome").innerText=`Welcome ${dash.name} (${dash.roll})`;
 
@@ -521,20 +524,20 @@ Promise.all([
     gdMembers.innerHTML=profile.members.map(m=>`<div>${m}</div>`).join("");
   }
 
-  //if(attendance.status==="OK"){
-  //attendanceBox.style.display="block";
+  if(attendance.status==="OK"){
+  attendanceBox.style.display="block";
 
-  //const pct = Number(attendance.percent);
-  //attendanceValue.innerText = `${pct}%`;
+  const pct = Number(attendance.percent);
+  attendanceValue.innerText = `${pct}%`;
 
-  //attendanceValue.classList.remove("attendance-good","attendance-bad");
+  attendanceValue.classList.remove("attendance-good","attendance-bad");
 
-  //if(pct >= 75){
-  //  attendanceValue.classList.add("attendance-good");
-  //}else{
-  //  attendanceValue.classList.add("attendance-bad");
-  //}
-//}
+  if(pct >= 75){
+  attendanceValue.classList.add("attendance-good");
+  }else{
+    attendanceValue.classList.add("attendance-bad");
+  }
+}
 
 
  let msgs = [], pastMsgs = [];
@@ -603,20 +606,20 @@ if(pastMsgs.length){
   `;
 } 
   /* Remove allocation UI */
-upcomingBox.style.display = "none";
+//upcomingBox.style.display = "none";
 
 /* Keep buttons visible */
-actionButtons.style.display = "block";
+//actionButtons.style.display = "block";
 
-});
+
   
- //upcomingBox.innerHTML = [
- // ...msgs,
- // completedHTML
-//].join("");
-//  upcomingBox.style.display="block";
-//  actionButtons.style.display="block";
-
+ upcomingBox.innerHTML = [
+  ...msgs,
+ completedHTML
+].join("");
+  upcomingBox.style.display="block";
+  actionButtons.style.display="block";
+});
 
 /* ===== GLOBAL FUNCTIONS ===== */
 function togglePanel(){ perfPanel.style.display=perfPanel.style.display==="none"?"block":"none"; }
