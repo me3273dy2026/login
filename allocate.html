@@ -521,20 +521,21 @@ Promise.all([
     gdMembers.innerHTML=profile.members.map(m=>`<div>${m}</div>`).join("");
   }
 
-  if(attendance.status==="OK"){
-  attendanceBox.style.display="block";
+  //if(attendance.status==="OK"){
+  //attendanceBox.style.display="block";
 
-  const pct = Number(attendance.percent);
-  attendanceValue.innerText = `${pct}%`;
+  //const pct = Number(attendance.percent);
+  //attendanceValue.innerText = `${pct}%`;
 
-  attendanceValue.classList.remove("attendance-good","attendance-bad");
+  //attendanceValue.classList.remove("attendance-good","attendance-bad");
 
-  if(pct >= 75){
-    attendanceValue.classList.add("attendance-good");
-  }else{
-    attendanceValue.classList.add("attendance-bad");
-  }
-}
+  //if(pct >= 75){
+  //  attendanceValue.classList.add("attendance-good");
+  //}else{
+  //  attendanceValue.classList.add("attendance-bad");
+  //}
+//}
+
 
  let msgs = [], pastMsgs = [];
 
@@ -601,15 +602,16 @@ if(pastMsgs.length){
     </div>
   `;
 } 
- upcomingBox.innerHTML = [
-  ...msgs,
-  completedHTML
-].join("");
-  upcomingBox.style.display="block";
-  actionButtons.style.display="block";
-});
-}
-
+ //upcomingBox.innerHTML = [
+ // ...msgs,
+ // completedHTML
+//].join("");
+//  upcomingBox.style.display="block";
+//  actionButtons.style.display="block";
+//});
+//}
+upcomingBox.style.display = "none";
+actionButtons.style.display = "block";});
 /* ===== GLOBAL FUNCTIONS ===== */
 function togglePanel(){ perfPanel.style.display=perfPanel.style.display==="none"?"block":"none"; }
   function toggleProfileDetails(){
