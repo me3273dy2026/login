@@ -438,7 +438,7 @@ footer{
 </footer>
 
 <script>
-const BACKEND="https://script.google.com/macros/s/AKfycby_3_8VjGRKIQ-YXO5Ml2Ne-reSR-LwehCS23-KxpPs2S5djf-rzBGYfL_yG6OYj5Vazg/exec";
+const BACKEND="https://script.google.com/macros/s/AKfycbwFO7TEzMWldNKZO1dURnIRRRlGkwC4XIcqkqKI4_A72gs_AlzjS5hIzoNnHujPSq78rw/exec";
 const token=sessionStorage.getItem("token");
 if(!token){ alert("Session expired"); location.replace("index.html"); }
 // 🔴 Prevent bypass without feedback
@@ -869,7 +869,10 @@ function logout(){
     const g = m.gradeCounts || {};
     loader.style.display = "none";
     box.style.display = "block";
-
+    const topperName = m.topperName || "-";
+const topperRoll = m.topperRoll || "-";
+const topperMarks = m.topperMarks || "-";
+const classAvg = m.classAverage || "-";
     // ===== DATA =====
     const gd = m.gd || 0;
     const seminar = m.seminar || 0;
@@ -956,10 +959,23 @@ function logout(){
 </table>
 
 </div>
+
 <div class="gradeBox ${getGradeClass(grade)}">
   GRADE: ${grade}
 </div>
-
+<div style="
+  margin-top:15px;
+  padding:15px;
+  background:#f5f5f5;
+  border-radius:10px;
+  font-size:14px;
+  line-height:1.8;
+">
+  <b>Topper Name:</b> ${topperName}<br>
+  <b>Topper Roll Number:</b> ${topperRoll}<br>
+  <b>Topper Marks:</b> ${topperMarks}<br>
+  <b>Class Average:</b> ${classAvg}
+</div>
 <!-- 🔽 Grade Table -->
 <div style="margin-top:14px">
 
