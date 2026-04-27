@@ -964,17 +964,25 @@ const classAvg = m.classAverage || "-";
   GRADE: ${grade}
 </div>
 <div style="
-  margin-top:15px;
-  padding:15px;
-  background:#f5f5f5;
-  border-radius:10px;
-  font-size:14px;
-  line-height:1.8;
+  margin-top:16px;
+  padding:16px;
+  background:#f1f8e9;
+  border:2px solid #4caf50;
+  border-radius:12px;
+  font-size:16px;
+  line-height:1.9;
+  font-weight:600;
 ">
-  <b>Topper Name:</b> ${topperName}<br>
-  <b>Topper Roll Number:</b> ${topperRoll}<br>
-  <b>Topper Marks:</b> ${topperMarks}<br>
-  <b>Class Average:</b> ${classAvg}
+
+  <div style="font-size:17px; font-weight:800; margin-bottom:6px; color:#1b5e20;">
+    Class Performance Summary
+  </div>
+
+  <div><b>Topper Name:</b> ${topperName}</div>
+  <div><b>Topper Roll Number:</b> ${topperRoll}</div>
+  <div><b>Topper Marks:</b> ${topperMarks}</div>
+  <div><b>Class Average:</b> ${classAvg}</div>
+
 </div>
 <!-- 🔽 Grade Table -->
 <div style="margin-top:14px">
